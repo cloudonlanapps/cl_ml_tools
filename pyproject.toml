@@ -1,0 +1,77 @@
+[project]
+name = "cl_media_tools"
+version = "0.1.0"
+description = "Library for master-worker media processing - provides task plugins, worker runtime, and protocols for job persistence and file storage"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "CL Server Team"}
+]
+keywords = ["media", "processing", "worker", "master", "compute", "image"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+master = [
+    "fastapi>=0.100",
+    "python-multipart>=0.0.6",
+]
+compute = [
+    "Pillow>=10.0",
+]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "pytest-cov>=4.0",
+    "httpx>=0.24",
+]
+all = [
+    "cl_media_tools[master,compute,dev]",
+]
+
+[project.entry-points."cl_media_tools.tasks"]
+image_resize = "cl_media_tools.plugins.image_resize.task:ImageResizeTask"
+image_conversion = "cl_media_tools.plugins.image_conversion.task:ImageConversionTask"
+
+[project.entry-points."cl_media_tools.routes"]
+image_resize = "cl_media_tools.plugins.image_resize.routes:create_router"
+image_conversion = "cl_media_tools.plugins.image_conversion.routes:create_router"
+
+[project.urls]
+Homepage = "https://github.com/cl-server/cl_media_tools"
+Documentation = "https://github.com/cl-server/cl_media_tools#readme"
+Repository = "https://github.com/cl-server/cl_media_tools"
+
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]
