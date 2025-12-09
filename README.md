@@ -1,4 +1,4 @@
-# cl_media_tools
+# cl_ml_tools
 
 A Python library for building master-worker media processing systems. Provides task plugins, worker runtime, and protocols for job persistence and file storage.
 
@@ -13,16 +13,16 @@ A Python library for building master-worker media processing systems. Provides t
 ## Installation
 
 ```bash
-pip install cl_media_tools
+pip install cl_ml_tools
 
 # With FastAPI support (for master/API server)
-pip install cl_media_tools[master]
+pip install cl_ml_tools[master]
 
 # With compute plugins (image processing, etc.)
-pip install cl_media_tools[compute]
+pip install cl_ml_tools[compute]
 
 # All extras
-pip install cl_media_tools[master,compute]
+pip install cl_ml_tools[master,compute]
 ```
 
 ## Quick Start
@@ -35,7 +35,7 @@ You need to implement two protocols to integrate with your system:
 
 ```python
 from typing import Optional, List
-from cl_media_tools.common.schemas import Job
+from cl_ml_tools.common.schemas import Job
 
 class SQLiteJobRepository:
     """SQLite implementation of JobRepository protocol."""
@@ -227,7 +227,7 @@ class LocalFileStorage:
 
 ```python
 from fastapi import FastAPI
-from cl_media_tools.master import create_master_router
+from cl_ml_tools.master import create_master_router
 
 # Your protocol implementations
 from my_app.repository import SQLiteJobRepository
@@ -263,13 +263,13 @@ Run the server:
 uvicorn my_app.main:app --reload
 ```
 
-> **Note**: Available API endpoints are auto-generated from registered plugins. See `pyproject.toml` entry points and `src/cl_media_tools/plugins/` for available task types.
+> **Note**: Available API endpoints are auto-generated from registered plugins. See `pyproject.toml` entry points and `src/cl_ml_tools/plugins/` for available task types.
 
 ### 3. Setup Worker
 
 ```python
 import asyncio
-from cl_media_tools.worker import Worker
+from cl_ml_tools.worker import Worker
 
 # Same repository as master (shared database)
 from my_app.repository import SQLiteJobRepository
@@ -314,7 +314,7 @@ my_app/plugins/watermark/
 
 ```python
 # schema.py
-from cl_media_tools.common.schemas import BaseJobParams
+from cl_ml_tools.common.schemas import BaseJobParams
 
 class WatermarkParams(BaseJobParams):
     watermark_text: str
@@ -326,8 +326,8 @@ class WatermarkParams(BaseJobParams):
 
 ```python
 # task.py
-from cl_media_tools.common.compute_module import ComputeModule
-from cl_media_tools.common.schemas import Job
+from cl_ml_tools.common.compute_module import ComputeModule
+from cl_ml_tools.common.schemas import Job
 from .schema import WatermarkParams
 
 class WatermarkTask(ComputeModule):
@@ -375,9 +375,9 @@ from fastapi import APIRouter, UploadFile, File, Form, Depends
 from typing import Callable
 from uuid import uuid4
 
-from cl_media_tools.common.job_repository import JobRepository
-from cl_media_tools.common.file_storage import FileStorage
-from cl_media_tools.common.schemas import Job
+from cl_ml_tools.common.job_repository import JobRepository
+from cl_ml_tools.common.file_storage import FileStorage
+from cl_ml_tools.common.schemas import Job
 
 def create_router(
     repository: JobRepository,
@@ -426,10 +426,10 @@ def create_router(
 Add to your `pyproject.toml`:
 
 ```toml
-[project.entry-points."cl_media_tools.tasks"]
+[project.entry-points."cl_ml_tools.tasks"]
 watermark = "my_app.plugins.watermark.task:WatermarkTask"
 
-[project.entry-points."cl_media_tools.routes"]
+[project.entry-points."cl_ml_tools.routes"]
 watermark = "my_app.plugins.watermark.routes:create_router"
 ```
 
@@ -471,9 +471,9 @@ Use `BEGIN IMMEDIATE` for write lock (shown in Quick Start example above).
 
 ## Available Plugins
 
-See [`src/cl_media_tools/plugins/`](src/cl_media_tools/plugins/) for built-in plugins and their documentation.
+See [`src/cl_ml_tools/plugins/`](src/cl_ml_tools/plugins/) for built-in plugins and their documentation.
 
-Registered plugins are listed in [`pyproject.toml`](pyproject.toml) under `[project.entry-points."cl_media_tools.tasks"]`.
+Registered plugins are listed in [`pyproject.toml`](pyproject.toml) under `[project.entry-points."cl_ml_tools.tasks"]`.
 
 ## Architecture
 
@@ -488,7 +488,7 @@ Registered plugins are listed in [`pyproject.toml`](pyproject.toml) under `[proj
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                      cl_media_tools                         │
+│                      cl_ml_tools                         │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  Protocols:          Base Class:                            │
@@ -501,7 +501,7 @@ Registered plugins are listed in [`pyproject.toml`](pyproject.toml) under `[proj
 │                                   ▲                         │
 │  Plugins:                         │ extends                 │
 │  ┌────────────────────────────────────────────────────┐    │
-│  │ See src/cl_media_tools/plugins/ for available tasks│    │
+│  │ See src/cl_ml_tools/plugins/ for available tasks│    │
 │  └────────────────────────────────────────────────────┘    │
 │                                                             │
 │  Runtime:                                                   │
@@ -521,7 +521,7 @@ MIT License
 
 1. Fork the repository
 2. Create a feature branch
-3. Add your plugin to `src/cl_media_tools/plugins/`
+3. Add your plugin to `src/cl_ml_tools/plugins/`
 4. Register entry points in `pyproject.toml`
 5. Add a README.md in your plugin directory documenting parameters
 6. Submit a pull request

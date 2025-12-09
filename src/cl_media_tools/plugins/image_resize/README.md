@@ -53,5 +53,5 @@ On successful completion, the job's `task_output` contains:
 Requires Pillow:
 
 ```bash
-pip install cl_media_tools[compute]
+pip install cl_ml_tools[compute]
 ```

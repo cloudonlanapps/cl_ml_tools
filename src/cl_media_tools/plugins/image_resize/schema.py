@@ -1,11 +1,11 @@
 """Image resize parameters schema."""
 
-from cl_media_tools.common.schemas import BaseJobParams
+from cl_ml_tools.common.schemas import BaseJobParams
 
 
 class ImageResizeParams(BaseJobParams):
     """Parameters for image resize task.
-    
+
     Attributes:
         input_paths: List of absolute paths to input images
         output_paths: List of absolute paths for resized images
@@ -13,7 +13,7 @@ class ImageResizeParams(BaseJobParams):
         height: Target height in pixels
         maintain_aspect_ratio: If True, maintain aspect ratio (default: False)
     """
-    
+
     width: int
     height: int
     maintain_aspect_ratio: bool = False

@@ -3,14 +3,14 @@
 from pathlib import Path
 from typing import Callable, Optional, Dict, Any, Type
 
-from cl_media_tools.common.compute_module import ComputeModule
-from cl_media_tools.common.schemas import Job, BaseJobParams
+from cl_ml_tools.common.compute_module import ComputeModule
+from cl_ml_tools.common.schemas import Job, BaseJobParams
 from .schema import ImageConversionParams
 
 
 class ImageConversionTask(ComputeModule):
     """Compute module for converting images between formats.
-    
+
     Converts images to specified format using Pillow.
     """
 
@@ -27,15 +27,15 @@ class ImageConversionTask(ComputeModule):
         self,
         job: Job,
         params: ImageConversionParams,
-        progress_callback: Optional[Callable[[int], None]] = None
+        progress_callback: Optional[Callable[[int], None]] = None,
     ) -> Dict[str, Any]:
         """Execute image conversion operation.
-        
+
         Args:
             job: The Job object
             params: Validated ImageConversionParams
             progress_callback: Optional callback to report progress (0-100)
-            
+
         Returns:
             Result dict with status and task_output
         """
@@ -44,7 +44,7 @@ class ImageConversionTask(ComputeModule):
         except ImportError:
             return {
                 "status": "error",
-                "error": "Pillow is not installed. Install with: pip install cl_media_tools[compute]"
+                "error": "Pillow is not installed. Install with: pip install cl_ml_tools[compute]",
             }
 
         try:
@@ -57,23 +57,30 @@ class ImageConversionTask(ComputeModule):
                 # Load image
                 with Image.open(input_path) as img:
                     # Convert mode if necessary for certain formats
-                    if params.format.lower() in ("jpg", "jpeg") and img.mode in ("RGBA", "P"):
+                    if params.format.lower() in ("jpg", "jpeg") and img.mode in (
+                        "RGBA",
+                        "P",
+                    ):
                         # Convert to RGB for JPEG (no alpha channel support)
                         img = img.convert("RGB")
-                    
+
                     # Save in target format
                     save_kwargs = {}
-                    
+
                     # Set quality for formats that support it
                     if params.format.lower() in ("jpg", "jpeg", "webp"):
                         save_kwargs["quality"] = params.quality
-                    
+
                     # PNG optimization
                     if params.format.lower() == "png":
                         save_kwargs["optimize"] = True
-                    
-                    img.save(output_path, format=self._get_pil_format(params.format), **save_kwargs)
-                
+
+                    img.save(
+                        output_path,
+                        format=self._get_pil_format(params.format),
+                        **save_kwargs,
+                    )
+
                 processed_files.append(output_path)
 
                 # Report progress
@@ -86,8 +93,8 @@ class ImageConversionTask(ComputeModule):
                 "task_output": {
                     "processed_files": processed_files,
                     "format": params.format,
-                    "quality": params.quality
-                }
+                    "quality": params.quality,
+                },
             }
 
         except FileNotFoundError as e:
@@ -105,6 +112,6 @@ class ImageConversionTask(ComputeModule):
             "webp": "WEBP",
             "gif": "GIF",
             "bmp": "BMP",
-            "tiff": "TIFF"
+            "tiff": "TIFF",
         }
         return format_map.get(format_str.lower(), format_str.upper())

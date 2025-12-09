@@ -2,14 +2,14 @@
 
 from typing import Callable, Optional, Dict, Any, Type
 
-from cl_media_tools.common.compute_module import ComputeModule
-from cl_media_tools.common.schemas import Job, BaseJobParams
+from cl_ml_tools.common.compute_module import ComputeModule
+from cl_ml_tools.common.schemas import Job, BaseJobParams
 from .schema import ImageResizeParams
 
 
 class ImageResizeTask(ComputeModule):
     """Compute module for resizing images.
-    
+
     Resizes images to specified dimensions using Pillow.
     """
 
@@ -26,15 +26,15 @@ class ImageResizeTask(ComputeModule):
         self,
         job: Job,
         params: ImageResizeParams,
-        progress_callback: Optional[Callable[[int], None]] = None
+        progress_callback: Optional[Callable[[int], None]] = None,
     ) -> Dict[str, Any]:
         """Execute image resize operation.
-        
+
         Args:
             job: The Job object
             params: Validated ImageResizeParams
             progress_callback: Optional callback to report progress (0-100)
-            
+
         Returns:
             Result dict with status and task_output
         """
@@ -43,7 +43,7 @@ class ImageResizeTask(ComputeModule):
         except ImportError:
             return {
                 "status": "error",
-                "error": "Pillow is not installed. Install with: pip install cl_media_tools[compute]"
+                "error": "Pillow is not installed. Install with: pip install cl_ml_tools[compute]",
             }
 
         try:
@@ -57,17 +57,18 @@ class ImageResizeTask(ComputeModule):
                 with Image.open(input_path) as img:
                     # Calculate new size
                     if params.maintain_aspect_ratio:
-                        img.thumbnail((params.width, params.height), Image.Resampling.LANCZOS)
+                        img.thumbnail(
+                            (params.width, params.height), Image.Resampling.LANCZOS
+                        )
                         resized = img
                     else:
                         resized = img.resize(
-                            (params.width, params.height), 
-                            Image.Resampling.LANCZOS
+                            (params.width, params.height), Image.Resampling.LANCZOS
                         )
-                    
+
                     # Save resized image
                     resized.save(output_path)
-                
+
                 processed_files.append(output_path)
 
                 # Report progress
@@ -79,8 +80,8 @@ class ImageResizeTask(ComputeModule):
                 "status": "ok",
                 "task_output": {
                     "processed_files": processed_files,
-                    "dimensions": {"width": params.width, "height": params.height}
-                }
+                    "dimensions": {"width": params.width, "height": params.height},
+                },
             }
 
         except FileNotFoundError as e:

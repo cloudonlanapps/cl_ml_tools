@@ -1,5 +1,5 @@
 [project]
-name = "cl_media_tools"
+name = "cl_ml_tools"
 version = "0.1.0"
 description = "Library for master-worker media processing - provides task plugins, worker runtime, and protocols for job persistence and file storage"
 readme = "README.md"
@@ -38,21 +38,21 @@ dev = [
     "httpx>=0.24",
 ]
 all = [
-    "cl_media_tools[master,compute,dev]",
+    "cl_ml_tools[master,compute,dev]",
 ]
 
-[project.entry-points."cl_media_tools.tasks"]
-image_resize = "cl_media_tools.plugins.image_resize.task:ImageResizeTask"
-image_conversion = "cl_media_tools.plugins.image_conversion.task:ImageConversionTask"
+[project.entry-points."cl_ml_tools.tasks"]
+image_resize = "cl_ml_tools.plugins.image_resize.task:ImageResizeTask"
+image_conversion = "cl_ml_tools.plugins.image_conversion.task:ImageConversionTask"
 
-[project.entry-points."cl_media_tools.routes"]
-image_resize = "cl_media_tools.plugins.image_resize.routes:create_router"
-image_conversion = "cl_media_tools.plugins.image_conversion.routes:create_router"
+[project.entry-points."cl_ml_tools.routes"]
+image_resize = "cl_ml_tools.plugins.image_resize.routes:create_router"
+image_conversion = "cl_ml_tools.plugins.image_conversion.routes:create_router"
 
 [project.urls]
-Homepage = "https://github.com/cl-server/cl_media_tools"
-Documentation = "https://github.com/cl-server/cl_media_tools#readme"
-Repository = "https://github.com/cl-server/cl_media_tools"
+Homepage = "https://github.com/cl-server/cl_ml_tools"
+Documentation = "https://github.com/cl-server/cl_ml_tools#readme"
+Repository = "https://github.com/cl-server/cl_ml_tools"
 
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
