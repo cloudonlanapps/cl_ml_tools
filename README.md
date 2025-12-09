@@ -1,10 +1,10 @@
 # cl_ml_tools
 
-A Python library for building master-worker media processing systems. Provides task plugins, worker runtime, and protocols for job persistence and file storage.
+A Python library for building master-worker media processing / ML systems. Provides task plugins, worker runtime, and protocols for job persistence and file storage.
 
 ## Features
 
-- **Plugin-based architecture** - Add new media processing tasks without modifying core code
+- **Plugin-based architecture** - Add new media processing / ML tasks without modifying core code
 - **Protocol-driven design** - Implement `JobRepository` and `FileStorage` to integrate with any database/storage
 - **Dynamic discovery** - Plugins auto-registered via Python entry points
 - **Race-condition safe** - Atomic job claiming prevents duplicate processing
@@ -233,7 +233,7 @@ from cl_ml_tools.master import create_master_router
 from my_app.repository import SQLiteJobRepository
 from my_app.storage import LocalFileStorage
 
-app = FastAPI(title="Media Processing API")
+app = FastAPI(title="ML Tools")
 
 # Initialize implementations
 repository = SQLiteJobRepository("./jobs.db")

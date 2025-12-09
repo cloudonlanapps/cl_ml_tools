@@ -1,4 +1,4 @@
-"""cl_ml_tools - Library for master-worker media processing."""
+"""cl_ml_tools - Tools for master-worker media processing / ML ."""
 
 from cl_ml_tools.common.schemas import Job, BaseJobParams
 from cl_ml_tools.common.compute_module import ComputeModule

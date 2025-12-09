@@ -1,14 +1,14 @@
 [project]
 name = "cl_ml_tools"
 version = "0.1.0"
-description = "Library for master-worker media processing - provides task plugins, worker runtime, and protocols for job persistence and file storage"
+description = "Tools for master-worker media processing / ML - provides task plugins, worker runtime, and protocols for job persistence and file storage"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "CL Server Team"}
 ]
-keywords = ["media", "processing", "worker", "master", "compute", "image"]
+keywords = ["media", "ml", "processing", "worker", "master", "compute", "image"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
