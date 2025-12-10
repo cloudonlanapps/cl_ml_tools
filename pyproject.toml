@@ -8,7 +8,7 @@ license = {text = "MIT"}
 authors = [
     {name = "Ananda Sarangaram"}
 ]
-keywords = ["media", "ml", "processing", "worker", "master", "compute", "image"]
+keywords = ["media", "ml", "processing", ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -18,16 +18,14 @@ classifiers = [
 ]
 dependencies = [
     "pydantic>=2.0",
+    "paho-mqtt>=1.6.0",
+    "fastapi>=0.100",
+    "python-multipart>=0.0.6",
+    "Pillow>=10.0",
 ]
 
 [project.optional-dependencies]
-master = [
-    "fastapi>=0.100",
-    "python-multipart>=0.0.6",
-]
-compute = [
-    "Pillow>=10.0",
-]
+
 dev = [
     "pytest>=7.0",
     "pytest-asyncio>=0.21",
@@ -35,7 +33,7 @@ dev = [
     "httpx>=0.24",
 ]
 all = [
-    "cl_ml_tools[master,compute,dev]",
+    "cl_ml_tools[dev]",
 ]
 
 [project.entry-points."cl_ml_tools.tasks"]

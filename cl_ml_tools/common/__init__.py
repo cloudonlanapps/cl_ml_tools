@@ -4,6 +4,7 @@ from cl_ml_tools.common.schemas import Job, BaseJobParams
 from cl_ml_tools.common.compute_module import ComputeModule
 from cl_ml_tools.common.job_repository import JobRepository
 from cl_ml_tools.common.file_storage import FileStorage
+from cl_ml_tools.worker import Worker
 
 __all__ = [
     "Job",
@@ -11,4 +12,5 @@ __all__ = [
     "ComputeModule",
     "JobRepository",
     "FileStorage",
+    "Worker",
 ]
