@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class BroadcasterBase(Protocol):
     connected: bool
 
-    def __init__(self, broker: str, port: int):
+    def __init__(self, broker: Optional[str] = None, port: Optional[int] = None):
         self.connected = False
 
     def connect(self) -> bool:
@@ -40,13 +40,19 @@ class BroadcasterBase(Protocol):
 class MQTTBroadcaster(BroadcasterBase):
     """MQTT event broadcaster using modern MQTT v5 protocol."""
 
-    def __init__(self, broker: str, port: int):
+    def __init__(self, broker: Optional[str] = None, port: Optional[int] = None):
+        if not self.broker or not self.port:
+            raise Exception(
+                "MQTT broadcaster must be provided with borker and its port"
+            )
         self.broker = broker
         self.port = port
         self.client: Optional[mqtt.Client] = None
         self.connected = False
 
     def connect(self) -> bool:
+        if not self.broker or not self.port:
+            return False
         try:
             self.client = mqtt.Client(protocol=mqtt.MQTTv5)
 
@@ -133,7 +139,7 @@ class NoOpBroadcaster(BroadcasterBase):
 
     connected: bool
 
-    def __init__(self, broker: str, port: int):
+    def __init__(self, broker: Optional[str] = None, port: Optional[int] = None):
         self.connected = True
 
     def connect(self) -> bool:
