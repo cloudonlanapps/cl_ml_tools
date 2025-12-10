@@ -6,6 +6,7 @@ import logging
 import time
 from typing import Optional, Protocol
 import paho.mqtt.client as mqtt
+from paho.mqtt.enums import CallbackAPIVersion
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +55,15 @@ class MQTTBroadcaster(BroadcasterBase):
 
     def connect(self) -> bool:
         if not self.broker or not self.port:
+            logger.warning(
+                f"Failed to configure to MQTT broker:{self.broker}:{self.port}"
+            )
             return False
         try:
-            self.client = mqtt.Client(protocol=mqtt.MQTTv5)
+            self.client = mqtt.Client(
+                callback_api_version=CallbackAPIVersion.VERSION2,  # <-- Add this line
+                protocol=mqtt.MQTTv5,
+            )
 
             # Assign v5 callbacks
             self.client.on_connect = self._on_connect
@@ -69,7 +76,9 @@ class MQTTBroadcaster(BroadcasterBase):
             self.client.loop_start()
             return True
         except Exception as e:
-            logger.warning(f"Failed to connect to MQTT broker: {e}")
+            logger.warning(
+                f"Failed to connect to MQTT broker:{self.broker}:{self.port} {e}"
+            )
             self.connected = False
             return False
 
@@ -129,7 +138,7 @@ class MQTTBroadcaster(BroadcasterBase):
         if self.connected:
             logger.info("MQTT connected using v5")
         else:
-            logger.error(f"MQTT failed to connect. Reason code: {reason_code}")
+            logger.error(f"MQTT failed: reason={reason_code}, props={properties}")
 
     def _on_disconnect(self, client, userdata, reason_code, properties):
         self.connected = False
