@@ -1,12 +1,12 @@
 [project]
 name = "cl_ml_tools"
-version = "0.1.0"
+version = "0.2.1"
 description = "Tools for master-worker media processing / ML - provides task plugins, worker runtime, and protocols for job persistence and file storage"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = {text = "MIT"}
 authors = [
-    {name = "CL Server Team"}
+    {name = "Ananda Sarangaram"}
 ]
 keywords = ["media", "ml", "processing", "worker", "master", "compute", "image"]
 classifiers = [
@@ -14,10 +14,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
     "pydantic>=2.0",
@@ -49,20 +46,18 @@ image_conversion = "cl_ml_tools.plugins.image_conversion.task:ImageConversionTas
 image_resize = "cl_ml_tools.plugins.image_resize.routes:create_router"
 image_conversion = "cl_ml_tools.plugins.image_conversion.routes:create_router"
 
-[project.urls]
-Homepage = "https://github.com/cl-server/cl_ml_tools"
-Documentation = "https://github.com/cl-server/cl_ml_tools#readme"
-Repository = "https://github.com/cl-server/cl_ml_tools"
 
 [build-system]
 requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.packages.find]
+where = ["."]
+
 [tool.pytest.ini_options]
+pythonpath = ["."]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-python_classes = ["Test*"]
-python_functions = ["test_*"]
 asyncio_mode = "auto"
 
 [tool.ruff]
