@@ -140,7 +140,7 @@ class MQTTBroadcaster(BroadcasterBase):
     def _on_connect(self, client, userdata, flags, reason_code, properties):
         self.connected = reason_code == 0
         if self.connected:
-            logger.info("MQTT connected using v5")
+            logger.error("MQTT connected using v5")
         else:
             logger.error(f"MQTT failed: reason={reason_code}, props={properties}")
 
