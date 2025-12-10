@@ -1,15 +1,38 @@
 """MQTT broadcaster for job events and worker capabilities."""
 
+from abc import ABC
 import json
 import logging
 import time
-from typing import Optional
+from typing import Optional, Protocol
 import paho.mqtt.client as mqtt
 
 logger = logging.getLogger(__name__)
 
 
-class MQTTBroadcaster:
+class BroadcasterBase(Protocol):
+    def connect(self) -> bool:
+        return True
+
+    def disconnect(self):
+        pass
+
+    def publish_event(self, *, topic: str, payload: str, qos: int = 1) -> bool:
+        return False
+
+    def set_will(
+        self, *, topic: str, payload: str, qos: int = 1, retain: bool = True
+    ) -> bool:
+        return False
+
+    def publish_retained(self, *, topic: str, payload: str, qos: int = 1) -> bool:
+        return False
+
+    def clear_retained(self, topic: str, qos: int = 1) -> bool:
+        return False
+
+
+class MQTTBroadcaster(BroadcasterBase):
     """MQTT event broadcaster using modern MQTT v5 protocol."""
 
     def __init__(self, broker: str, port: int):
@@ -100,7 +123,7 @@ class MQTTBroadcaster:
         logger.warning(f"MQTT disconnected: {reason_code}")
 
 
-class NoOpBroadcaster:
+class NoOpBroadcaster(BroadcasterBase):
     """No-operation broadcaster for when MQTT is disabled or unavailable."""
 
     def connect(self) -> bool:
@@ -109,15 +132,21 @@ class NoOpBroadcaster:
     def disconnect(self):
         pass
 
-    def publish_event(self, event_type: str, job_id: str, data: dict) -> bool:
-        return True
-
-    def set_will(
-        self, topic: str, payload: str, qos: int = 1, retain: bool = True
+    def publish_event(
+        self,
+        *,
+        topic: str,
+        payload: str,
+        qos: int = 1,
     ) -> bool:
         return True
 
-    def publish_retained(self, topic: str, payload: str, qos: int = 1) -> bool:
+    def set_will(
+        self, *, topic: str, payload: str, qos: int = 1, retain: bool = True
+    ) -> bool:
+        return True
+
+    def publish_retained(self, *, topic: str, payload: str, qos: int = 1) -> bool:
         return True
 
     def clear_retained(self, topic: str, qos: int = 1) -> bool:
