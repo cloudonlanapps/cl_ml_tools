@@ -12,10 +12,9 @@ logger = logging.getLogger(__name__)
 class MQTTBroadcaster:
     """MQTT event broadcaster using modern MQTT v5 protocol."""
 
-    def __init__(self, broker: str, port: int, topic: str):
+    def __init__(self, broker: str, port: int):
         self.broker = broker
         self.port = port
-        self.topic = topic
         self.client: Optional[mqtt.Client] = None
         self.connected = False
 
@@ -44,7 +43,9 @@ class MQTTBroadcaster:
             self.client.disconnect()
             self.connected = False
 
-    def publish_event(self, event_type: str, job_id: str, data: dict) -> bool:
+    def publish_event(
+        self, topic: str, event_type: str, job_id: str, data: dict
+    ) -> bool:
         if not self.connected or not self.client:
             return False
 
@@ -57,7 +58,7 @@ class MQTTBroadcaster:
             }
             # v5: publish returns MQTTMessageInfo with rc result code
             result = self.client.publish(
-                self.topic, json.dumps(payload), qos=1, retain=False
+                topic, json.dumps(payload), qos=1, retain=False
             )
             return result.rc == mqtt.MQTT_ERR_SUCCESS
         except Exception as e:
