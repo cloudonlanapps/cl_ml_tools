@@ -61,7 +61,7 @@ class MQTTBroadcaster(BroadcasterBase):
             return False
         try:
             self.client = mqtt.Client(
-                callback_api_version=CallbackAPIVersion.VERSION2,  # <-- Add this line
+                callback_api_version=CallbackAPIVersion.VERSION2,
                 protocol=mqtt.MQTTv5,
             )
 
@@ -72,7 +72,7 @@ class MQTTBroadcaster(BroadcasterBase):
             # Optional: robust reconnection
             self.client.reconnect_delay_set(min_delay=1, max_delay=30)
 
-            self.client.connect(self.broker, self.port, keepalive=60)
+            self.client.connect_async(self.broker, self.port, keepalive=60)
             self.client.loop_start()
             return True
         except Exception as e:
