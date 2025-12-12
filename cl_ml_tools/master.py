@@ -58,7 +58,9 @@ def create_master_router(
         try:
             create_router = ep.load()  # Load the factory function
             plugin_router = create_router(repository, file_storage, get_current_user)
-            master.include_router(plugin_router, tags=[ep.name])
+            master.include_router(
+                plugin_router
+            )  # , tags=[ep.name] WE don't need this tag, all will be listed as compute-plugins
         except Exception as e:
             # Plugin dependency missing = exception (fail fast)
             raise RuntimeError(f"Failed to load plugin '{ep.name}': {e}")
