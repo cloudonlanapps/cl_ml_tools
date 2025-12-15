@@ -12,7 +12,7 @@ from uuid import uuid4
 
 import pytest
 
-from src.cl_ml_tools import (
+from cl_ml_tools import (
     MQTTBroadcaster,
     NoOpBroadcaster,
     get_broadcaster,
@@ -873,7 +873,7 @@ class TestBroadcasterMethods:
 
     def test_set_will_method_exists(self):
         """Test that broadcaster has set_will method."""
-        from ..src.cl_ml_tools import MQTTBroadcaster
+        from cl_ml_tools import MQTTBroadcaster
 
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(broker="localhost", port=1883)
         try:
@@ -886,7 +886,7 @@ class TestBroadcasterMethods:
 
     def test_publish_retained_method_exists(self):
         """Test that broadcaster has publish_retained method."""
-        from ..src.cl_ml_tools import MQTTBroadcaster
+        from cl_ml_tools import MQTTBroadcaster
 
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(broker="localhost", port=1883)
         try:
@@ -899,7 +899,7 @@ class TestBroadcasterMethods:
 
     def test_noop_broadcaster_has_methods(self):
         """Test that NoOp broadcaster implements required methods."""
-        from ..src.cl_ml_tools import NoOpBroadcaster
+        from cl_ml_tools import NoOpBroadcaster
 
         broadcaster: NoOpBroadcaster = NoOpBroadcaster()
         assert hasattr(broadcaster, "set_will")
@@ -914,7 +914,7 @@ class TestBroadcasterMethods:
         has implemented the clear_retained method. If this test fails, it means
         the cl_server_shared package needs to be updated.
         """
-        from ..src.cl_ml_tools import MQTTBroadcaster
+        from cl_ml_tools import MQTTBroadcaster
 
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(broker="localhost", port=1883)
         try:
