@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 
-def toTimeStamp(localTime: datetime):
+def toTimeStamp(localTime: datetime) -> int:
     """
     Converts a local datetime object to a UTC timestamp in milliseconds.
     If the input datetime is naive (lacks timezone info), it's assumed to be
