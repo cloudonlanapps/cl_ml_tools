@@ -52,14 +52,14 @@ TaskOutput = Mapping[str, object]
 # ─────────────────────────────────────────────────────────────
 # Task execution result
 # ─────────────────────────────────────────────────────────────
-
-
-class TaskResult(TypedDict):
+class TaskResult(BaseModel):
     """Result returned by ComputeModule.execute()."""
 
     status: str
-    task_output: NotRequired[TaskOutput | None]
-    error: NotRequired[str | None]
+    task_output: TaskOutput | None = None
+    error: str | None = None
+
+    model_config = ConfigDict(extra="forbid")
 
 
 # ─────────────────────────────────────────────────────────────
