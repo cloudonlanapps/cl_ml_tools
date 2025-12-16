@@ -2,12 +2,10 @@
 
 import subprocess
 from pathlib import Path
-from typing import cast
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from PIL import Image
-from PIL.ExifTags import TAGS
 
 from cl_ml_tools.common.schemas import Job
 from cl_ml_tools.plugins.exif.algo.exif_tool_wrapper import MetadataExtractor

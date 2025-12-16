@@ -1,7 +1,9 @@
 """Comprehensive test suite for hash plugin."""
 
 import hashlib
+import tempfile
 from io import BytesIO
+from pathlib import Path
 from typing import Any, Literal
 
 import pytest
@@ -13,6 +15,7 @@ from cl_ml_tools.plugins.hash import HashParams, HashTask
 from cl_ml_tools.plugins.hash.algo.generic import sha512hash_generic
 from cl_ml_tools.plugins.hash.algo.image import sha512hash_image
 from cl_ml_tools.plugins.hash.algo.md5 import get_md5_hexdigest
+from cl_ml_tools.utils.random_media_generator import RandomMediaGenerator
 
 # Helper type for params dict
 ParamsDict = dict[str, list[str] | Literal["sha512", "md5"]]
@@ -247,11 +250,49 @@ class TestImageHash:
 class TestVideoHash:
     """Test sha512hash_video2 function."""
 
-    def test_video_hash_skipped(self):
-        """Test video hashing is skipped (requires real video file)."""
-        # Video testing requires actual video files and ffprobe
-        # Skip in basic test suite
-        pytest.skip("Video hashing requires test video file and ffprobe")
+    def test_video_hash_with_random_video(self):
+        """Test video hashing with generated video file."""
+        from cl_ml_tools.plugins.hash.algo.video import sha512hash_video2
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            # Generate a test video using random_media_generator
+            gen = RandomMediaGenerator(
+                out_dir=tmp_dir,
+                media_list=[
+                    {
+                        "MIMEType": "video/mp4",
+                        "width": 320,
+                        "height": 240,
+                        "fileName": "test_video",
+                        "scenes": [
+                            {
+                                "background_color": [100, 150, 200],
+                                "num_shapes": 2,
+                                "duration_seconds": 1,
+                            }
+                        ],
+                        "fps": 10,
+                    }
+                ],
+            )
+
+            # Generate the video
+            video_media = gen.media_list[0]
+            video_media.generate()
+
+            # Read the generated video into BytesIO
+            video_path = Path(video_media.filepath)
+            assert video_path.exists(), "Generated video file should exist"
+
+            video_bytes = video_path.read_bytes()
+            bytes_io = BytesIO(video_bytes)
+
+            # Compute hash
+            hash_value = sha512hash_video2(bytes_io)
+
+            # Verify result is bytes and has correct length (SHA-512 = 64 bytes)
+            assert isinstance(hash_value, bytes)
+            assert len(hash_value) == 64
 
     def test_return_format_is_bytes(self):
         """Test that function signature returns bytes."""
@@ -261,7 +302,7 @@ class TestVideoHash:
 
         sig = inspect.signature(sha512hash_video2)
         # Function should return bytes (not str)
-        assert sig.return_annotation == bytes
+        assert sig.return_annotation is bytes
 
 
 # ─────────────────────────────────────────────────────────────

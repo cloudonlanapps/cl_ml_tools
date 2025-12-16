@@ -1,59 +1,85 @@
-# INTERNALS.md - Known Issues Registry
+# Internal Documentation & Known Issues
 
-This document tracks known linting warnings, type checker issues, and test skips that are intentionally kept in the codebase. Each entry must include justification and removal criteria.
+This document tracks known technical issues, type checker warnings, and technical debt for `cl_ml_tools`.
 
-**Last Updated**: 2025-12-16
+## Type Checker Status
 
----
+**Last checked**: 2025-12-16
+**Tool**: basedpyright
+**Summary**: 35 errors, 240 warnings
 
-## Format
+### Known Type Issues (Documented & Accepted)
 
-Each entry must follow this format:
+#### 1. Missing ONNX Runtime Type Stubs
 
-```markdown
-### [Category] Issue Title
+**Issue**: `reportMissingTypeStubs` for `onnxruntime` package
+**Affected files**:
+- `src/cl_ml_tools/plugins/clip_embedding/algo/clip_embedder.py`
+- `src/cl_ml_tools/plugins/dino_embedding/algo/dino_embedder.py`
+- `src/cl_ml_tools/plugins/face_detection/algo/face_detector.py`
+- `src/cl_ml_tools/plugins/face_embedding/algo/face_embedder.py`
 
-- **File**: `path/to/file.py`
-- **Tool**: ruff | basedpyright | pytest
-- **Issue**: Error code or warning message
-- **Reason**: Clear, justified explanation for keeping the warning/skip
-- **Removal Criteria**: Action required to resolve the issue
-- **Added**: YYYY-MM-DD
-```
+**Reason**: The `onnxruntime` package does not ship with type stubs, and no third-party stubs are available. This affects all ML plugins using ONNX models.
 
----
+**Status**: **ACCEPTED** - External dependency limitation.
 
-## Active Issues
+**Impact**: ~150 warnings related to unknown types from onnxruntime.
 
-### [Example] Type Ignore for Dynamic Plugin Loading
+#### 2. Numpy Array Type Arguments
 
-- **File**: `src/cl_ml_tools/common/plugin_loader.py` (example)
-- **Tool**: basedpyright
-- **Issue**: `type: ignore[attr-defined]` on line 42
-- **Reason**: Dynamic plugin loading via entry points requires runtime attribute access that cannot be statically verified
-- **Removal Criteria**: Refactor to use Protocol classes for static type checking of plugin interfaces
-- **Added**: 2025-12-16
+**Issue**: `reportMissingTypeArgument` for `np.ndarray`
 
----
+**Reason**: Numpy's generic `ndarray` requires shape and dtype type parameters. Adding these makes signatures verbose without significant runtime benefit.
 
-## Resolved Issues
+**Status**: **ACCEPTED** - Trade-off between type safety and code readability.
 
-(Issues that were previously documented but have been resolved)
+**Impact**: ~50 warnings
 
----
+### Type Errors Requiring Fixes
 
-## Guidelines
+See full list with `uv run basedpyright src/`
 
-1. **Never skip errors without documentation** - All type ignores, test skips, and ignored linting rules must be documented here
-2. **Provide context** - Explain why the issue cannot be immediately resolved
-3. **Set removal criteria** - Define what needs to happen to remove the exception
-4. **Review regularly** - During Phase 5 QA, review all entries and attempt to resolve
-5. **Keep it current** - Remove entries when issues are resolved
+**Priority fixes**:
+1. Missing error parameters in exception handling
+2. Type incompatibility in ONNX inference results
+3. Implicit string concatenation (5 instances)
+4. Deprecated Union syntax (use `T | None` instead of `Optional[T]`)
 
----
+## Code Coverage Status
 
-## Statistics
+**Last measured**: 2025-12-16
+**Coverage**: 64.83% (349 tests passing)
+**Target**: 85%
 
-- **Total Active Issues**: 0
-- **Total Resolved Issues**: 0
-- **Last Review**: 2025-12-16
+### Coverage Gaps
+
+**High Priority (0% coverage)**:
+- ML Plugin Routes (clip_embedding, dino_embedding, face_detection, face_embedding)
+- exif plugin
+- image_conversion plugin
+
+**Medium Priority (<50%)**:
+- Worker (21%)
+- Model Downloader (21%)
+- HLS Streaming (43-53%)
+
+**Well-Tested (>80%)**:
+- Utilities: timestamp (100%), media_types (98%), random_media_generator (76-100%)
+- Hash plugin: 64-100%
+- Media thumbnail: 83-93%
+- MQTT: 81-88%
+
+## Linter Status
+
+**Tool**: ruff
+**Status**: ✅ **PASSING**
+
+## Production Readiness Checklist
+
+- [x] Ruff linter passing
+- [ ] Critical type errors fixed
+- [ ] Coverage >85%
+- [ ] Performance benchmarks
+- [ ] Deployment guide
+
+**Last updated**: 2025-12-16

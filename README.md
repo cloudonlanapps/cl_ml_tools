@@ -9,6 +9,8 @@ A Python library for building master-worker media processing / ML systems. Provi
 - **Dynamic discovery** - Plugins auto-registered via Python entry points
 - **Race-condition safe** - Atomic job claiming prevents duplicate processing
 - **FastAPI integration** - Auto-generates REST endpoints for job creation
+- **ONNX ML plugins** - CPU-optimized face recognition, visual similarity, and semantic search
+- **Automatic model management** - Models download on-demand and cache locally
 
 ## Installation
 
@@ -471,9 +473,55 @@ Use `BEGIN IMMEDIATE` for write lock (shown in Quick Start example above).
 
 ## Available Plugins
 
-See [`src/cl_ml_tools/plugins/`](src/cl_ml_tools/plugins/) for built-in plugins and their documentation.
+### Built-in Media Processing Plugins
 
-Registered plugins are listed in [`pyproject.toml`](pyproject.toml) under `[project.entry-points."cl_ml_tools.tasks"]`.
+| Plugin | Description | Input | Output | ONNX Model |
+|--------|-------------|-------|--------|------------|
+| **hash** | Generate cryptographic hashes for images/videos | Media files | MD5/SHA256/Perceptual hashes | No |
+| **media_thumbnail** | Extract video thumbnails or resize images | Images, videos | Thumbnail images | No |
+| **image_conversion** | Convert between image formats (JPEG, PNG, WebP, HEIF) | Images | Converted images | No |
+| **hls_streaming** | Convert videos to HLS streaming format | Videos | M3U8 playlist + segments | No |
+| **exif** | Extract EXIF metadata from images | Images | Structured metadata | No |
+
+### ML/AI Plugins (ONNX-based)
+
+| Plugin | Description | Model | Embedding Size | Use Cases |
+|--------|-------------|-------|----------------|-----------|
+| **face_detection** | Detect faces with bounding boxes | MediaPipe Face Detection | N/A | Face localization, face counting |
+| **face_embedding** | Generate face embeddings for recognition | ArcFace (MobileFaceNet) | 512D | Face recognition, verification, clustering |
+| **dino_embedding** | Visual similarity embeddings | DINOv2 ViT-S/14 | 384D | Image similarity search, clustering, retrieval |
+| **clip_embedding** | Semantic image embeddings | MobileCLIP-S2 | 512D | Text-image search, zero-shot classification |
+
+**See individual plugin READMEs** in [`src/cl_ml_tools/plugins/`](src/cl_ml_tools/plugins/) for detailed documentation, parameters, and usage examples.
+
+**Registered plugins** are listed in [`pyproject.toml`](pyproject.toml) under `[project.entry-points."cl_ml_tools.tasks"]`.
+
+### ONNX Model Management
+
+ML plugins use ONNX Runtime for CPU-optimized inference. Models are automatically downloaded on first use:
+
+**Model Cache Location:** `~/.cache/cl_ml_tools/models/`
+
+**Download-on-Demand:** Models download from original sources (Hugging Face, etc.) when the plugin is first initialized. No pre-installation required.
+
+**Offline Usage:** After first download, models are cached locally and work offline.
+
+**Model Sources:**
+- **MediaPipe Face Detection**: [Hugging Face - qualcomm/MediaPipe-Face-Detection](https://huggingface.co/qualcomm/MediaPipe-Face-Detection)
+- **ArcFace (Face Embedding)**: [Hugging Face - garavv/arcface-onnx](https://huggingface.co/garavv/arcface-onnx)
+- **DINOv2**: [Hugging Face - RoundtTble/dinov2_vits14_onnx](https://huggingface.co/RoundtTble/dinov2_vits14_onnx)
+- **MobileCLIP**: Apple ml-mobileclip (requires manual ONNX conversion - see plugin README)
+
+**Licensing:** Each model has its own license. Check model sources before commercial use:
+- MediaPipe: Apache 2.0
+- ArcFace: Check model card
+- DINOv2: Apache 2.0
+- MobileCLIP: Apple Sample Code License
+
+**System Requirements:**
+- CPU-optimized (no GPU required)
+- ~100-200ms inference time per image on modern CPUs
+- Models range from 16-40 MB each
 
 ### Plugin Algorithm Organization
 
@@ -568,11 +616,26 @@ pytest
 
 MIT License
 
+## Migration Notes
+
+### Plugin Naming Change: `resize` → `media_thumbnail`
+
+The `resize` plugin has been renamed to `media_thumbnail` to better reflect its functionality (video thumbnail extraction + image resizing).
+
+**If you're upgrading from an older version:**
+- Update entry point references in `pyproject.toml`
+- Update job creation calls from `/jobs/resize` to `/jobs/media_thumbnail`
+- The plugin functionality remains unchanged
+
 ## Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
+
+Quick steps:
 1. Fork the repository
 2. Create a feature branch
 3. Add your plugin to `src/cl_ml_tools/plugins/`
 4. Register entry points in `pyproject.toml`
 5. Add a README.md in your plugin directory documenting parameters
-6. Submit a pull request
+6. Add comprehensive tests (see existing plugin tests for patterns)
+7. Submit a pull request
