@@ -1,7 +1,7 @@
 """Face detection task implementation."""
 
 import logging
-from typing import Callable, override
+from typing import Callable, Literal, TypedDict, override
 
 from ...common.compute_module import ComputeModule
 from ...common.schemas import BaseJobParams, Job, TaskResult
@@ -11,11 +11,25 @@ from .schema import BoundingBox, FaceDetectionParams, FaceDetectionResult
 logger = logging.getLogger(__name__)
 
 
+class FileSuccessResult(TypedDict):
+    file_path: str
+    status: Literal["success"]
+    detection: dict[str, object]
+
+
+class FileErrorResult(TypedDict):
+    file_path: str
+    status: Literal["error"]
+    error: str
+
+
+FileResult = FileSuccessResult | FileErrorResult
+
+
 class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
     """Compute module for detecting faces in images using ONNX model."""
 
-    def __init__(self):
-        """Initialize face detection task."""
+    def __init__(self) -> None:
         super().__init__()
         self._detector: FaceDetector | None = None
 
@@ -29,15 +43,9 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
         return FaceDetectionParams
 
     def _get_detector(self) -> FaceDetector:
-        """Get or create face detector instance (lazy loading)."""
         if self._detector is None:
-            try:
-                self._detector = FaceDetector()
-                logger.info("Face detector initialized successfully")
-            except Exception as e:
-                logger.error(f"Failed to initialize face detector: {e}")
-                raise
-
+            self._detector = FaceDetector()
+            logger.info("Face detector initialized successfully")
         return self._detector
 
     @override
@@ -47,44 +55,31 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
         params: FaceDetectionParams,
         progress_callback: Callable[[int], None] | None = None,
     ) -> TaskResult:
-        """Detect faces in input images.
-
-        Args:
-            job: Job instance
-            params: FaceDetectionParams with input_paths and detection parameters
-            progress_callback: Optional callback for progress updates (0-100)
-
-        Returns:
-            TaskResult with status and face detections for each image
-        """
         try:
-            # Initialize detector
             try:
                 detector = self._get_detector()
             except Exception as e:
-                logger.error(f"Face detector initialization failed: {e}")
+                logger.error("Face detector initialization failed: %s", e)
                 return {
                     "status": "error",
                     "error": (
-                        f"Failed to initialize face detector: {e}. "
-                        "Ensure ONNX Runtime is installed and the model can be downloaded."
+                        "Failed to initialize face detector: "
+                        f"{e}. Ensure ONNX Runtime is installed and the model can be downloaded."
                     ),
                 }
 
-            file_results: list[dict] = []
-            total_files = len(params.input_paths)
+            file_results: list[FileResult] = []
+            total_files: int = len(params.input_paths)
+
+            from PIL import Image
 
             for index, input_path in enumerate(params.input_paths):
                 try:
-                    # Detect faces
                     detections = detector.detect(
                         image_path=input_path,
                         confidence_threshold=params.confidence_threshold,
                         nms_threshold=params.nms_threshold,
                     )
-
-                    # Convert to BoundingBox objects
-                    from PIL import Image
 
                     with Image.open(input_path) as img:
                         image_width, image_height = img.size
@@ -100,7 +95,6 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
                         for det in detections
                     ]
 
-                    # Create result
                     result = FaceDetectionResult(
                         file_path=input_path,
                         faces=face_boxes,
@@ -118,7 +112,7 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
                     )
 
                 except FileNotFoundError:
-                    logger.error(f"File not found: {input_path}")
+                    logger.error("File not found: %s", input_path)
                     file_results.append(
                         {
                             "file_path": input_path,
@@ -128,7 +122,7 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
                     )
 
                 except Exception as e:
-                    logger.error(f"Failed to detect faces in {input_path}: {e}")
+                    logger.error("Failed to detect faces in %s: %s", input_path, e)
                     file_results.append(
                         {
                             "file_path": input_path,
@@ -137,27 +131,15 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
                         }
                     )
 
-                # Report progress
                 if progress_callback:
-                    progress = int((index + 1) / total_files * 100)
-                    progress_callback(progress)
+                    progress_callback(int((index + 1) / total_files * 100))
 
-            # Determine overall status
-            all_success = all(r["status"] == "success" for r in file_results)
-            any_success = any(r["status"] == "success" for r in file_results)
+            all_success: bool = all(r["status"] == "success" for r in file_results)
+            any_success: bool = any(r["status"] == "success" for r in file_results)
 
-            if all_success:
-                status = "ok"
-            elif any_success:
-                status = "ok"  # Partial success
-                logger.warning(
-                    f"Partial success: {sum(1 for r in file_results if r['status'] == 'success')}"
-                    f"/{total_files} files processed successfully"
-                )
-            else:
-                status = "error"
+            if not any_success:
                 return {
-                    "status": status,
+                    "status": "error",
                     "error": "Failed to detect faces in all files",
                     "task_output": {
                         "files": file_results,
@@ -165,8 +147,16 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
                     },
                 }
 
+            if not all_success:
+                success_count = sum(1 for r in file_results if r["status"] == "success")
+                logger.warning(
+                    "Partial success: %d/%d files processed successfully",
+                    success_count,
+                    total_files,
+                )
+
             return {
-                "status": status,
+                "status": "ok",
                 "task_output": {
                     "files": file_results,
                     "total_files": total_files,
@@ -176,5 +166,5 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
             }
 
         except Exception as e:
-            logger.exception(f"Unexpected error in FaceDetectionTask: {e}")
-            return {"status": "error", "error": f"Task failed: {str(e)}"}
+            logger.exception("Unexpected error in FaceDetectionTask: %s", e)
+            return {"status": "error", "error": f"Task failed: {e}"}
