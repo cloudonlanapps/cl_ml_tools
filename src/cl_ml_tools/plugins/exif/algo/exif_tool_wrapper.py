@@ -8,33 +8,23 @@ import json
 import logging
 import subprocess
 from pathlib import Path
-from typing import Any
+from typing import TypeAlias, cast
 
 logger = logging.getLogger(__name__)
 
+JSONPrimitive: TypeAlias = str | int | float | bool | None
+JSONValue: TypeAlias = JSONPrimitive | list["JSONValue"] | dict[str, "JSONValue"]
+MetadataDict: TypeAlias = dict[str, JSONValue]
+
 
 class MetadataExtractor:
-    """Wrapper class for extracting metadata from media files using ExifTool.
+    """Wrapper class for extracting metadata from media files using ExifTool."""
 
-    Requires ExifTool to be installed and available in PATH.
-    Install from: https://exiftool.org/
-    """
-
-    def __init__(self):
-        """Initialize the MetadataExtractor and check for ExifTool availability.
-
-        Raises:
-            RuntimeError: If ExifTool is not installed or not found in PATH
-        """
+    def __init__(self) -> None:
         if not self.is_exiftool_available():
             raise RuntimeError("ExifTool is not installed or not found in PATH.")
 
     def is_exiftool_available(self) -> bool:
-        """Check if ExifTool is available in the system.
-
-        Returns:
-            True if ExifTool is available, False otherwise
-        """
         try:
             result = subprocess.run(
                 ["exiftool", "-ver"],
@@ -43,121 +33,64 @@ class MetadataExtractor:
                 text=True,
                 timeout=5,
             )
-            version = result.stdout.strip()
-            logger.debug(f"ExifTool version {version} found")
+            logger.debug(f"ExifTool version {result.stdout.strip()} found")
             return True
-        except FileNotFoundError:
-            logger.warning("ExifTool not found in PATH")
-            return False
-        except subprocess.CalledProcessError as e:
-            logger.warning(f"ExifTool check failed: {e}")
-            return False
-        except subprocess.TimeoutExpired:
-            logger.warning("ExifTool check timed out")
+        except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
             return False
 
-    def extract_metadata(
-        self, filepath: str | Path, tags: list[str]
-    ) -> dict[str, Any]:
-        """Extract specific metadata tags from a media file using ExifTool.
+    def extract_metadata(self, filepath: str | Path, tags: list[str]) -> MetadataDict:
+        path = Path(filepath)
 
-        Args:
-            filepath: Path to the media file
-            tags: List of metadata tags to extract (e.g., ["Make", "Model", "DateTimeOriginal"])
-
-        Returns:
-            Extracted metadata as a dictionary. Returns empty dict on error.
-
-        Raises:
-            FileNotFoundError: If the file does not exist
-        """
-        filepath = Path(filepath)
-
-        if not filepath.exists():
-            logger.error(f"File not found: {filepath}")
-            raise FileNotFoundError(f"File not found: {filepath}")
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {path}")
 
         if not tags:
-            logger.error("No tags provided for metadata extraction")
             return {}
 
-        # Format tags for ExifTool
         tag_args = [f"-{tag}" for tag in tags]
 
         try:
             result = subprocess.run(
-                ["exiftool", "-n", "-j"] + tag_args + [str(filepath)],
+                ["exiftool", "-n", "-j", *tag_args, str(path)],
                 capture_output=True,
                 text=True,
                 check=True,
                 timeout=30,
             )
 
-            metadata = json.loads(result.stdout)
+            parsed = cast(list[MetadataDict], json.loads(result.stdout))
+            return parsed[0] if parsed else {}
 
-            if not metadata:
-                logger.warning(f"No metadata found in {filepath}")
-                return {}
-
-            # ExifTool returns a list; we take the first result
-            return metadata[0]
-
-        except subprocess.CalledProcessError as e:
-            logger.error(f"ExifTool failed for {filepath}: {e.stderr}")
+        except subprocess.CalledProcessError as exc:
+            stderr = cast(str, exc.stderr) if exc.stderr is not None else ""  # pyright: ignore[reportAny]
+            logger.error(f"ExifTool failed for {path}: {stderr}")
             return {}
 
-        except subprocess.TimeoutExpired:
-            logger.error(f"ExifTool timed out for {filepath}")
+        except (subprocess.TimeoutExpired, json.JSONDecodeError):
             return {}
 
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse ExifTool JSON output for {filepath}: {e}")
-            return {}
+    def extract_metadata_all(self, filepath: str | Path) -> MetadataDict:
+        path = Path(filepath)
 
-    def extract_metadata_all(self, filepath: str | Path) -> dict[str, Any]:
-        """Extract all available metadata from a media file using ExifTool.
-
-        Args:
-            filepath: Path to the media file
-
-        Returns:
-            Complete metadata dictionary. Returns empty dict on error.
-
-        Raises:
-            FileNotFoundError: If the file does not exist
-        """
-        filepath = Path(filepath)
-
-        if not filepath.exists():
-            logger.error(f"File not found: {filepath}")
-            raise FileNotFoundError(f"File not found: {filepath}")
+        if not path.exists():
+            raise FileNotFoundError(f"File not found: {path}")
 
         try:
-            # -G: Include group names, -n: Numeric output, -j: JSON format
             result = subprocess.run(
-                ["exiftool", "-G", "-n", "-j", str(filepath)],
+                ["exiftool", "-G", "-n", "-j", str(path)],
                 capture_output=True,
                 text=True,
                 check=True,
                 timeout=30,
             )
 
-            metadata = json.loads(result.stdout)
+            parsed = cast(list[MetadataDict], json.loads(result.stdout))
+            return parsed[0] if parsed else {}
 
-            if not metadata:
-                logger.warning(f"No metadata found in {filepath}")
-                return {}
-
-            return metadata[0]
-
-        except subprocess.CalledProcessError as e:
-            logger.error(f"ExifTool failed for {filepath}: {e.stderr}")
+        except subprocess.CalledProcessError as exc:
+            stderr = cast(str, exc.stderr) if exc.stderr is not None else ""  # pyright: ignore[reportAny]
+            logger.error(f"ExifTool failed for {path}: {stderr}")
             return {}
 
-        except subprocess.TimeoutExpired:
-            logger.error(f"ExifTool timed out for {filepath}")
-            return {}
-
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse ExifTool JSON output for {filepath}: {e}")
+        except (subprocess.TimeoutExpired, json.JSONDecodeError):
             return {}

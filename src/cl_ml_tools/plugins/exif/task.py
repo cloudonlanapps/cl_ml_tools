@@ -1,7 +1,7 @@
 """EXIF metadata extraction task implementation."""
 
 import logging
-from typing import Callable, override
+from typing import Callable, TypedDict, override
 
 from ...common.compute_module import ComputeModule
 from ...common.schemas import BaseJobParams, Job, TaskResult
@@ -9,6 +9,13 @@ from .algo.exif_tool_wrapper import MetadataExtractor
 from .schema import ExifMetadata, ExifParams
 
 logger = logging.getLogger(__name__)
+
+
+class FileResult(TypedDict):
+    file_path: str
+    status: str
+    metadata: dict[str, object]
+    error: str | None
 
 
 class ExifTask(ComputeModule[ExifParams]):
@@ -30,22 +37,11 @@ class ExifTask(ComputeModule[ExifParams]):
         params: ExifParams,
         progress_callback: Callable[[int], None] | None = None,
     ) -> TaskResult:
-        """Extract EXIF metadata from input files.
-
-        Args:
-            job: Job instance
-            params: ExifParams with input_paths and tags
-            progress_callback: Optional callback for progress updates (0-100)
-
-        Returns:
-            TaskResult with status and metadata for each file
-        """
         try:
-            # Initialize ExifTool wrapper
             try:
                 extractor = MetadataExtractor()
-            except RuntimeError as e:
-                logger.error(f"ExifTool initialization failed: {e}")
+            except RuntimeError as exc:
+                logger.error(f"ExifTool initialization failed: {exc}")
                 return {
                     "status": "error",
                     "error": (
@@ -54,19 +50,16 @@ class ExifTask(ComputeModule[ExifParams]):
                     ),
                 }
 
-            file_results: list[dict] = []
-            total_files = len(params.input_paths)
+            file_results: list[FileResult] = []
+            total_files: int = len(params.input_paths)
 
             for index, input_path in enumerate(params.input_paths):
                 try:
-                    # Extract raw metadata
                     if params.tags:
                         raw_metadata = extractor.extract_metadata(input_path, tags=params.tags)
                     else:
-                        # Extract all tags if none specified
                         raw_metadata = extractor.extract_metadata_all(input_path)
 
-                    # Convert to typed model
                     if raw_metadata:
                         metadata = ExifMetadata.from_raw_metadata(raw_metadata)
                         file_results.append(
@@ -74,16 +67,17 @@ class ExifTask(ComputeModule[ExifParams]):
                                 "file_path": input_path,
                                 "status": "success",
                                 "metadata": metadata.model_dump(),
+                                "error": None,
                             }
                         )
                     else:
-                        # No metadata found (corrupt file or unsupported format)
                         logger.warning(f"No EXIF metadata found for {input_path}")
                         file_results.append(
                             {
                                 "file_path": input_path,
                                 "status": "no_metadata",
-                                "metadata": ExifMetadata().model_dump(),  # Empty metadata
+                                "metadata": ExifMetadata().model_dump(),
+                                "error": None,
                             }
                         )
 
@@ -98,38 +92,34 @@ class ExifTask(ComputeModule[ExifParams]):
                         }
                     )
 
-                except Exception as e:
-                    logger.error(f"Failed to extract metadata from {input_path}: {e}")
+                except Exception as exc:
+                    logger.error(f"Failed to extract metadata from {input_path}: {exc}")
                     file_results.append(
                         {
                             "file_path": input_path,
                             "status": "error",
-                            "error": str(e),
+                            "error": str(exc),
                             "metadata": ExifMetadata().model_dump(),
                         }
                     )
 
-                # Report progress
                 if progress_callback:
                     progress = int((index + 1) / total_files * 100)
                     progress_callback(progress)
 
-            # Determine overall status
-            all_success = all(r["status"] == "success" for r in file_results)
-            any_success = any(r["status"] == "success" for r in file_results)
+            all_success: bool = all(r["status"] == "success" for r in file_results)
+            any_success: bool = any(r["status"] == "success" for r in file_results)
 
-            if all_success:
+            if all_success or any_success:
                 status = "ok"
-            elif any_success:
-                status = "ok"  # Partial success still returns "ok"
-                logger.warning(
-                    f"Partial success: {sum(1 for r in file_results if r['status'] == 'success')}"
-                    f"/{total_files} files processed successfully"
-                )
+                if not all_success:
+                    success_count = sum(1 for r in file_results if r["status"] == "success")
+                    logger.warning(
+                        f"Partial success: {success_count}/{total_files} files processed successfully"
+                    )
             else:
-                status = "error"
                 return {
-                    "status": status,
+                    "status": "error",
                     "error": "Failed to extract metadata from all files",
                     "task_output": {
                         "files": file_results,
@@ -146,6 +136,6 @@ class ExifTask(ComputeModule[ExifParams]):
                 },
             }
 
-        except Exception as e:
-            logger.exception(f"Unexpected error in ExifTask: {e}")
-            return {"status": "error", "error": f"Task failed: {str(e)}"}
+        except Exception as exc:
+            logger.exception(f"Unexpected error in ExifTask: {exc}")
+            return {"status": "error", "error": f"Task failed: {exc}"}
