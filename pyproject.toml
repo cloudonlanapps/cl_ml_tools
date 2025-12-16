@@ -41,13 +41,13 @@ all = [
 ]
 
 [project.entry-points."cl_ml_tools.tasks"]
-image_resize = "cl_ml_tools.plugins.image_resize.task:ImageResizeTask"
+media_resize = "cl_ml_tools.plugins.media_resize.task:MediaResizeTask"
 image_conversion = "cl_ml_tools.plugins.image_conversion.task:ImageConversionTask"
 hash = "cl_ml_tools.plugins.hash.task:HashTask"
 hls_streaming = "cl_ml_tools.plugins.hls_streaming.task:HLSStreamingTask"
 
 [project.entry-points."cl_ml_tools.routes"]
-image_resize = "cl_ml_tools.plugins.image_resize.routes:create_router"
+media_resize = "cl_ml_tools.plugins.media_resize.routes:create_router"
 image_conversion = "cl_ml_tools.plugins.image_conversion.routes:create_router"
 hash = "cl_ml_tools.plugins.hash.routes:create_router"
 hls_streaming = "cl_ml_tools.plugins.hls_streaming.routes:create_router"

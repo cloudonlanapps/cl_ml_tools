@@ -1,4 +1,4 @@
-"""Image resize route factory."""
+"""Media resize route factory."""
 
 from typing import Annotated, Callable, Protocol
 from uuid import uuid4
@@ -29,23 +29,23 @@ def create_router(
         get_current_user: Callable that returns current user (for auth)
 
     Returns:
-        Configured APIRouter with image resize endpoint
+        Configured APIRouter with media resize endpoint
     """
     router = APIRouter()
 
-    @router.post("/jobs/image_resize")
+    @router.post("/jobs/media_resize")
     async def create_resize_job(
-        file: Annotated[UploadFile, File(description="Image file to resize")],
+        file: Annotated[UploadFile, File(description="Media file to resize (image or video)")],
         width: Annotated[int, Form(gt=0, description="Target width in pixels")],
         height: Annotated[int, Form(gt=0, description="Target height in pixels")],
         maintain_aspect_ratio: Annotated[bool, Form(description="Maintain aspect ratio")] = False,
         priority: Annotated[int, Form(ge=0, le=10, description="Job priority (0-10)")] = 5,
         user: Annotated[UserLike | None, Depends(get_current_user)] = None,
     ):
-        """Create an image resize job.
+        """Create a media resize job.
 
-        Upload an image and specify target dimensions. The job will be queued
-        for processing by a worker.
+        Upload a media file (image or video) and specify target dimensions.
+        The job will be queued for processing by a worker.
 
         Returns:
             job_id: Unique identifier for the created job
@@ -70,7 +70,7 @@ def create_router(
         # Create job
         job = Job(
             job_id=job_id,
-            task_type="image_resize",
+            task_type="media_resize",
             params={
                 "input_paths": [input_path],
                 "output_paths": [output_path],

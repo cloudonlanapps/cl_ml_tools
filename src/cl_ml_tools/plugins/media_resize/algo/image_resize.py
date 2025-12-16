@@ -9,8 +9,8 @@ def image_resize(
     *,
     input_path: str | Path,
     output_path: str | Path,
-    width: int,
-    height: int,
+    width: int | None = None,
+    height: int | None = None,
     maintain_aspect_ratio: bool = True,
 ) -> str:
     """
@@ -34,6 +34,18 @@ def image_resize(
     """
     input_path = Path(input_path)
     output_path = Path(output_path)
+
+    # Default to 256x256 if neither specified
+    if width is None and height is None:
+        width = 256
+        height = 256
+    elif width is None:
+        # Only height specified, use it for both (PIL thumbnail maintains aspect)
+        width = height
+    elif height is None:
+        # Only width specified, use it for both (PIL thumbnail maintains aspect)
+        height = width
+    # If both specified, use as-is (PIL thumbnail will fit within box)
 
     with Image.open(input_path) as img:
         if maintain_aspect_ratio:
