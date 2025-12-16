@@ -428,11 +428,13 @@ class RotatingSquare(AnimatedShape):
         _ = cv2.fillPoly(frame, [square_pts], self.color)
 
 
-Shapes = {
+Shapes: dict[str, type[Shape]] = {
     "line": Line,
     "circle": Circle,
     "triangle": Triangle,
     "rectangle": Rectangle,
+}
+AnimatedShapes: dict[str, type[AnimatedShape]] = {
     "BouncingCircle": BouncingCircle,
     "MovingLine": MovingLine,
     "PulsatingTriangle": PulsatingTriangle,

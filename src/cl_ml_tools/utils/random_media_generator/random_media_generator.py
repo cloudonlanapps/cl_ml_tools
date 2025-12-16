@@ -1,53 +1,52 @@
-from dataclasses import dataclass, field
-from typing import List
+from collections.abc import Mapping, Sequence
+
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 
 from .base_media import BaseMedia, SupportedMIME
 from .errors import JSONValidationError
 from .image_generator import ImageGenerator
 from .video_generator import VideoGenerator
 
+RawMedia = Mapping[str, object]
+RawMediaList = Sequence[RawMedia]
 
-@dataclass
-class RandomMediaGenerator:
+
+class RandomMediaGenerator(BaseModel):
     """A collection of various media descriptions."""
 
-    out_dir: str |  = None
-    media_list: list[BaseMedia] = field(default_factory=list)
+    out_dir: str
+    media_list: list[BaseMedia] = Field(default_factory=list)
+
+    # ----------------------------
+    # Class helpers
+    # ----------------------------
 
     @classmethod
     def supportedMIME(cls) -> list[str]:
-        return SupportedMIME.MIME_TYPES.keys()
+        return list(SupportedMIME.MIME_TYPES.keys())
 
+    # ----------------------------
+    # Validators
+    # ----------------------------
+
+    @field_validator("media_list", mode="before")
     @classmethod
-    def from_dict(cls, outdir: str, data: dict):
-        if (
-            not isinstance(data, dict)
-            or "media_list" not in data
-            or not isinstance(data["media_list"], list)
-        ):
-            raise JSONValidationError(
-                "Invalid input data for MediaGenerator. Expected a dict with 'media_list' key."
-            )
+    def validate_media_list(cls, v: RawMediaList, info: ValidationInfo):
+        out_dir = info.data.get("out_dir")
+        if not isinstance(out_dir, str):
+            raise JSONValidationError("'out_dir' must be provided before 'media_list'.")
 
-        parsed_media_list: List[BaseMedia] = []
-        for item_data in data["media_list"]:
-            if not isinstance(item_data, dict):
-                raise JSONValidationError("Invalid item in media_list. Expected a dictionary.")
+        parsed: list[BaseMedia] = []
 
-            mime_type = item_data.get("MIMEType", "")
+        for item in v:
+            mime_type_obj = item.get("MIMEType")
+            mime_type = mime_type_obj if isinstance(mime_type_obj, str) else ""
+
             if mime_type.startswith("image/"):
-                parsed_media_list.append(ImageGenerator.from_dict(outdir, item_data))
+                parsed.append(ImageGenerator.model_validate({**item, "out_dir": out_dir}))
             elif mime_type.startswith("video/"):
-                parsed_media_list.append(VideoGenerator.from_dict(outdir, item_data))
+                parsed.append(VideoGenerator.model_validate({**item, "out_dir": out_dir}))
             else:
-                # Fallback to BaseMediaDescription if type is unknown or not image/video
-                parsed_media_list.append(BaseMedia.from_dict(item_data))
+                parsed.append(BaseMedia.model_validate({**item, "out_dir": out_dir}))
 
-        return cls(media_list=parsed_media_list)
-
-    def to_dict(self) -> dict:
-        return {"media_list": [media.to_dict() for media in self.media_list]}
-
-    def generate(self):
-        for media in self.media_list:
-            media.generate()
+        return parsed

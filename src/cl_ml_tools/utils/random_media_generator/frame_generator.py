@@ -64,7 +64,7 @@ class FrameGenerator(BaseModel):
 
         return np.full((height, width, 3), background_color, dtype=np.uint8)
 
-    def generate(self, width: int, height: int) -> NDArray[np.uint8]:
+    def generate_frame(self, width: int, height: int) -> NDArray[np.uint8]:
         frame = self.create_base_frame(width, height, self.background_color)
 
         for shape in self.shapes:

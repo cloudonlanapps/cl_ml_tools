@@ -30,7 +30,7 @@ class ImageGenerator(BaseMedia):
     def generate(self) -> None:
         if self.frame is None:
             raise JSONValidationError("ImageDescription missing 'frame' data.")
-        frame = self.frame.generate(self.width, self.height)
+        frame = self.frame.generate_frame(self.width, self.height)
 
         _ = cv2.imwrite(self.temp_filepath, frame)
         print(f"Image '{self.fileName}' created by OpenCV.")

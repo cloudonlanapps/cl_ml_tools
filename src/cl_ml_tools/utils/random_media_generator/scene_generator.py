@@ -1,24 +1,36 @@
-from dataclasses import dataclass, field
-from datetime import datetime
 import random
-from typing import List, Optional
+from typing import Protocol
 
-import cv2
+import numpy as np
+from numpy.typing import NDArray
+from pydantic import Field, field_validator, model_validator
 
-from .basic_shapes import Shapes, AnimatedShape
+from .basic_shapes import AnimatedShapes, Shape
 from .frame_generator import FrameGenerator
 
 
-@dataclass
-class SceneGenerator(FrameGenerator):
-    duration: Optional[datetime] = None
-    animated_shapes: Optional[List[AnimatedShape]] = field(default_factory=list)
+class VideoWriterLike(Protocol):
+    def write(self, frame: NDArray[np.uint8]) -> None: ...
 
-    def with_shapes(self):
+
+class SceneGenerator(FrameGenerator):
+    duration_seconds: int | None = None
+    shapes: list[Shape] = Field(default_factory=list)
+
+    @field_validator("duration_seconds")
+    @classmethod
+    def validate_duration(cls, v: int | None) -> int | None:
+        if v is None:
+            return None
+        if v <= 0:
+            raise ValueError("duration_seconds must be > 0")
+        return v
+
+    @model_validator(mode="after")
+    def generate_animated_shapes(self):
         if self.num_shapes and self.num_shapes > 0:
             self.shapes = [
-                #
-                Shapes[
+                AnimatedShapes[
                     random.choice(
                         [
                             "BouncingCircle",
@@ -27,7 +39,7 @@ class SceneGenerator(FrameGenerator):
                             "RotatingSquare",
                         ]
                     )
-                ].from_dict(
+                ].model_validate(
                     {
                         "thickness": random.randint(-1, 3),
                         "color": (
@@ -35,50 +47,36 @@ class SceneGenerator(FrameGenerator):
                             random.randint(0, 255),
                             random.randint(0, 255),
                         ),
-                    },
+                    }
                 )
                 for _ in range(self.num_shapes)
             ]
         else:
             self.shapes = []
+
         return self
 
-    @classmethod
-    def from_dict(cls, data: dict):
-        # Call parent's from_dict to handle inherited fields
+    # ---------------------------------
+    # Frame math
+    # ---------------------------------
 
-        processed_data = super().from_dict(data)
-        # Add specific fields for SceneDescription
-        processed_data.duration = data.get("duration")
+    def num_frames(self, fps: int) -> int:
+        if self.duration_seconds is None:
+            return 0
+        return self.duration_seconds * fps
 
-        return cls(**processed_data.__dict__).with_shapes()
-
-    def to_dict(self) -> dict:
-        data = super().to_dict()
-        data["duration"] = self.duration
-        return data
-
-    def num_frames(self, fps) -> int:
-        return self.duration * fps
-
-    def get_next_frame(self, width: int, height: int):
-        frame = self.create_base_frame(width, height, self.background_color)
-
-        if self.shapes:
-            for shape in self.shapes:
-                shape.draw(frame)
-
-        """ for shape in self.animated_shapes:
-            shape.update(index)
-            shape.draw(frame) """
-
-        return frame
-
-    def generate(self, fps: int, out: cv2.VideoWriter, width: int, height: int):
-        num_frames = self.num_frames(fps)
-        if num_frames == 0:
+    def render_to(
+        self,
+        *,
+        out: object,
+        fps: int,
+        width: int,
+        height: int,
+    ) -> None:
+        total_frames = self.num_frames(fps)
+        if total_frames == 0:
             return
 
-        for _ in range(num_frames):
-            frame = self.get_next_frame(width, height)
-            out.write(frame)
+        for _ in range(total_frames):
+            frame = self.generate_frame(width, height)
+            out.write(frame)  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
