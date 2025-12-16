@@ -50,12 +50,14 @@ media_thumbnail = "cl_ml_tools.plugins.media_thumbnail.task:MediaThumbnailTask"
 image_conversion = "cl_ml_tools.plugins.image_conversion.task:ImageConversionTask"
 hash = "cl_ml_tools.plugins.hash.task:HashTask"
 hls_streaming = "cl_ml_tools.plugins.hls_streaming.task:HLSStreamingTask"
+exif = "cl_ml_tools.plugins.exif.task:ExifTask"
 
 [project.entry-points."cl_ml_tools.routes"]
 media_thumbnail = "cl_ml_tools.plugins.media_thumbnail.routes:create_router"
 image_conversion = "cl_ml_tools.plugins.image_conversion.routes:create_router"
 hash = "cl_ml_tools.plugins.hash.routes:create_router"
 hls_streaming = "cl_ml_tools.plugins.hls_streaming.routes:create_router"
+exif = "cl_ml_tools.plugins.exif.routes:create_router"
 
 
 [build-system]
