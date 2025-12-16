@@ -42,13 +42,10 @@ class ExifTask(ComputeModule[ExifParams]):
                 extractor = MetadataExtractor()
             except RuntimeError as exc:
                 logger.error(f"ExifTool initialization failed: {exc}")
-                return {
-                    "status": "error",
-                    "error": (
+                return TaskResult(status = "error", error = (
                         "ExifTool is not installed or not found in PATH. "
                         "Please install ExifTool: https://exiftool.org/"
-                    ),
-                }
+                    ))
 
             file_results: list[FileResult] = []
             total_files: int = len(params.input_paths)
@@ -118,24 +115,17 @@ class ExifTask(ComputeModule[ExifParams]):
                         f"Partial success: {success_count}/{total_files} files processed successfully"
                     )
             else:
-                return {
-                    "status": "error",
-                    "error": "Failed to extract metadata from all files",
-                    "task_output": {
+                return TaskResult(status = "error", task_output = {
                         "files": file_results,
                         "total_files": total_files,
-                    },
-                }
+                    }, error = "Failed to extract metadata from all files")
 
-            return {
-                "status": status,
-                "task_output": {
+            return TaskResult(status = status, task_output = {
                     "files": file_results,
                     "total_files": total_files,
                     "tags_requested": params.tags if params.tags else "all",
-                },
-            }
+                })
 
         except Exception as exc:
             logger.exception(f"Unexpected error in ExifTask: {exc}")
-            return {"status": "error", "error": f"Task failed: {exc}"}
+            return TaskResult(status = "error", error = f"Task failed: {exc}")

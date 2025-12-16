@@ -60,10 +60,7 @@ class HLSStreamingTask(ComputeModule[HLSStreamingParams]):
                 validation: ValidationResult = validator.validate()
 
                 if not validation.is_valid:
-                    return {
-                        "status": "error",
-                        "error": f"HLS validation failed: {', '.join(validation.errors)}",
-                    }
+                    return TaskResult(status = "error", error = f"HLS validation failed: {', '.join(validation.errors)}")
 
                 # Create Pydantic result object (not dict!)
                 result = HLSConversionResult(
@@ -87,12 +84,9 @@ class HLSStreamingTask(ComputeModule[HLSStreamingParams]):
                 total_files=total_files,
             )
 
-            return {
-                "status": "ok",
-                "task_output": task_output.model_dump(),
-            }
+            return TaskResult(status = "ok", task_output = task_output.model_dump())
 
         except FileNotFoundError as e:
-            return {"status": "error", "error": f"Input file not found: {e}"}
+            return TaskResult(status = "error", error = f"Input file not found: {e}")
         except Exception as e:
-            return {"status": "error", "error": f"HLS conversion failed: {e}"}
+            return TaskResult(status = "error", error = f"HLS conversion failed: {e}")

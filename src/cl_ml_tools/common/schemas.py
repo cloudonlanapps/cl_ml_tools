@@ -1,7 +1,7 @@
 """Pydantic schemas for job parameters and data structures."""
 
 from collections.abc import Mapping, Sequence
-from typing import ClassVar, NotRequired, TypedDict
+from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 

@@ -57,13 +57,10 @@ class FaceEmbeddingTask(ComputeModule[FaceEmbeddingParams]):
                 embedder = self._get_embedder()
             except Exception as exc:
                 logger.error(f"Face embedder initialization failed: {exc}")
-                return {
-                    "status": "error",
-                    "error": (
+                return TaskResult(status = "error", error = (
                         f"Failed to initialize face embedder: {exc}. "
                         "Ensure ONNX Runtime is installed and the model can be downloaded."
-                    ),
-                }
+                    ))
 
             file_results: list[FaceEmbeddingFileResult] = []
             total_files: int = len(params.input_paths)
@@ -130,24 +127,17 @@ class FaceEmbeddingTask(ComputeModule[FaceEmbeddingParams]):
                         f"Partial success: {success_count}/{total_files} files processed successfully"
                     )
             else:
-                return {
-                    "status": "error",
-                    "error": "Failed to generate embeddings for all files",
-                    "task_output": {
+                return TaskResult(status = "error", task_output = {
                         "files": file_results,
                         "total_files": total_files,
-                    },
-                }
+                    }, error = "Failed to generate embeddings for all files")
 
-            return {
-                "status": status,
-                "task_output": {
+            return TaskResult(status = status, task_output = {
                     "files": file_results,
                     "total_files": total_files,
                     "normalize": params.normalize,
-                },
-            }
+                })
 
         except Exception as exc:
             logger.exception(f"Unexpected error in FaceEmbeddingTask: {exc}")
-            return {"status": "error", "error": f"Task failed: {exc}"}
+            return TaskResult(status = "error", error = f"Task failed: {exc}")

@@ -134,17 +134,17 @@ class Worker:
             result = await task.execute(job, params, progress_callback)
 
             # Update status based on result
-            if result.get("status") == "ok":
+            if result.status == "ok":
                 updates: JobUpdate = {
                     "status": "completed",
                     "progress": 100,
                 }
-                task_output = result.get("task_output")
+                task_output = result.task_output
                 if task_output is not None:
                     updates["task_output"] = dict(task_output)
                 _ = self.repository.update_job(job.job_id, updates)
             else:
-                error_msg = result.get("error")
+                error_msg = result.error
                 _ = self.repository.update_job(
                     job.job_id,
                     {

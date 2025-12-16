@@ -100,20 +100,14 @@ class HashTask(ComputeModule[HashParams]):
                     progress = int((index + 1) / total_files * 100)
                     progress_callback(progress)
 
-            return {
-                "status": "ok",
-                "task_output": {
+            return TaskResult(status = "ok", task_output = {
                     "files": file_results,
                     "total_files": total_files,
-                },
-            }
+                })
 
         except ImportError as e:
-            return {
-                "status": "error",
-                "error": f"Missing dependency: {e}. Install with: pip install cl_ml_tools[compute]",
-            }
+            return TaskResult(status = "error", error = f"Missing dependency: {e}. Install with: pip install cl_ml_tools[compute]")
         except FileNotFoundError as e:
-            return {"status": "error", "error": f"Input file not found: {e}"}
+            return TaskResult(status = "error", error = f"Input file not found: {e}")
         except Exception as e:
-            return {"status": "error", "error": f"Hash computation failed: {e}"}
+            return TaskResult(status = "error", error = f"Hash computation failed: {e}")

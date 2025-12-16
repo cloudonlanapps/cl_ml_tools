@@ -47,21 +47,15 @@ class ImageConversionTask(ComputeModule[ImageConversionParams]):
                     progress = int((index + 1) / total_files * 100)
                     progress_callback(progress)
 
-            return {
-                "status": "ok",
-                "task_output": {
+            return TaskResult(status = "ok", task_output = {
                     "processed_files": processed_files,
                     "format": params.format,
                     "quality": params.quality,
-                },
-            }
+                })
 
         except ImportError:
-            return {
-                "status": "error",
-                "error": "Pillow is not installed. Install with: pip install cl_ml_tools[compute]",
-            }
+            return TaskResult(status = "error", error = "Pillow is not installed. Install with: pip install cl_ml_tools[compute]")
         except FileNotFoundError as e:
-            return {"status": "error", "error": f"Input file not found: {e}"}
+            return TaskResult(status = "error", error = f"Input file not found: {e}")
         except Exception as e:
-            return {"status": "error", "error": str(e)}
+            return TaskResult(status = "error", error = str(e))

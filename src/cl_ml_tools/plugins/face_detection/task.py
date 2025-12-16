@@ -60,13 +60,10 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
                 detector = self._get_detector()
             except Exception as e:
                 logger.error("Face detector initialization failed: %s", e)
-                return {
-                    "status": "error",
-                    "error": (
+                return TaskResult(status = "error", error = (
                         "Failed to initialize face detector: "
                         f"{e}. Ensure ONNX Runtime is installed and the model can be downloaded."
-                    ),
-                }
+                    ))
 
             file_results: list[FileResult] = []
             total_files: int = len(params.input_paths)
@@ -138,14 +135,10 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
             any_success: bool = any(r["status"] == "success" for r in file_results)
 
             if not any_success:
-                return {
-                    "status": "error",
-                    "error": "Failed to detect faces in all files",
-                    "task_output": {
+                return TaskResult(status = "error", task_output = {
                         "files": file_results,
                         "total_files": total_files,
-                    },
-                }
+                    }, error = "Failed to detect faces in all files")
 
             if not all_success:
                 success_count = sum(1 for r in file_results if r["status"] == "success")
@@ -155,16 +148,13 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams]):
                     total_files,
                 )
 
-            return {
-                "status": "ok",
-                "task_output": {
+            return TaskResult(status = "ok", task_output = {
                     "files": file_results,
                     "total_files": total_files,
                     "confidence_threshold": params.confidence_threshold,
                     "nms_threshold": params.nms_threshold,
-                },
-            }
+                })
 
         except Exception as e:
             logger.exception("Unexpected error in FaceDetectionTask: %s", e)
-            return {"status": "error", "error": f"Task failed: {e}"}
+            return TaskResult(status = "error", error = f"Task failed: {e}")

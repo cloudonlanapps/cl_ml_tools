@@ -69,10 +69,7 @@ class MediaThumbnailTask(ComputeModule[MediaThumbnailParams]):
                     media_types.append("video")
 
                 else:
-                    return {
-                        "status": "error",
-                        "error": f"Unsupported media type: {media_type}. Only image and video are supported.",
-                    }
+                    return TaskResult(status = "error", error = f"Unsupported media type: {media_type}. Only image and video are supported.")
 
                 processed_files.append(output)
 
@@ -80,24 +77,18 @@ class MediaThumbnailTask(ComputeModule[MediaThumbnailParams]):
                     progress = int((index + 1) / total_files * 100)
                     progress_callback(progress)
 
-            return {
-                "status": "ok",
-                "task_output": {
+            return TaskResult(status = "ok", task_output = {
                     "processed_files": processed_files,
                     "media_types": media_types,
                     "dimensions": {
                         "width": params.width,
                         "height": params.height,
                     },
-                },
-            }
+                })
 
         except ImportError as e:
-            return {
-                "status": "error",
-                "error": f"Required library not installed: {e}",
-            }
+            return TaskResult(status = "error", error = f"Required library not installed: {e}")
         except FileNotFoundError as e:
-            return {"status": "error", "error": str(e)}
+            return TaskResult(status = "error", error = str(e))
         except Exception as e:
-            return {"status": "error", "error": str(e)}
+            return TaskResult(status = "error", error = str(e))
