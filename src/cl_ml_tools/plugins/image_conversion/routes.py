@@ -1,13 +1,15 @@
 """Image conversion route factory."""
 
 from pathlib import Path
-from typing import Annotated, Callable, Literal, Protocol, TypedDict
-from uuid import uuid4
+from typing import Annotated, Callable, Literal, Protocol
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from ...common.file_storage import JobStorage
+from ...common.job_creator import create_job_from_upload
 from ...common.job_repository import JobRepository
+from ...common.schema_job_record import JobCreatedResponse
+from .schema import ImageConversionOutput, ImageConversionParams
 
 
 class UserLike(Protocol):
@@ -32,43 +34,23 @@ def create_router(
         priority: Annotated[int, Form(ge=0, le=10, description="Job priority (0-10)")] = 5,
         user: Annotated[UserLike | None, Depends(get_current_user)] = None,
     ) -> JobCreatedResponse:
-        job_id = str(uuid4())
-
-        _ = file_storage.create_job_directory(job_id)
-
-        if not file.filename:
-            raise ValueError("Uploaded file has no filename")
-
-        filename: str = file.filename
-
-        file_info = await file_storage.save_input_file(job_id, filename, file)
-
-        input_path = file_info["path"]
-        original_stem = Path(filename).stem
         output_ext = "jpg" if format == "jpeg" else format
-        output_filename = f"converted_{original_stem}.{output_ext}"
-        output_path = str(file_storage.get_output_path(job_id) / output_filename)
 
-        job = Job(
-            job_id=job_id,
+        return await create_job_from_upload(
             task_type="image_conversion",
-            params={
-                "input_paths": [input_path],
-                "output_paths": [output_path],
-                "format": format,
-                "quality": quality,
-            },
+            repository=repository,
+            file_storage=file_storage,
+            file=file,
+            priority=priority,
+            user=user,
+            output_type=ImageConversionOutput,
+            params_factory=lambda path: ImageConversionParams(
+                input_path=path,
+                output_path=f"output/converted_{Path(path).stem}.{output_ext}",
+                format=format,
+                quality=quality,
+            ),
         )
 
-        created_by = user.id if user is not None else None
-        _ = repository.add_job(job, created_by=created_by, priority=priority)
-
-        return {
-            "job_id": job_id,
-            "status": "queued",
-        }
-
-    # Mark function as used (accessed via FastAPI decorator)
     _ = create_conversion_job
-
     return router
