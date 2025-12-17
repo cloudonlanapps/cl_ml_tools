@@ -1,26 +1,9 @@
 """JobRepository Protocol - interface for job persistence."""
 
 from collections.abc import Sequence
-from typing import Protocol, TypedDict, runtime_checkable
+from typing import Protocol, runtime_checkable
 
-from .schemas import Job
-
-# ─────────────────────────────────────────────────────────────
-# Typed update payload (avoids **kwargs: Any)
-# ─────────────────────────────────────────────────────────────
-
-
-class JobUpdate(TypedDict, total=False):
-    status: str  # "queued" | "processing" | "completed" | "error"
-    progress: int  # 0–100
-    task_output: dict[str, object]
-    error_message: str
-    priority: int
-
-
-# ─────────────────────────────────────────────────────────────
-# JobRepository protocol
-# ─────────────────────────────────────────────────────────────
+from .schema_job_record import JobRecord, JobRecordUpdate
 
 
 @runtime_checkable
@@ -33,7 +16,7 @@ class JobRepository(Protocol):
 
     def add_job(
         self,
-        job: Job,
+        job: JobRecord,
         created_by: str | None = None,
         priority: int | None = None,
     ) -> str:
@@ -44,14 +27,14 @@ class JobRepository(Protocol):
         """
         ...
 
-    def get_job(self, job_id: str) -> Job | None:
+    def get_job(self, job_id: str) -> JobRecord | None:
         """Get job by ID."""
         ...
 
     def update_job(
         self,
         job_id: str,
-        updates: JobUpdate,
+        updates: JobRecordUpdate,
     ) -> bool:
         """Update job fields.
 
@@ -67,7 +50,7 @@ class JobRepository(Protocol):
     def fetch_next_job(
         self,
         task_types: Sequence[str],
-    ) -> Job | None:
+    ) -> JobRecord | None:
         """Atomically find and claim the next queued job.
 
         Implementations MUST ensure this operation is atomic.
