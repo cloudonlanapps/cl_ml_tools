@@ -8,7 +8,7 @@ from cl_ml_tools.common.file_storage import JobStorage
 from .common.compute_module import ComputeModule
 from .common.job_repository import JobRepository
 from .common.schema_job import BaseJobParams, TaskOutput
-from .common.schema_job_record import JobRecord, JobRecordUpdate
+from .common.schema_job_record import  JobRecordUpdate
 
 
 def get_task_registry() -> dict[str, ComputeModule[BaseJobParams, TaskOutput]]:

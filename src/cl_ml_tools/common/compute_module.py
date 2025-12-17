@@ -10,27 +10,69 @@ from .schema_job_record import JobRecord, JobRecordUpdate
 
 class ComputeModule(ABC, Generic[P, Q]):
     """
-    Abstract base class for all compute tasks.
-    All task plugins must extend this class and implement the required methods.
+    Stateless, template-method based compute module.
+
+    - Params are validated once and passed through
+    - run() owns persistence
+    - Q contains metadata only
     """
+
+    schema: type[P]
 
     @property
     @abstractmethod
-    def task_type(self) -> str:
-        """Return task type identifier."""
-        ...
+    def task_type(self) -> str: ...
+
+    def setup(self) -> None:
+        """Optional per-execution setup."""
+        pass
 
     @abstractmethod
-    def get_schema(self) -> type[P]:
-        """Return the Pydantic params class for this task."""
+    async def run(
+        self,
+        params: P,
+        storage: JobStorage,
+        progress_callback: Callable[[int], None] | None = None,
+    ) -> Q:
+        """
+        Execute task.
+
+        - May persist data via storage
+        - Must return metadata only
+        """
         ...
 
-    @abstractmethod
     async def execute(
         self,
         job_record: JobRecord,
         storage: JobStorage,
         progress_callback: Callable[[int], None] | None = None,
     ) -> JobRecordUpdate:
-        """Execute the task."""
-        ...
+        try:
+            params = self.schema.model_validate(job_record.params)
+
+            self.setup()
+
+            output = await self.run(
+                params,
+                storage,
+                progress_callback,
+            )
+
+            return JobRecordUpdate(
+                status="completed",
+                output=output.model_dump(),
+                progress=100,
+            )
+
+        except FileNotFoundError as exc:
+            return JobRecordUpdate(
+                status="error",
+                error_message=str(exc),
+            )
+
+        except Exception as exc:
+            return JobRecordUpdate(
+                status="error",
+                error_message=str(exc),
+            )
