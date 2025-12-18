@@ -3,7 +3,6 @@
 import json
 import time
 from io import BytesIO
-from pathlib import Path
 from typing import Callable, override
 
 from ...common.compute_module import ComputeModule
@@ -48,14 +47,14 @@ class HashTask(ComputeModule[HashParams, HashOutput]):
         except ImportError as exc:
             raise RuntimeError(
                 "python-magic is required for hash computation. "
-                "Install it with: pip install python-magic"
+                + "Install it with: pip install python-magic"
             ) from exc
 
         mime = magic.Magic(mime=True)
         file_type = mime.from_buffer(file_bytes)
         media_type = determine_media_type(bytes_io, file_type)
 
-        bytes_io.seek(0)
+        _ = bytes_io.seek(0)
         start = time.time()
 
         if params.algorithm == "md5":
