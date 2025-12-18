@@ -45,11 +45,10 @@ def contains_url(text: str):
 
 def determine_mime(bytes_io: BytesIO, file_type: str | None = None) -> MediaType:
     # Save original position
-    original_pos = bytes_io.tell()
 
     try:
         if not file_type:
-            bytes_io.seek(0)
+            _ = bytes_io.seek(0)
             # Create a Magic object
             mime = magic.Magic(mime=True)
 
@@ -60,7 +59,7 @@ def determine_mime(bytes_io: BytesIO, file_type: str | None = None) -> MediaType
         return MediaType.from_mime(file_type)
     finally:
         # Always reset position to 0 (as expected by tests)
-        bytes_io.seek(0)
+        _ = bytes_io.seek(0)
 
 
 def determine_media_type(bytes_io: BytesIO, file_type: str) -> MediaType:
