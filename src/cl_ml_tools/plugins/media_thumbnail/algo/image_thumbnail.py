@@ -38,30 +38,35 @@ def image_thumbnail(
     with Image.open(input_path) as img:
         original_width, original_height = img.size
 
-        # Calculate target dimensions
-        if width is None and height is None:
-            # Default to 256x256
-            w = h = 256
-        elif width is None:
-            # Height specified, calculate width to maintain aspect ratio
-            h = height  # type: ignore[assignment]
+        # Defaults
+        DEFAULT_SIZE = 256
+
+        # Normalize inputs
+        w_in: int | None = width
+        h_in: int | None = height
+        h: int = h_in if h_in is not None else DEFAULT_SIZE
+        w: int = w_in if w_in is not None else DEFAULT_SIZE
+
+        if w_in is None and h_in is None:
+            w = h = DEFAULT_SIZE
+
+        elif w_in is None:
+            h = h_in if h_in is not None else DEFAULT_SIZE
             if maintain_aspect_ratio:
-                aspect_ratio = original_width / original_height
-                w = int(h * aspect_ratio)
+                w = int(h * (original_width / original_height))
             else:
                 w = h
-        elif height is None:
-            # Width specified, calculate height to maintain aspect ratio
-            w = width
+
+        elif h_in is None:
+            w = w_in
             if maintain_aspect_ratio:
-                aspect_ratio = original_height / original_width
-                h = int(w * aspect_ratio)
+                h = int(w * (original_height / original_width))
             else:
                 h = w
+
         else:
-            # Both specified
-            w = width
-            h = height
+            w = w_in
+            h = h_in
 
         # Resize the image
         thumbnail = img.resize((w, h), Image.Resampling.LANCZOS)
