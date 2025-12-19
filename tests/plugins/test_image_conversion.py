@@ -9,7 +9,7 @@ import pytest
 from PIL import Image
 
 from cl_ml_tools.plugins.image_conversion.algo.image_convert import (
-    _get_pil_format,
+    get_pil_format,
     image_convert,
 )
 from cl_ml_tools.plugins.image_conversion.schema import (
@@ -113,27 +113,27 @@ def test_image_conversion_output_schema_validation():
 
 def test_get_pil_format_jpg():
     """Test _get_pil_format converts jpg to JPEG."""
-    assert _get_pil_format("jpg") == "JPEG"
-    assert _get_pil_format("jpeg") == "JPEG"
+    assert get_pil_format("jpg") == "JPEG"
+    assert get_pil_format("jpeg") == "JPEG"
 
 
 def test_get_pil_format_png():
     """Test _get_pil_format converts png to PNG."""
-    assert _get_pil_format("png") == "PNG"
+    assert get_pil_format("png") == "PNG"
 
 
 def test_get_pil_format_other_formats():
     """Test _get_pil_format handles various formats."""
-    assert _get_pil_format("webp") == "WEBP"
-    assert _get_pil_format("gif") == "GIF"
-    assert _get_pil_format("bmp") == "BMP"
-    assert _get_pil_format("tiff") == "TIFF"
+    assert get_pil_format("webp") == "WEBP"
+    assert get_pil_format("gif") == "GIF"
+    assert get_pil_format("bmp") == "BMP"
+    assert get_pil_format("tiff") == "TIFF"
 
 
 def test_get_pil_format_case_insensitive():
     """Test _get_pil_format is case insensitive."""
-    assert _get_pil_format("PNG") == "PNG"
-    assert _get_pil_format("JpG") == "JPEG"
+    assert get_pil_format("PNG") == "PNG"
+    assert get_pil_format("JpG") == "JPEG"
 
 
 # ============================================================================
@@ -187,7 +187,7 @@ def test_image_convert_with_quality(sample_image_path: Path, tmp_path: Path):
     """Test image conversion with quality parameter."""
     output_path = tmp_path / "output.jpg"
 
-    result = image_convert(
+    _ = image_convert(
         input_path=sample_image_path,
         output_path=output_path,
         format="jpg",
@@ -198,7 +198,7 @@ def test_image_convert_with_quality(sample_image_path: Path, tmp_path: Path):
 
     # Lower quality should produce smaller file
     output_path_high = tmp_path / "output_high.jpg"
-    image_convert(
+    _ = image_convert(
         input_path=sample_image_path,
         output_path=output_path_high,
         format="jpg",
@@ -218,7 +218,7 @@ def test_image_convert_rgba_to_jpg(tmp_path: Path):
 
     output_path = tmp_path / "output.jpg"
 
-    result = image_convert(
+    _ = image_convert(
         input_path=rgba_image,
         output_path=output_path,
         format="jpg",
@@ -260,7 +260,7 @@ def test_image_convert_webp_format(sample_image_path: Path, tmp_path: Path):
     """Test converting to WebP format."""
     output_path = tmp_path / "output.webp"
 
-    result = image_convert(
+    image_convert(
         input_path=sample_image_path,
         output_path=output_path,
         format="webp",

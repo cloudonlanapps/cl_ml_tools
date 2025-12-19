@@ -50,20 +50,18 @@ def image_convert(
 
         # Ensure parent directory exists (caller's responsibility to create)
         if not output_path.parent.exists():
-            raise FileNotFoundError(
-                f"Output directory does not exist: {output_path.parent}"
-            )
+            raise FileNotFoundError(f"Output directory does not exist: {output_path.parent}")
 
         img.save(
             output_path,
-            format=_get_pil_format(fmt),
+            format=get_pil_format(fmt),
             **save_kwargs,
         )
 
     return str(output_path)
 
 
-def _get_pil_format(format_str: str) -> str:
+def get_pil_format(format_str: str) -> str:
     """Convert format string to PIL format name."""
     format_map = {
         "jpg": "JPEG",
