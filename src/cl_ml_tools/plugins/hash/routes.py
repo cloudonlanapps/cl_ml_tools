@@ -4,7 +4,7 @@ from typing import Annotated, Callable, Literal
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from ...common.job_creator import create_job_from_upload
 from ...common.job_repository import JobRepository
 from ...common.schema_job_record import JobCreatedResponse
@@ -27,7 +27,9 @@ def create_router(
             Literal["sha512", "md5"],
             Form(description="Hash algorithm to use (sha512 or md5)"),
         ] = "sha512",
-        priority: Annotated[int, Form(ge=0, le=10, description="Job priority (0-10)")] = 5,
+        priority: Annotated[
+            int, Form(ge=0, le=10, description="Job priority (0-10)")
+        ] = 5,
         user: Annotated[UserLike | None, Depends(get_current_user)] = None,
     ) -> JobCreatedResponse:
         return await create_job_from_upload(

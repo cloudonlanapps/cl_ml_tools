@@ -6,7 +6,7 @@ from io import BytesIO
 from typing import Callable, override
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from ...utils.media_types import MediaType, determine_media_type
 from .algo.generic import sha512hash_generic
 from .algo.image import sha512hash_image

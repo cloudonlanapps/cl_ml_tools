@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage
+    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
 
 from cl_ml_tools.plugins.hash.algo.generic import sha512hash_generic
@@ -230,7 +230,8 @@ def test_sha512_image_algo_synthetic_image(synthetic_image: Path):
 
 
 def test_sha512_image_different_images_different_hashes(
-    sample_image_path: Path, synthetic_image: Path,
+    sample_image_path: Path,
+    synthetic_image: Path,
 ):
     """Test different images produce different SHA512 hashes."""
     with open(sample_image_path, "rb") as f:
@@ -251,7 +252,8 @@ def test_sha512_image_different_images_different_hashes(
 
 
 def test_hash_different_media_types_produce_different_hashes(
-    sample_image_path: Path, tmp_path: Path,
+    sample_image_path: Path,
+    tmp_path: Path,
 ):
     """Test same data with different media type detection produces different hashes."""
     # Read image data
@@ -344,7 +346,9 @@ def test_sha512_video_algo_errors(sample_video_path: Path):
 
     # 2. OSError
     with patch("subprocess.run", side_effect=OSError("fail")):
-        with pytest.raises(UnsupportedMediaType, match="An error occurred while running ffprobe"):
+        with pytest.raises(
+            UnsupportedMediaType, match="An error occurred while running ffprobe"
+        ):
             sha512hash_video2(bytes_io)
 
     # 3. Non-zero return code
@@ -369,7 +373,9 @@ def test_sha512_video_algo_errors(sample_video_path: Path):
     mock_res = MagicMock(returncode=0, stdout=b"0,10,I\n")
     with patch("subprocess.run", return_value=mock_res):
         with patch.object(bytes_io, "read", side_effect=OSError("read fail")):
-            with pytest.raises(UnsupportedMediaType, match="Error processing video data"):
+            with pytest.raises(
+                UnsupportedMediaType, match="Error processing video data"
+            ):
                 sha512hash_video2(bytes_io)
 
     # 7. Incomplete read
@@ -379,8 +385,12 @@ def test_sha512_video_algo_errors(sample_video_path: Path):
     bytes_io = BytesIO(b"A" * 20)
     mock_res = MagicMock(returncode=0, stdout=b"0,10,I\n")
     with patch("subprocess.run", return_value=mock_res):
-        with patch.object(bytes_io, "read", return_value=b"short"):  # returns 5 bytes instead of 10
-            with pytest.raises(UnsupportedMediaType, match="Failed to read complete frame"):
+        with patch.object(
+            bytes_io, "read", return_value=b"short"
+        ):  # returns 5 bytes instead of 10
+            with pytest.raises(
+                UnsupportedMediaType, match="Failed to read complete frame"
+            ):
                 sha512hash_video2(bytes_io)
 
 
@@ -390,7 +400,9 @@ def test_sha512_video_algo_errors(sample_video_path: Path):
 
 
 @pytest.mark.asyncio
-async def test_hash_task_run_success_md5(sample_image_path: Path, file_storage, tmp_path: Path):
+async def test_hash_task_run_success_md5(
+    sample_image_path: Path, file_storage, tmp_path: Path
+):
     """Test HashTask execution with MD5 algorithm."""
     job_id = "test-job-123"
 
@@ -419,7 +431,12 @@ async def test_hash_task_run_success_md5(sample_image_path: Path, file_storage, 
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -429,7 +446,9 @@ async def test_hash_task_run_success_md5(sample_image_path: Path, file_storage, 
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / job_id / relative_path
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -484,7 +503,12 @@ async def test_hash_task_run_success_sha512(sample_image_path: Path, tmp_path: P
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -494,7 +518,9 @@ async def test_hash_task_run_success_sha512(sample_image_path: Path, tmp_path: P
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / job_id / relative_path
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -538,7 +564,12 @@ async def test_hash_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -548,7 +579,9 @@ async def test_hash_task_run_file_not_found(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             return tmp_path / job_id / relative_path
 
     storage = MockStorage()
@@ -586,7 +619,12 @@ async def test_hash_task_progress_callback(sample_image_path: Path, tmp_path: Pa
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -596,7 +634,9 @@ async def test_hash_task_progress_callback(sample_image_path: Path, tmp_path: Pa
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / job_id / relative_path
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -644,7 +684,9 @@ def test_hash_route_job_submission(api_client: "TestClient", sample_image_path: 
     assert data["task_type"] == "hash"
 
 
-def test_hash_route_job_submission_sha512(api_client: "TestClient", sample_image_path: Path):
+def test_hash_route_job_submission_sha512(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test job submission with SHA512 algorithm."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(
@@ -660,7 +702,9 @@ def test_hash_route_job_submission_sha512(api_client: "TestClient", sample_image
     assert data["task_type"] == "hash"
 
 
-def test_hash_route_default_algorithm(api_client: "TestClient", sample_image_path: Path):
+def test_hash_route_default_algorithm(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test hash route uses default algorithm when not specified."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(

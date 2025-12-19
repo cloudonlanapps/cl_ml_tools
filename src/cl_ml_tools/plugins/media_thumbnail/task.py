@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Callable, override
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from ...utils.media_types import MediaType, determine_mime
 from .algo.image_thumbnail import image_thumbnail
 from .algo.video_thumbnail import video_thumbnail

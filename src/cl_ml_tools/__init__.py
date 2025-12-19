@@ -1,7 +1,7 @@
 """cl_ml_tools - Tools for master-worker media processing / ML ."""
 
 from .common.compute_module import ComputeModule
-from .common.file_storage import JobStorage
+from .common.job_storage import JobStorage
 from .common.job_repository import JobRepository
 from .common.schema_job import BaseJobParams, Job
 from .common.schema_job_record import JobRecord, JobRecordUpdate

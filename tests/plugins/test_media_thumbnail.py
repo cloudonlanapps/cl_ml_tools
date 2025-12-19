@@ -9,13 +9,13 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from PIL import Image
 
-from cl_ml_tools.common.file_storage import SavedJobFile
+from cl_ml_tools.common.job_storage import SavedJobFile
 
 if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage
+    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
 
 from cl_ml_tools.plugins.media_thumbnail.algo.image_thumbnail import (
@@ -141,7 +141,9 @@ def test_image_thumbnail_algo_height_only(sample_image_path: Path, tmp_path: Pat
         assert img.height == 200
 
 
-def test_image_thumbnail_algo_aspect_ratio_maintained(sample_image_path: Path, tmp_path: Path):
+def test_image_thumbnail_algo_aspect_ratio_maintained(
+    sample_image_path: Path, tmp_path: Path
+):
     """Test thumbnail maintains aspect ratio."""
     # Get original aspect ratio
     with Image.open(sample_image_path) as img:
@@ -162,7 +164,9 @@ def test_image_thumbnail_algo_aspect_ratio_maintained(sample_image_path: Path, t
         assert abs(thumbnail_ratio - original_ratio) / original_ratio < 0.01
 
 
-def test_image_thumbnail_algo_larger_than_original(sample_image_path: Path, tmp_path: Path):
+def test_image_thumbnail_algo_larger_than_original(
+    sample_image_path: Path, tmp_path: Path
+):
     """Test thumbnail creation when requested size is larger than original."""
     output_path = tmp_path / "thumbnail.jpg"
 
@@ -249,7 +253,9 @@ def test_video_thumbnail_algo_height_only(sample_video_path: Path, tmp_path: Pat
 
 
 @pytest.mark.requires_ffmpeg
-def test_video_thumbnail_algo_output_dir_missing(sample_video_path: Path, tmp_path: Path):
+def test_video_thumbnail_algo_output_dir_missing(
+    sample_video_path: Path, tmp_path: Path
+):
     """Test video thumbnail raises FileNotFoundError if output directory missing."""
     output_path = tmp_path / "nonexistent_dir" / "thumb.jpg"
 
@@ -279,7 +285,9 @@ def test_video_thumbnail_algo_input_missing(tmp_path: Path):
 
 
 @pytest.mark.asyncio
-async def test_media_thumbnail_task_run_success_image(sample_image_path: Path, tmp_path: Path):
+async def test_media_thumbnail_task_run_success_image(
+    sample_image_path: Path, tmp_path: Path
+):
     """Test MediaThumbnailTask execution with image."""
     input_path = tmp_path / "input.jpg"
     input_path.write_bytes(sample_image_path.read_bytes())
@@ -302,7 +310,12 @@ async def test_media_thumbnail_task_run_success_image(sample_image_path: Path, t
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
 
@@ -312,7 +325,9 @@ async def test_media_thumbnail_task_run_success_image(sample_image_path: Path, t
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "thumbnail.jpg"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -349,7 +364,12 @@ async def test_media_thumbnail_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
 
@@ -359,7 +379,9 @@ async def test_media_thumbnail_task_run_file_not_found(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             return tmp_path / "output" / "thumbnail.jpg"
 
     storage = MockStorage()
@@ -369,7 +391,9 @@ async def test_media_thumbnail_task_run_file_not_found(tmp_path: Path):
 
 
 @pytest.mark.asyncio
-async def test_media_thumbnail_task_progress_callback(sample_image_path: Path, tmp_path: Path):
+async def test_media_thumbnail_task_progress_callback(
+    sample_image_path: Path, tmp_path: Path
+):
     """Test MediaThumbnailTask calls progress callback."""
     input_path = tmp_path / "input.jpg"
     input_path.write_bytes(sample_image_path.read_bytes())
@@ -391,7 +415,12 @@ async def test_media_thumbnail_task_progress_callback(sample_image_path: Path, t
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
 
@@ -401,7 +430,9 @@ async def test_media_thumbnail_task_progress_callback(sample_image_path: Path, t
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "thumbnail.jpg"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -432,7 +463,9 @@ def test_media_thumbnail_route_creation(api_client: "TestClient"):
     assert "/jobs/media_thumbnail" in openapi["paths"]
 
 
-def test_media_thumbnail_route_job_submission(api_client: "TestClient", sample_image_path: Path):
+def test_media_thumbnail_route_job_submission(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test job submission via media_thumbnail route."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(
@@ -449,7 +482,9 @@ def test_media_thumbnail_route_job_submission(api_client: "TestClient", sample_i
     assert data["task_type"] == "media_thumbnail"
 
 
-def test_media_thumbnail_route_width_only(api_client: "TestClient", sample_image_path: Path):
+def test_media_thumbnail_route_width_only(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test job submission with width only."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(

@@ -6,7 +6,7 @@ from typing import Callable, override
 import numpy as np
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from .algo.face_embedder import FaceEmbedder
 from .schema import FaceEmbeddingOutput, FaceEmbeddingParams
 

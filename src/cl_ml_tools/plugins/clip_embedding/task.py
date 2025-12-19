@@ -6,7 +6,7 @@ from typing import Callable, override
 import numpy as np
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from .algo.clip_embedder import ClipEmbedder
 from .schema import ClipEmbeddingOutput, ClipEmbeddingParams
 

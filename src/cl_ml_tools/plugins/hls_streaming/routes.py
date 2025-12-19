@@ -5,7 +5,7 @@ from typing import Annotated, Callable, TypedDict, cast
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from ...common.job_creator import create_job_from_upload
 from ...common.job_repository import JobRepository
 from ...common.schema_job_record import JobCreatedResponse
@@ -33,8 +33,12 @@ def create_router(
             str,
             Form(description="JSON array of variants: [{resolution:720,bitrate:3500}]"),
         ] = '[{"resolution":720,"bitrate":3500},{"resolution":480,"bitrate":1500}]',
-        include_original: Annotated[bool, Form(description="Include original quality")] = False,
-        priority: Annotated[int, Form(ge=0, le=10, description="Job priority (0-10)")] = 5,
+        include_original: Annotated[
+            bool, Form(description="Include original quality")
+        ] = False,
+        priority: Annotated[
+            int, Form(ge=0, le=10, description="Job priority (0-10)")
+        ] = 5,
         user: Annotated[UserLike | None, Depends(get_current_user)] = None,
     ) -> JobCreatedResponse:
         parsed = json.loads(variants)  # pyright: ignore[reportAny]

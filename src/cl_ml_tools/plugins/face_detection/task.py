@@ -7,7 +7,7 @@ from typing import Callable, override
 from PIL import Image
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from .algo.face_detector import FaceDetector
 from .schema import BoundingBox, FaceDetectionOutput, FaceDetectionParams
 

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from cl_ml_tools import Worker
     from cl_ml_tools.common.job_repository import JobRepository
 
-from cl_ml_tools.common.file_storage import JobStorage, SavedJobFile
+from cl_ml_tools.common.job_storage import JobStorage, SavedJobFile
 from cl_ml_tools.plugins.exif.algo.exif_tool_wrapper import MetadataExtractor
 from cl_ml_tools.plugins.exif.schema import ExifMetadataOutput, ExifMetadataParams
 from cl_ml_tools.plugins.exif.task import ExifTask
@@ -202,14 +202,26 @@ async def test_exif_task_run_success(sample_image_path: Path, tmp_path: Path):
 
     # Mock storage
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> SavedJobFile:
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "exif.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -233,7 +245,9 @@ async def test_exif_task_run_success(sample_image_path: Path, tmp_path: Path):
 
 @pytest.mark.requires_exiftool
 @pytest.mark.asyncio
-async def test_exif_task_run_with_specific_tags(sample_image_path: Path, tmp_path: Path):
+async def test_exif_task_run_with_specific_tags(
+    sample_image_path: Path, tmp_path: Path
+):
     """Test ExifTask with specific tags."""
     input_path = tmp_path / "input.jpg"
     input_path.write_bytes(sample_image_path.read_bytes())
@@ -249,14 +263,26 @@ async def test_exif_task_run_with_specific_tags(sample_image_path: Path, tmp_pat
     job_id = "test-job-456"
 
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> SavedJobFile:
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "exif.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -282,14 +308,26 @@ async def test_exif_task_run_file_not_found(tmp_path: Path):
     job_id = "test-job-789"
 
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> SavedJobFile:
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "exif.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -325,7 +363,12 @@ async def test_exif_task_progress_callback(sample_image_path: Path, tmp_path: Pa
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
 
@@ -335,7 +378,9 @@ async def test_exif_task_progress_callback(sample_image_path: Path, tmp_path: Pa
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "exif.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -397,7 +442,9 @@ def test_exif_route_job_submission(api_client: "TestClient", sample_image_path: 
 
 
 @pytest.mark.requires_exiftool
-def test_exif_route_job_submission_with_tags(api_client: "TestClient", sample_image_path: Path):
+def test_exif_route_job_submission_with_tags(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test job submission with specific tags."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(

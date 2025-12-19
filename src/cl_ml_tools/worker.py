@@ -4,7 +4,7 @@ from importlib.metadata import entry_points
 from typing import cast
 
 from .common.compute_module import ComputeModule
-from .common.file_storage import JobStorage
+from .common.job_storage import JobStorage
 from .common.job_repository import JobRepository
 from .common.schema_job import BaseJobParams, TaskOutput
 from .common.schema_job_record import JobRecordUpdate, JobStatus
@@ -62,7 +62,9 @@ class Worker:
         self,
         repository: JobRepository,
         job_storage: JobStorage,
-        task_registry: dict[str, ComputeModule[BaseJobParams, TaskOutput]] | None = None,
+        task_registry: (
+            dict[str, ComputeModule[BaseJobParams, TaskOutput]] | None
+        ) = None,
     ):
         """Initialize worker.
 
@@ -113,7 +115,9 @@ class Worker:
 
         # Progress callback updates repository
         def progress_callback(pct: int) -> None:
-            _ = self.repository.update_job(jobRecord.job_id, JobRecordUpdate(progress=min(99, pct)))
+            _ = self.repository.update_job(
+                jobRecord.job_id, JobRecordUpdate(progress=min(99, pct))
+            )
 
         # Execute task
         try:
@@ -122,6 +126,8 @@ class Worker:
         except Exception as e:
             _ = self.repository.update_job(
                 jobRecord.job_id,
-                JobRecordUpdate(status=JobStatus.error, error_message=str(e), progress=100),
+                JobRecordUpdate(
+                    status=JobStatus.error, error_message=str(e), progress=100
+                ),
             )
         return True  # Job error is communicated, it is not worker's error

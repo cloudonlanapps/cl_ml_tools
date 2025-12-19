@@ -5,7 +5,7 @@ import logging
 from typing import Callable, override
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from .algo.exif_tool_wrapper import MetadataExtractor
 from .schema import ExifMetadataOutput, ExifMetadataParams
 

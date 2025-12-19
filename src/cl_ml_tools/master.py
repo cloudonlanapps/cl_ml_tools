@@ -5,7 +5,7 @@ from typing import Callable, cast
 
 from fastapi import APIRouter
 
-from .common.file_storage import JobStorage
+from .common.job_storage import JobStorage
 from .common.job_repository import JobRepository
 from .common.user import UserLike
 
@@ -65,7 +65,9 @@ def create_master_router(
     for ep in eps:
         try:
             create_router = cast(RouteFactory, ep.load())  # Load the factory function
-            plugin_router: APIRouter = create_router(repository, file_storage, get_current_user)
+            plugin_router: APIRouter = create_router(
+                repository, file_storage, get_current_user
+            )
             master.include_router(
                 plugin_router
             )  # , tags=[ep.name] WE don't need this tag, all will be listed as compute-plugins

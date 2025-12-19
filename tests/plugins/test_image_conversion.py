@@ -9,13 +9,13 @@ from typing import TYPE_CHECKING, Any
 import pytest
 from PIL import Image
 
-from cl_ml_tools.common.file_storage import SavedJobFile
+from cl_ml_tools.common.job_storage import SavedJobFile
 
 if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage
+    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
 
 from cl_ml_tools.plugins.image_conversion.algo.image_convert import (
@@ -254,7 +254,9 @@ def test_image_convert_file_not_found(tmp_path: Path):
         )
 
 
-def test_image_convert_output_directory_not_found(sample_image_path: Path, tmp_path: Path):
+def test_image_convert_output_directory_not_found(
+    sample_image_path: Path, tmp_path: Path
+):
     """Test image_convert raises FileNotFoundError when output directory doesn't exist."""
     output_path = tmp_path / "nonexistent" / "dir" / "output.png"
 
@@ -289,7 +291,9 @@ def test_image_convert_webp_format(sample_image_path: Path, tmp_path: Path):
 
 
 @pytest.mark.asyncio
-async def test_image_conversion_task_run_success(sample_image_path: Path, tmp_path: Path):
+async def test_image_conversion_task_run_success(
+    sample_image_path: Path, tmp_path: Path
+):
     """Test ImageConversionTask execution success."""
     input_path = tmp_path / "input.jpg"
     input_path.write_bytes(sample_image_path.read_bytes())
@@ -312,7 +316,12 @@ async def test_image_conversion_task_run_success(sample_image_path: Path, tmp_pa
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
 
@@ -322,7 +331,9 @@ async def test_image_conversion_task_run_success(sample_image_path: Path, tmp_pa
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "converted.png"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -358,7 +369,12 @@ async def test_image_conversion_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
 
@@ -368,7 +384,9 @@ async def test_image_conversion_task_run_file_not_found(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             return tmp_path / "output" / "converted.png"
 
     storage = MockStorage()
@@ -378,7 +396,9 @@ async def test_image_conversion_task_run_file_not_found(tmp_path: Path):
 
 
 @pytest.mark.asyncio
-async def test_image_conversion_task_progress_callback(sample_image_path: Path, tmp_path: Path):
+async def test_image_conversion_task_progress_callback(
+    sample_image_path: Path, tmp_path: Path
+):
     """Test ImageConversionTask calls progress callback."""
     input_path = tmp_path / "input.jpg"
     input_path.write_bytes(sample_image_path.read_bytes())
@@ -400,7 +420,12 @@ async def test_image_conversion_task_progress_callback(sample_image_path: Path, 
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> SavedJobFile:
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
 
@@ -410,7 +435,9 @@ async def test_image_conversion_task_progress_callback(sample_image_path: Path, 
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "converted.png"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -441,7 +468,9 @@ def test_image_conversion_route_creation(api_client: "TestClient"):
     assert "/jobs/image_conversion" in openapi["paths"]
 
 
-def test_image_conversion_route_job_submission(api_client: "TestClient", sample_image_path: Path):
+def test_image_conversion_route_job_submission(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test job submission via image_conversion route."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(
@@ -458,7 +487,9 @@ def test_image_conversion_route_job_submission(api_client: "TestClient", sample_
     assert data["task_type"] == "image_conversion"
 
 
-def test_image_conversion_route_default_quality(api_client: "TestClient", sample_image_path: Path):
+def test_image_conversion_route_default_quality(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test image_conversion route uses default quality."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(

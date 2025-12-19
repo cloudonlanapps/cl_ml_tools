@@ -8,7 +8,7 @@ from typing import Final, override
 
 import aiofiles
 
-from .file_storage import (
+from .job_storage import (
     AsyncFileLike,
     FileLike,
     JobDirectoryCreationError,

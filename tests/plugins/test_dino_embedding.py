@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage
+    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
 
 from cl_ml_tools.plugins.dino_embedding.schema import (
@@ -158,7 +158,12 @@ async def test_dino_task_run_success(sample_image_path: Path, tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -168,7 +173,9 @@ async def test_dino_task_run_success(sample_image_path: Path, tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "embedding.npy"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -203,7 +210,12 @@ async def test_dino_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -213,7 +225,9 @@ async def test_dino_task_run_file_not_found(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             return tmp_path / "output" / "embedding.npy"
 
     storage = MockStorage()
@@ -237,7 +251,9 @@ def test_dino_embedding_route_creation(api_client: "TestClient"):
 
 
 @pytest.mark.requires_models
-def test_dino_embedding_route_job_submission(api_client: "TestClient", sample_image_path: Path):
+def test_dino_embedding_route_job_submission(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test job submission via dino_embedding route."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(

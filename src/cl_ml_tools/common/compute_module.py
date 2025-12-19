@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Generic
 
-from .file_storage import JobStorage
+from .job_storage import JobStorage
 from .schema_job import P, Q
 from .schema_job_record import JobRecord, JobRecordUpdate, JobStatus
 

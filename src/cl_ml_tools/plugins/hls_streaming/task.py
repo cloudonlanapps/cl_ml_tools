@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Callable, override
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from .algo.hls_stream_generator import HLSStreamGenerator, HLSVariant
 from .algo.hls_validator import HLSValidator
 from .schema import HLSStreamingOutput, HLSStreamingParams
@@ -42,7 +42,9 @@ class HLSStreamingTask(ComputeModule[HLSStreamingParams, HLSStreamingOutput]):
 
         # Verify directory exists (allocate_path should have created it)
         if not output_dir.exists():
-            raise FileNotFoundError(f"Output directory was not created by storage: {output_dir}")
+            raise FileNotFoundError(
+                f"Output directory was not created by storage: {output_dir}"
+            )
 
         generator = HLSStreamGenerator(
             input_file=str(input_path),
@@ -50,7 +52,8 @@ class HLSStreamingTask(ComputeModule[HLSStreamingParams, HLSStreamingOutput]):
         )
 
         requested_variants = [
-            HLSVariant(resolution=v.resolution, bitrate=v.bitrate) for v in params.variants
+            HLSVariant(resolution=v.resolution, bitrate=v.bitrate)
+            for v in params.variants
         ]
 
         _ = generator.addVariants(requested_variants)

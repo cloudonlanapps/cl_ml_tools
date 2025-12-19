@@ -6,7 +6,7 @@ from typing import Callable, override
 import numpy as np
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from .algo.dino_embedder import DinoEmbedder
 from .schema import DinoEmbeddingOutput, DinoEmbeddingParams
 

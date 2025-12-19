@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage
+    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
 
 from cl_ml_tools.plugins.hls_streaming.schema import (
@@ -162,7 +162,12 @@ async def test_hls_streaming_task_run_success(sample_video_path: Path, tmp_path:
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -172,7 +177,9 @@ async def test_hls_streaming_task_run_success(sample_video_path: Path, tmp_path:
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "hls" / Path(relative_path).name
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -188,7 +195,9 @@ async def test_hls_streaming_task_run_success(sample_video_path: Path, tmp_path:
 
 @pytest.mark.requires_ffmpeg
 @pytest.mark.asyncio
-async def test_hls_streaming_task_creates_master_playlist(sample_video_path: Path, tmp_path: Path):
+async def test_hls_streaming_task_creates_master_playlist(
+    sample_video_path: Path, tmp_path: Path
+):
     """Test HLSStreamingTask creates master playlist."""
     input_path = tmp_path / "input.mp4"
     input_path.write_bytes(sample_video_path.read_bytes())
@@ -210,7 +219,12 @@ async def test_hls_streaming_task_creates_master_playlist(sample_video_path: Pat
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -220,7 +234,9 @@ async def test_hls_streaming_task_creates_master_playlist(sample_video_path: Pat
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "hls" / Path(relative_path).name
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -253,7 +269,12 @@ async def test_hls_streaming_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -263,7 +284,9 @@ async def test_hls_streaming_task_run_file_not_found(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "hls" / Path(relative_path).name
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -276,7 +299,9 @@ async def test_hls_streaming_task_run_file_not_found(tmp_path: Path):
 
 @pytest.mark.requires_ffmpeg
 @pytest.mark.asyncio
-async def test_hls_streaming_task_progress_callback(sample_video_path: Path, tmp_path: Path):
+async def test_hls_streaming_task_progress_callback(
+    sample_video_path: Path, tmp_path: Path
+):
     """Test HLSStreamingTask calls progress callback."""
     input_path = tmp_path / "input.mp4"
     input_path.write_bytes(sample_video_path.read_bytes())
@@ -298,7 +323,12 @@ async def test_hls_streaming_task_progress_callback(sample_video_path: Path, tmp
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -308,7 +338,9 @@ async def test_hls_streaming_task_progress_callback(sample_video_path: Path, tmp
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "hls" / Path(relative_path).name
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -370,7 +402,12 @@ async def test_hls_streaming_task_audio_only_failure(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -380,7 +417,9 @@ async def test_hls_streaming_task_audio_only_failure(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "hls" / Path(relative_path).name
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -393,7 +432,9 @@ async def test_hls_streaming_task_audio_only_failure(tmp_path: Path):
 
 @pytest.mark.requires_ffmpeg
 @pytest.mark.asyncio
-async def test_hls_streaming_task_with_original(sample_video_path: Path, tmp_path: Path):
+async def test_hls_streaming_task_with_original(
+    sample_video_path: Path, tmp_path: Path
+):
     """Test HLSStreamingTask with include_original flag."""
     input_path = tmp_path / "input.mp4"
     input_path.write_bytes(sample_video_path.read_bytes())
@@ -416,7 +457,12 @@ async def test_hls_streaming_task_with_original(sample_video_path: Path, tmp_pat
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -426,7 +472,9 @@ async def test_hls_streaming_task_with_original(sample_video_path: Path, tmp_pat
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "hls" / Path(relative_path).name
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -455,7 +503,9 @@ def test_hls_streaming_route_creation(api_client: "TestClient"):
 
 
 @pytest.mark.requires_ffmpeg
-def test_hls_streaming_route_job_submission(api_client: "TestClient", sample_video_path: Path):
+def test_hls_streaming_route_job_submission(
+    api_client: "TestClient", sample_video_path: Path
+):
     """Test job submission via hls_streaming route."""
     with open(sample_video_path, "rb") as f:
         response = api_client.post(
@@ -474,7 +524,8 @@ def test_hls_streaming_route_job_submission(api_client: "TestClient", sample_vid
 
 @pytest.mark.requires_ffmpeg
 def test_hls_streaming_route_with_custom_variants(
-    api_client: "TestClient", sample_video_path: Path,
+    api_client: "TestClient",
+    sample_video_path: Path,
 ):
     """Test job submission with custom variant configuration."""
 

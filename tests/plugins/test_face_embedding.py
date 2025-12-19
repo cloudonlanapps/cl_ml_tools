@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage
+    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
 
 from cl_ml_tools.plugins.face_embedding.algo.face_embedder import FaceEmbedder
@@ -202,7 +202,9 @@ def test_face_embedding_algo_consistency(sample_image_path: Path):
 
 
 @pytest.mark.requires_models
-def test_face_embedding_algo_different_images(sample_image_path: Path, synthetic_image: Path):
+def test_face_embedding_algo_different_images(
+    sample_image_path: Path, synthetic_image: Path
+):
     """Test different images produce different face embeddings."""
     embedder = FaceEmbedder()
 
@@ -215,7 +217,9 @@ def test_face_embedding_algo_different_images(sample_image_path: Path, synthetic
     # May raise exception if no face found - that's ok
     # If both succeed, embeddings should be different
     if embedding1 is not None and embedding2 is not None:
-        assert not np.allclose(cast("Any", embedding1), cast("Any", embedding2), rtol=0.1)
+        assert not np.allclose(
+            cast("Any", embedding1), cast("Any", embedding2), rtol=0.1
+        )
 
 
 @pytest.mark.requires_models
@@ -262,7 +266,12 @@ async def test_face_embedding_task_run_success(sample_image_path: Path, tmp_path
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -272,7 +281,9 @@ async def test_face_embedding_task_run_success(sample_image_path: Path, tmp_path
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "embedding.npy"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -307,7 +318,12 @@ async def test_face_embedding_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -317,7 +333,9 @@ async def test_face_embedding_task_run_file_not_found(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             return tmp_path / "output" / "embedding.npy"
 
     storage = MockStorage()
@@ -341,7 +359,9 @@ def test_face_embedding_route_creation(api_client: "TestClient"):
 
 
 @pytest.mark.requires_models
-def test_face_embedding_route_job_submission(api_client: "TestClient", sample_image_path: Path):
+def test_face_embedding_route_job_submission(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test job submission via face_embedding route."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(

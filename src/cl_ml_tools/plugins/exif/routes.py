@@ -4,7 +4,7 @@ from typing import Annotated, Callable
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from ...common.job_creator import create_job_from_upload
 from ...common.job_repository import JobRepository
 from ...common.schema_job_record import JobCreatedResponse
@@ -22,15 +22,21 @@ def create_router(
 
     @router.post("/jobs/exif", response_model=JobCreatedResponse)
     async def create_exif_extraction_job(
-        file: Annotated[UploadFile, File(description="Media file to extract EXIF metadata from")],
+        file: Annotated[
+            UploadFile, File(description="Media file to extract EXIF metadata from")
+        ],
         tags: Annotated[
             str,
             Form(description="Comma-separated EXIF tags to extract (empty for all)"),
         ] = "",
-        priority: Annotated[int, Form(ge=0, le=10, description="Job priority (0-10)")] = 5,
+        priority: Annotated[
+            int, Form(ge=0, le=10, description="Job priority (0-10)")
+        ] = 5,
         user: Annotated[UserLike | None, Depends(get_current_user)] = None,
     ) -> JobCreatedResponse:
-        tags_list = [tag.strip() for tag in tags.split(",") if tag.strip()] if tags else []
+        tags_list = (
+            [tag.strip() for tag in tags.split(",") if tag.strip()] if tags else []
+        )
 
         return await create_job_from_upload(
             task_type="exif",

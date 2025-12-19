@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from cl_ml_tools.common.user import UserLike
 
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from ...common.job_creator import create_job_from_upload
 from ...common.job_repository import JobRepository
 from ...common.schema_job_record import JobCreatedResponse
@@ -23,11 +23,15 @@ def create_router(
 
     @router.post("/jobs/dino_embedding", response_model=JobCreatedResponse)
     async def create_dino_embedding_job(
-        file: Annotated[UploadFile, File(description="Image file for visual similarity embedding")],
+        file: Annotated[
+            UploadFile, File(description="Image file for visual similarity embedding")
+        ],
         normalize: Annotated[
             bool, Form(description="Whether to L2-normalize the embedding")
         ] = True,
-        priority: Annotated[int, Form(ge=0, le=10, description="Job priority (0-10)")] = 5,
+        priority: Annotated[
+            int, Form(ge=0, le=10, description="Job priority (0-10)")
+        ] = 5,
         user: Annotated[UserLike | None, Depends(get_current_user)] = None,
     ) -> JobCreatedResponse:
         return await create_job_from_upload(

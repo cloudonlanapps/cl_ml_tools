@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage, SavedJobFile
+    from cl_ml_tools.common.job_storage import JobStorage, SavedJobFile
     from cl_ml_tools.common.job_repository import JobRepository
 
 from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
@@ -147,9 +147,14 @@ def mock_face_detector():
         # Mock session input/output names
         mock_instance = mock_sess.return_value
         mock_instance.get_inputs.return_value = [MagicMock(name="input")]
-        mock_instance.get_outputs.return_value = [MagicMock(name="boxes"), MagicMock(name="scores")]
+        mock_instance.get_outputs.return_value = [
+            MagicMock(name="boxes"),
+            MagicMock(name="scores"),
+        ]
 
-        with patch("cl_ml_tools.plugins.face_detection.algo.face_detector.get_model_downloader"):
+        with patch(
+            "cl_ml_tools.plugins.face_detection.algo.face_detector.get_model_downloader"
+        ):
             with patch(
                 "cl_ml_tools.plugins.face_detection.algo.face_detector.Path.exists",
                 return_value=True,
@@ -160,10 +165,17 @@ def mock_face_detector():
 def test_face_detector_preprocess(mock_face_detector):
     """Test image preprocessing."""
     img = Image.new("RGB", (1000, 800), color="red")
-    input_array, original_size = mock_face_detector.preprocess(img)  # pyright: ignore[reportUnknownVariableType]
+    input_array, original_size = mock_face_detector.preprocess(
+        img
+    )  # pyright: ignore[reportUnknownVariableType]
 
     assert original_size == (1000, 800)
-    assert input_array.shape == (1, 3, 224, 224)  # pyright: ignore[reportUnknownMemberType]
+    assert input_array.shape == (
+        1,
+        3,
+        224,
+        224,
+    )  # pyright: ignore[reportUnknownMemberType]
     assert input_array.dtype == np.float32
     assert np.max(input_array) <= 1.0
 
@@ -181,7 +193,9 @@ def test_face_detector_calculate_iou(mock_face_detector):
         dtype=np.float32,
     )
 
-    ious = mock_face_detector._calculate_iou(box1, boxes)  # pyright: ignore[reportPrivateUsage, reportUnknownVariableType]
+    ious = mock_face_detector._calculate_iou(
+        box1, boxes
+    )  # pyright: ignore[reportPrivateUsage, reportUnknownVariableType]
 
     assert ious[0] == pytest.approx(1.0, abs=1e-4)
     assert ious[1] == pytest.approx(0.333333, abs=1e-4)
@@ -200,7 +214,9 @@ def test_face_detector_nms(mock_face_detector):
     )
     scores = np.array([0.9, 0.85, 0.8], dtype=np.float32)
 
-    keep_indices = mock_face_detector._nms(boxes, scores, iou_threshold=0.5)  # pyright: ignore[reportPrivateUsage, reportUnknownVariableType]
+    keep_indices = mock_face_detector._nms(
+        boxes, scores, iou_threshold=0.5
+    )  # pyright: ignore[reportPrivateUsage, reportUnknownVariableType]
 
     assert len(keep_indices) == 2
     assert 0 in keep_indices  # Kept boxes[0] because it has higher score
@@ -216,7 +232,8 @@ def test_face_detector_postprocess_center_format(mock_face_detector):
 
     original_size = (1000, 1000)
     detections: list[dict[str, Any]] = mock_face_detector.postprocess(
-        [boxes, scores], original_size,
+        [boxes, scores],
+        original_size,
     )
 
     assert len(detections) == 1
@@ -242,7 +259,8 @@ def test_face_detector_postprocess_corner_format(mock_face_detector):
 
     original_size = (1000, 1000)
     detections: list[dict[str, Any]] = mock_face_detector.postprocess(
-        [boxes, scores], original_size,
+        [boxes, scores],
+        original_size,
     )
 
     assert len(detections) == 1
@@ -265,7 +283,9 @@ def test_face_detector_postprocess_low_confidence(mock_face_detector):
     boxes = np.array([[[0.5, 0.5, 0.2, 0.2]]], dtype=np.float32)
     scores = np.array([[[0.1]]], dtype=np.float32)  # Below 0.7
 
-    detections: list[dict[str, Any]] = mock_face_detector.postprocess([boxes, scores], (100, 100))
+    detections: list[dict[str, Any]] = mock_face_detector.postprocess(
+        [boxes, scores], (100, 100)
+    )
     assert len(detections) == 0
 
 
@@ -281,7 +301,9 @@ def test_face_detector_preprocess_non_rgb(mock_face_detector):
 def test_face_detector_postprocess_single_output(mock_face_detector):
     """Test postprocessing with insufficient outputs."""
     outputs = [np.array([[[0.5, 0.5, 0.2, 0.2]]], dtype=np.float32)]
-    detections: list[dict[str, Any]] = mock_face_detector.postprocess(outputs, (100, 100))
+    detections: list[dict[str, Any]] = mock_face_detector.postprocess(
+        outputs, (100, 100)
+    )
     assert detections == []
 
 
@@ -380,9 +402,14 @@ async def test_face_detection_task_run_success(sample_image_path: Path, tmp_path
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> "SavedJobFile":
-            from cl_ml_tools.common.file_storage import SavedJobFile
+            from cl_ml_tools.common.job_storage import SavedJobFile
 
             return SavedJobFile(relative_path=relative_path, size=0, hash=None)
 
@@ -394,7 +421,9 @@ async def test_face_detection_task_run_success(sample_image_path: Path, tmp_path
                 return tmp_path / job_id / relative_path
             return tmp_path / job_id
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / job_id / relative_path
             if mkdirs:
                 output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -441,7 +470,12 @@ async def test_face_detection_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -451,7 +485,9 @@ async def test_face_detection_task_run_file_not_found(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             return tmp_path / "output" / relative_path
 
     storage = MockStorage()
@@ -475,7 +511,9 @@ def test_face_detection_route_creation(api_client: "TestClient"):
 
 
 @pytest.mark.requires_models
-def test_face_detection_route_job_submission(api_client: "TestClient", sample_image_path: Path):
+def test_face_detection_route_job_submission(
+    api_client: "TestClient", sample_image_path: Path
+):
     """Test job submission via face_detection route."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(

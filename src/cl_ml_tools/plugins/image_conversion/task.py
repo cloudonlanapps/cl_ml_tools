@@ -3,7 +3,7 @@
 from typing import Callable, override
 
 from ...common.compute_module import ComputeModule
-from ...common.file_storage import JobStorage
+from ...common.job_storage import JobStorage
 from .algo.image_convert import image_convert
 from .schema import ImageConversionOutput, ImageConversionParams
 
@@ -42,7 +42,8 @@ class ImageConversionTask(ComputeModule[ImageConversionParams, ImageConversionOu
 
         except ImportError as exc:
             raise RuntimeError(
-                "Pillow is not installed. " + "Install with: pip install cl_ml_tools[compute]"
+                "Pillow is not installed. "
+                + "Install with: pip install cl_ml_tools[compute]"
             ) from exc
 
         except FileNotFoundError as exc:

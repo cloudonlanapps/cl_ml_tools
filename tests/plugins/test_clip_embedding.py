@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage
+    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
 
 from cl_ml_tools.plugins.clip_embedding.schema import (
@@ -147,7 +147,8 @@ def test_clip_algo_consistency(sample_image_path: Path):
 
 @pytest.mark.requires_models
 def test_clip_algo_different_images_different_embeddings(
-    sample_image_path: Path, synthetic_image: Path,
+    sample_image_path: Path,
+    synthetic_image: Path,
 ):
     """Test different images produce different embeddings."""
     from cl_ml_tools.plugins.clip_embedding.algo.clip_embedder import ClipEmbedder
@@ -158,7 +159,9 @@ def test_clip_algo_different_images_different_embeddings(
     embedding2 = embedder.embed(str(synthetic_image), normalize=True)
 
     # Embeddings should be different
-    assert not np.allclose(embedding1, embedding2, rtol=0.1)  # pyright: ignore[reportUnknownArgumentType]
+    assert not np.allclose(
+        embedding1, embedding2, rtol=0.1
+    )  # pyright: ignore[reportUnknownArgumentType]
     _ = Path  # Ensure Path is used if needed, or just remove if unused
 
 
@@ -206,7 +209,12 @@ async def test_clip_task_run_success(sample_image_path: Path, tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -216,7 +224,9 @@ async def test_clip_task_run_success(sample_image_path: Path, tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             output_path = tmp_path / "output" / "embedding.npy"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -258,7 +268,12 @@ async def test_clip_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+            self,
+            job_id: str,
+            relative_path: str,
+            file: Any,
+            *,
+            mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -268,7 +283,9 @@ async def test_clip_task_run_file_not_found(tmp_path: Path):
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
 
-        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
+        def allocate_path(
+            self, job_id: str, relative_path: str, *, mkdirs: bool = True
+        ) -> Path:
             return tmp_path / "output" / "embedding.npy"
 
     storage = MockStorage()
@@ -292,7 +309,9 @@ def test_clip_embedding_route_creation(api_client: "TestClient"):
 
 
 @pytest.mark.requires_models
-def test_clip_embedding_route_job_submission(api_client: "TestClient", sample_image_path: "Path"):
+def test_clip_embedding_route_job_submission(
+    api_client: "TestClient", sample_image_path: "Path"
+):
     """Test job submission via clip_embedding route."""
     with open(sample_image_path, "rb") as f:
         response = api_client.post(
