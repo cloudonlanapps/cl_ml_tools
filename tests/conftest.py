@@ -26,6 +26,15 @@ MANIFEST_FILE = TESTS_DIR / "MANIFEST.md5"
 # ============================================================================
 
 
+def pytest_addoption(parser):
+    """Add custom command line options and ini values."""
+    parser.addini(
+        "test_storage_base_dir",
+        help="Base directory for test storage",
+        default="/tmp/cl_ml_tools_test_storage"
+    )
+
+
 def pytest_configure(config):
     """Configure pytest with custom markers."""
     config.addinivalue_line(

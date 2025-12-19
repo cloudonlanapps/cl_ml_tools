@@ -151,8 +151,8 @@ async def test_hls_streaming_task_run_success(sample_video_path: Path, tmp_path:
             return tmp_path / job_id / relative_path
 
         def allocate_path(self, job_id: str, relative_path: str) -> str:
-            output_path = tmp_path / "output" / "hls"
-            output_path.mkdir(parents=True, exist_ok=True)
+            output_path = tmp_path / "output" / "hls" / Path(relative_path).name
+            output_path.parent.mkdir(parents=True, exist_ok=True)
             return str(output_path)
 
     storage = MockStorage()
@@ -185,8 +185,8 @@ async def test_hls_streaming_task_creates_master_playlist(sample_video_path: Pat
             return tmp_path / job_id / relative_path
 
         def allocate_path(self, job_id: str, relative_path: str) -> str:
-            output_path = tmp_path / "output" / "hls"
-            output_path.mkdir(parents=True, exist_ok=True)
+            output_path = tmp_path / "output" / "hls" / Path(relative_path).name
+            output_path.parent.mkdir(parents=True, exist_ok=True)
             return str(output_path)
 
     storage = MockStorage()
@@ -194,7 +194,7 @@ async def test_hls_streaming_task_creates_master_playlist(sample_video_path: Pat
     output = await task.run(job_id, params, storage)
 
     # Master playlist should be created
-    assert "master.m3u8" in output.master_playlist or "playlist" in output.master_playlist
+    assert "adaptive.m3u8" in output.master_playlist
 
 
 @pytest.mark.requires_ffmpeg
@@ -214,7 +214,9 @@ async def test_hls_streaming_task_run_file_not_found(tmp_path: Path):
             return tmp_path / job_id / relative_path
 
         def allocate_path(self, job_id: str, relative_path: str) -> str:
-            return str(tmp_path / "output" / "hls")
+            output_path = tmp_path / "output" / "hls" / Path(relative_path).name
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            return str(output_path)
 
     storage = MockStorage()
 
@@ -243,8 +245,8 @@ async def test_hls_streaming_task_progress_callback(sample_video_path: Path, tmp
             return tmp_path / job_id / relative_path
 
         def allocate_path(self, job_id: str, relative_path: str) -> str:
-            output_path = tmp_path / "output" / "hls"
-            output_path.mkdir(parents=True, exist_ok=True)
+            output_path = tmp_path / "output" / "hls" / Path(relative_path).name
+            output_path.parent.mkdir(parents=True, exist_ok=True)
             return str(output_path)
 
     storage = MockStorage()
@@ -259,6 +261,57 @@ async def test_hls_streaming_task_progress_callback(sample_video_path: Path, tmp
     # Should have some progress updates
     assert len(progress_values) > 0
     assert 100 in progress_values
+
+
+@pytest.mark.requires_ffmpeg
+@pytest.mark.asyncio
+async def test_hls_streaming_task_audio_only_failure(tmp_path: Path):
+    """Test HLSStreamingTask rejects audio-only input."""
+    import subprocess
+
+    # Generate dummy audio file
+    input_path = tmp_path / "audio_only.mp4"
+    subprocess.run(
+        [
+            "ffmpeg",
+            "-f",
+            "lavfi",
+            "-i",
+            "anullsrc=r=44100:cl=stereo",
+            "-t",
+            "5",
+            "-c:a",
+            "aac",
+            str(input_path),
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+
+    params = HLSStreamingParams(
+        input_path=str(input_path),
+        output_path="output/hls",
+        variants=[VariantConfig(resolution=240, bitrate=800)],
+    )
+
+    task = HLSStreamingTask()
+    job_id = "test-job-audio-only"
+
+    class MockStorage:
+        def resolve_path(self, job_id: str, relative_path: str) -> Path:
+            return tmp_path / relative_path
+
+        def allocate_path(self, job_id: str, relative_path: str) -> str:
+            output_path = tmp_path / "output" / "hls" / Path(relative_path).name
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            return str(output_path)
+
+    storage = MockStorage()
+
+    with pytest.raises(ValueError, match="does not contain a video stream"):
+        await task.run(job_id, params, storage)
+
 
 
 @pytest.mark.requires_ffmpeg
@@ -283,8 +336,8 @@ async def test_hls_streaming_task_with_original(sample_video_path: Path, tmp_pat
             return tmp_path / job_id / relative_path
 
         def allocate_path(self, job_id: str, relative_path: str) -> str:
-            output_path = tmp_path / "output" / "hls"
-            output_path.mkdir(parents=True, exist_ok=True)
+            output_path = tmp_path / "output" / "hls" / Path(relative_path).name
+            output_path.parent.mkdir(parents=True, exist_ok=True)
             return str(output_path)
 
     storage = MockStorage()

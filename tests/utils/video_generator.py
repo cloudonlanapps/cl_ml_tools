@@ -37,9 +37,8 @@ def generate_hls_test_video(
         ImportError: If cv2 (OpenCV) is not available
     """
     try:
-        from cl_ml_tools.utils.random_media_generator import VideoGenerator
+        from cl_ml_tools.utils.random_media_generator.video_generator import VideoGenerator
         from cl_ml_tools.utils.random_media_generator.scene_generator import SceneGenerator
-        from cl_ml_tools.utils.random_media_generator.basic_shapes import SolidColor
     except ImportError as e:
         raise ImportError(
             "OpenCV (cv2) is required for video generation. "
@@ -65,13 +64,9 @@ def generate_hls_test_video(
     for i in range(scenes_per_video):
         color = colors[i % len(colors)]
         scene = SceneGenerator(
-            duration=5.0,  # 5 seconds per scene
-            frames=[
-                SolidColor(
-                    color=color,
-                    duration=5.0,
-                )
-            ],
+            duration_seconds=5,
+            background_color=color,
+            num_shapes=0,
         )
         scenes.append(scene)
 
@@ -83,7 +78,7 @@ def generate_hls_test_video(
 
         generator = VideoGenerator(
             out_dir=str(output_path.parent),
-            fileName=output_path.name,
+            fileName=output_path.stem,
             MIMEType="video/mp4",
             width=width,
             height=height,

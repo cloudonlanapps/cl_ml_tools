@@ -134,7 +134,37 @@ class HLSStreamGenerator:
         self.input_file: str = input_file
         self.output_dir: str = output_dir
         self.variants: list[HLSVariant] = []
+        self.has_audio: bool = self.check_stream("a")
+        if not self.check_stream("v"):
+            raise ValueError(f"Input file {input_file} does not contain a video stream")
         self.scan()
+
+    def check_stream(self, stream_type: str) -> bool:
+        """Check if input file has a stream of the specified type (v=video, a=audio)."""
+        command = [
+            "ffprobe",
+            "-v",
+            "error",
+            "-select_streams",
+            stream_type,
+            "-show_entries",
+            "stream=index",
+            "-of",
+            "csv=p=0",
+            self.input_file,
+        ]
+        try:
+            result = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+            return len(result.stdout.strip()) > 0
+        except Exception:
+            logger.warning(f"Failed to check {stream_type} stream for {self.input_file}")
+            return False
 
     # ─────────────────────────────────────────────
     #
@@ -230,8 +260,11 @@ class HLSStreamGenerator:
             )
             video_map_commands.append("-map")
             video_map_commands.append(f"[{variant.resolution_str}_out]")
-            audio_map_commands.append("-map")
-            audio_map_commands.append("0:a")
+            
+            if self.has_audio:
+                audio_map_commands.append("-map")
+                audio_map_commands.append("0:a")
+            
             video_bitrate_commands.append(f"-b:v:{i}")
             if variant.bitrate_str:
                 video_bitrate_commands.append(variant.bitrate_str)
@@ -241,9 +274,13 @@ class HLSStreamGenerator:
             video_bitrate_commands.append(f"-bufsize:v:{i}")
             if variant.bitrate_str:
                 video_bitrate_commands.append(variant.bitrate_str)
-            audio_bitrate_commands.append(f"-b:a:{i}")
-            audio_bitrate_commands.append("128k")
-            out_streams.append(f"v:{i},a:{i},name:{variant.resolution}p-{variant.bitrate}")
+            
+            if self.has_audio:
+                audio_bitrate_commands.append(f"-b:a:{i}")
+                audio_bitrate_commands.append("128k")
+                out_streams.append(f"v:{i},a:{i},name:{variant.resolution}p-{variant.bitrate}")
+            else:
+                out_streams.append(f"v:{i},name:{variant.resolution}p-{variant.bitrate}")
 
         filter_complex = (
             f"[0:v]split={len(requested_variants)}" + "".join(split) + ";" + ";".join(scale)
