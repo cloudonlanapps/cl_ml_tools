@@ -4,7 +4,6 @@ Tests schema validation, 384-dim embedding generation, normalization, task execu
 Requires ML models downloaded.
 """
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -15,7 +14,6 @@ from cl_ml_tools.plugins.dino_embedding.schema import (
     DinoEmbeddingParams,
 )
 from cl_ml_tools.plugins.dino_embedding.task import DinoEmbeddingTask
-
 
 # ============================================================================
 # SCHEMA TESTS

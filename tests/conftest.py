@@ -10,7 +10,6 @@ This module provides:
 import hashlib
 import shutil
 from pathlib import Path
-from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
@@ -363,8 +362,9 @@ def file_storage(tmp_path: Path, pytestconfig):
     2. pytest.ini test_storage_base_dir option
     3. Default: tmp_path / "file_storage"
     """
-    from cl_ml_tools.common.file_storage_impl import LocalFileStorage
     import os
+
+    from cl_ml_tools.common.file_storage_impl import LocalFileStorage
 
     # Check environment variable first
     env_storage = os.environ.get("TEST_STORAGE_DIR")

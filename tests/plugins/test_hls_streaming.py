@@ -15,7 +15,6 @@ from cl_ml_tools.plugins.hls_streaming.schema import (
 )
 from cl_ml_tools.plugins.hls_streaming.task import HLSStreamingTask
 
-
 # ============================================================================
 # SCHEMA TESTS
 # ============================================================================

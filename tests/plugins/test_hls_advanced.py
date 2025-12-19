@@ -3,18 +3,16 @@
 Targets error handling, validation failures, and edge cases in HLSStreamGenerator and HLSValidator.
 """
 
-import os
-import subprocess
 from unittest.mock import MagicMock, patch
 
 import pytest
-import m3u8
 
 from cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator import (
-    HLSStreamGenerator, HLSVariant, InternalServerError, NotFound
+    HLSStreamGenerator,
+    HLSVariant,
+    InternalServerError,
 )
 from cl_ml_tools.plugins.hls_streaming.algo.hls_validator import HLSValidator, validate_hls_output
-
 
 # ============================================================================
 # HLSVariant Tests
@@ -61,7 +59,7 @@ def test_hls_generator_check_stream_exception():
         with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.check_stream", side_effect=[True, True]):
             with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan"):
                 gen = HLSStreamGenerator("input.mp4", "/tmp/out")
-        
+
         # Now test the actual method with exception
         with patch("subprocess.run", side_effect=Exception("fail")):
             assert gen.check_stream("v") is False
@@ -73,7 +71,7 @@ def test_hls_generator_update_failures():
     with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.check_stream", return_value=True):
         with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan"):
             gen = HLSStreamGenerator("input.mp4", "/tmp/out")
-    
+
     # Simulate FFmpeg failing to create master playlist
     with patch.object(gen, "run_command"):
         # Mocking specifically in the module namespace
@@ -99,11 +97,11 @@ def test_hls_generator_add_variants_errors():
     with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.check_stream", return_value=True):
         with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan"):
             gen = HLSStreamGenerator("input.mp4", "/tmp/out")
-    
+
     # 1. HLSVariant() in requested
     with pytest.raises(InternalServerError, match="original should be generated using addOriginal"):
         gen.addVariants([HLSVariant()])
-        
+
     # 2. Validation failure after generation
     with patch.object(gen, "create"):
         with patch.object(HLSVariant, "check", return_value=False):
@@ -116,7 +114,7 @@ def test_hls_generator_add_original_validation_fail():
     with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.check_stream", return_value=True):
         with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan"):
             gen = HLSStreamGenerator("input.mp4", "/tmp/out")
-            
+
     with patch.object(gen, "createOriginal"):
         with patch.object(HLSVariant, "check", side_effect=[False, False]): # Fails before and after create
             with pytest.raises(InternalServerError, match="is either invalid or partial or corrupted"):
@@ -154,14 +152,14 @@ def test_hls_validator_missing_segments():
         if "master.m3u8" in p or "variant.m3u8" in p:
             return True
         return False # Segments missing
-        
+
     with patch("os.path.exists", side_effect=exists_mock):
         mock_master = MagicMock()
         mock_master.playlists = [MagicMock(uri="variant.m3u8", stream_info=MagicMock(bandwidth=1000))]
-        
+
         mock_variant = MagicMock()
         mock_variant.segments = [MagicMock(uri="seg1.ts"), MagicMock(uri="seg2.ts")]
-        
+
         with patch("m3u8.load", side_effect=[mock_master, mock_variant]):
             validator = HLSValidator("master.m3u8")
             result = validator.validate()
@@ -189,7 +187,7 @@ def test_validate_hls_output_failure():
         mock_result.segments_found = 0
         mock_result.total_segments = 10
         mock_val.return_value = mock_result
-        
+
         err = validate_hls_output("master.m3u8")
         assert "HLS validation failed" in err
         assert "Some error" in err

@@ -8,10 +8,8 @@ from ...common.file_storage import JobStorage
 from ...common.job_creator import create_job_from_upload
 from ...common.job_repository import JobRepository
 from ...common.schema_job_record import JobCreatedResponse
+from ...common.user import UserLike
 from .schema import ExifMetadataOutput, ExifMetadataParams
-
-
-from cl_ml_tools.common.user import UserLike
 
 
 def create_router(

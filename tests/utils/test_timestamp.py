@@ -1,7 +1,8 @@
 """Unit tests for timestamp utilities."""
 
-from datetime import datetime, timezone, timedelta
-from cl_ml_tools.utils.timestamp import toTimeStamp, fromTimeStamp
+from datetime import datetime, timedelta, timezone
+
+from cl_ml_tools.utils.timestamp import fromTimeStamp, toTimeStamp
 
 
 def test_to_timestamp_aware():
@@ -17,10 +18,10 @@ def test_to_timestamp_naive():
     """Test toTimeStamp with naive datetime (assumed local)."""
     dt = datetime(2023, 1, 1, 12, 0, 0)
     ts = toTimeStamp(dt)
-    
+
     # fromTimeStamp(ts) should return the same local time
     dt_back = fromTimeStamp(ts).replace(tzinfo=None)
-    # astimezone() might result in slight differences if DST changes, 
+    # astimezone() might result in slight differences if DST changes,
     # but for this specific date it should be fine.
     assert dt_back == dt
 
@@ -29,7 +30,7 @@ def test_from_timestamp():
     """Test fromTimeStamp conversion."""
     ts = 1672574400000  # 2023-01-01 12:00:00 UTC
     dt = fromTimeStamp(ts)
-    
+
     # Convert to UTC for comparison
     dt_utc = dt.astimezone(timezone.utc)
     assert dt_utc.year == 2023
@@ -51,7 +52,7 @@ def test_with_offset():
     offset = timezone(timedelta(hours=5, minutes=30))
     dt = datetime(2023, 5, 20, 10, 0, 0, tzinfo=offset)
     ts = toTimeStamp(dt)
-    
+
     # 10:00:00 +05:30 = 04:30:00 UTC
     expected_utc = datetime(2023, 5, 20, 4, 30, 0, tzinfo=timezone.utc)
     assert fromTimeStamp(ts).astimezone(timezone.utc) == expected_utc

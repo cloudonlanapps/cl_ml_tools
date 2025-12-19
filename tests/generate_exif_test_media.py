@@ -6,7 +6,6 @@ the EXIF extraction plugin. Requires exiftool to be installed.
 """
 
 import hashlib
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -76,7 +75,7 @@ def generate_gps_image() -> Path:
     )
 
     print(f"  ✓ Created: {output_path.name}")
-    print(f"    GPS: 37.7749° N, 122.4194° W")
+    print("    GPS: 37.7749° N, 122.4194° W")
     return output_path
 
 
@@ -107,7 +106,7 @@ def generate_camera_settings_image() -> Path:
     )
 
     print(f"  ✓ Created: {output_path.name}")
-    print(f"    Camera: Canon EOS R5, ISO 400, f/2.8, 1/100s")
+    print("    Camera: Canon EOS R5, ISO 400, f/2.8, 1/100s")
     return output_path
 
 
@@ -134,7 +133,7 @@ def generate_datetime_image() -> Path:
     )
 
     print(f"  ✓ Created: {output_path.name}")
-    print(f"    DateTime: 2024-01-15 14:30:00")
+    print("    DateTime: 2024-01-15 14:30:00")
     return output_path
 
 
@@ -167,7 +166,7 @@ def generate_all_metadata_image() -> Path:
     )
 
     print(f"  ✓ Created: {output_path.name}")
-    print(f"    GPS + Camera + DateTime (New York)")
+    print("    GPS + Camera + DateTime (New York)")
     return output_path
 
 
@@ -189,7 +188,7 @@ def generate_no_exif_image() -> Path:
     )
 
     print(f"  ✓ Created: {output_path.name}")
-    print(f"    No EXIF metadata")
+    print("    No EXIF metadata")
     return output_path
 
 
@@ -223,7 +222,7 @@ def update_manifest(generated_files: list[Path]) -> None:
     with open(MANIFEST_FILE, "w", encoding="utf-8") as f:
         f.write("# Test Media Manifest\n")
         f.write(f"# Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"# Source: /Users/anandasarangaram/Work/test_media\n")
+        f.write("# Source: /Users/anandasarangaram/Work/test_media\n")
         f.write("\n")
 
         for entry in existing_entries:

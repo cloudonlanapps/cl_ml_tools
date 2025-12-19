@@ -13,7 +13,6 @@ from cl_ml_tools.plugins.exif.algo.exif_tool_wrapper import MetadataExtractor
 from cl_ml_tools.plugins.exif.schema import ExifMetadataOutput, ExifMetadataParams
 from cl_ml_tools.plugins.exif.task import ExifTask
 
-
 # ============================================================================
 # SCHEMA TESTS
 # ============================================================================

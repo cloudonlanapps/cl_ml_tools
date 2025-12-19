@@ -18,7 +18,6 @@ from cl_ml_tools.plugins.image_conversion.schema import (
 )
 from cl_ml_tools.plugins.image_conversion.task import ImageConversionTask
 
-
 # ============================================================================
 # SCHEMA TESTS
 # ============================================================================

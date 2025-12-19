@@ -140,7 +140,7 @@ class ModelDownloader:
                 # If checking existing files, we need to be careful.
                 # If we assume extraction happened, we can check.
                 # But if previous run didn't extract (because of the bug), we must extract now.
-                
+
                 # If we can't easily check for *all* files, maybe best to just try extracting.
                 # Optimisation: Check for at least one match?
                 # Using rglob if pattern indicates recursion?
@@ -164,7 +164,7 @@ class ModelDownloader:
                         )
                     for member in members:
                         _ = zip_ref.extract(member, extract_dir)
-                    
+
                     # Return path to the first matched file, resolving subdirectories
                     extracted_file = extract_dir / members[0]
                 else:

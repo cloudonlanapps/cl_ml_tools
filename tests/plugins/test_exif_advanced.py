@@ -3,9 +3,7 @@
 Targets error handling and edge cases in MetadataExtractor to reach high coverage.
 """
 
-import json
 import subprocess
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -97,15 +95,15 @@ def test_extract_metadata_all_exceptions():
             with patch("pathlib.Path.exists", return_value=False):
                 with pytest.raises(FileNotFoundError):
                     extractor.extract_metadata_all("file.jpg")
-            
+
             # CalledProcessError
             with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error")):
                 assert extractor.extract_metadata_all("file.jpg") == {}
-            
+
             # Timeout
             with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 30)):
                 assert extractor.extract_metadata_all("file.jpg") == {}
-                
+
             # JSON error
             mock_result = MagicMock()
             mock_result.stdout = "invalid json"

@@ -4,7 +4,6 @@ Tests schema validation, 512-dim embedding generation, normalization, task execu
 Requires ML models downloaded.
 """
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -15,7 +14,6 @@ from cl_ml_tools.plugins.clip_embedding.schema import (
     ClipEmbeddingParams,
 )
 from cl_ml_tools.plugins.clip_embedding.task import ClipEmbeddingTask
-
 
 # ============================================================================
 # SCHEMA TESTS

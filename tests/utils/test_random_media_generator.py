@@ -2,9 +2,10 @@
 
 Tests media list validation, MIME type support, configuration, and actual media generation.
 """
-from pathlib import Path
-from unittest.mock import patch, MagicMock
 import subprocess
+from pathlib import Path
+from unittest.mock import patch
+
 import numpy as np
 import pytest
 from pydantic import ValidationError
@@ -15,7 +16,6 @@ from cl_ml_tools.utils.random_media_generator import (
 )
 from cl_ml_tools.utils.random_media_generator.base_media import SupportedMIME
 from cl_ml_tools.utils.random_media_generator.frame_generator import FrameGenerator
-
 
 # ============================================================================
 # SupportedMIME Tests
@@ -324,10 +324,10 @@ def test_image_generation_with_shapes(tmp_path: Path):
             }
         ],
     )
-    
+
     for media in generator.media_list:
         media.generate()
-        
+
     assert (tmp_path / "test_shapes.jpg").exists()
     assert (tmp_path / "test_shapes.jpg").stat().st_size > 0
 
@@ -354,10 +354,10 @@ def test_video_generation_with_scenes(tmp_path: Path):
             }
         ],
     )
-    
+
     for media in generator.media_list:
         media.generate()
-        
+
     assert (tmp_path / "test_video.mp4").exists()
     assert (tmp_path / "test_video.mp4").stat().st_size > 0
 
@@ -366,7 +366,7 @@ def test_video_generation_with_scenes(tmp_path: Path):
 def test_image_generation_with_metadata(tmp_path: Path):
     """Test image generation with EXIF metadata."""
     from datetime import datetime
-    
+
     generator = RandomMediaGenerator(
         out_dir=str(tmp_path),
         media_list=[
@@ -383,21 +383,21 @@ def test_image_generation_with_metadata(tmp_path: Path):
             }
         ],
     )
-    
+
     for media in generator.media_list:
         media.generate()
-        
+
     assert (tmp_path / "test_meta.jpg").exists()
 
 
 def test_scene_generator_num_frames():
     """Test SceneGenerator frame calculation."""
     from cl_ml_tools.utils.random_media_generator.scene_generator import SceneGenerator
-    
+
     scene = SceneGenerator(duration_seconds=5)
     assert scene.num_frames(fps=30) == 150
     assert scene.num_frames(fps=10) == 50
-    
+
     scene_no_duration = SceneGenerator(duration_seconds=None)
     assert scene_no_duration.num_frames(fps=30) == 0
 
@@ -409,40 +409,47 @@ def test_scene_generator_num_frames():
 def test_basic_shapes_direct_draw():
     """Test various shapes draw methods directly to increase basic_shapes.py coverage."""
     from cl_ml_tools.utils.random_media_generator.basic_shapes import (
-        Circle, Rectangle, Line, Triangle
+        Circle,
+        Line,
+        Rectangle,
+        Triangle,
     )
     frame = np.zeros((100, 100, 3), dtype=np.uint8)
-    
+
     # Test each shape type
     Circle(center=(50, 50), radius=10, color=(255, 0, 0), thickness=2).draw(frame)
     Rectangle(color=(0, 255, 0), thickness=-1).draw(frame)
     Line(color=(0, 0, 255), thickness=1).draw(frame)
     Triangle(thickness=1).draw(frame)
-    
+
     assert np.any(frame > 0)
 
 
 def test_animated_shapes_direct_draw():
     """Test animated shapes draw methods directly to increase basic_shapes.py coverage."""
     from cl_ml_tools.utils.random_media_generator.basic_shapes import (
-        BouncingCircle, MovingLine, PulsatingTriangle, RotatingSquare
+        BouncingCircle,
+        MovingLine,
+        PulsatingTriangle,
+        RotatingSquare,
     )
     frame = np.zeros((100, 100, 3), dtype=np.uint8)
-    
+
     # Test each animated shape
     BouncingCircle(center=(50, 50), radius=10, color=(255, 0, 0), velocity=(2, 2)).draw(frame)
     MovingLine(start=(0, 0), end=(10, 10), color=(0, 255, 0), velocity=(5, 5)).draw(frame)
     PulsatingTriangle(pt1=(10, 10), pt2=(30, 10), pt3=(20, 30), color=(0, 0, 255), pulse_speed=0.1).draw(frame)
     RotatingSquare(center=(50, 50), side_length=20, color=(255, 255, 0), rotation_speed=0.1).draw(frame)
-    
+
     assert np.any(frame > 0)
 
 
 def test_exif_metadata_video_logic():
     """Test ExifMetadata logic for video types to hit uncovered branches."""
     from datetime import datetime
+
     from cl_ml_tools.utils.random_media_generator.exif_metadata import ExifMetadata
-    
+
     # Test video branches
     meta = ExifMetadata(
         MIMEType="video/mp4",
@@ -452,7 +459,7 @@ def test_exif_metadata_video_logic():
     # We call these to trigger the cmd expansion logic
     meta.updateCreateDate()
     meta.updateUserComments()
-    
+
     cmd_str = " ".join(meta.cmd)
     assert "QuickTime:CreateDate" in cmd_str
     assert "QuickTime:Comment" in cmd_str
@@ -462,18 +469,19 @@ def test_exif_metadata_video_logic():
 def test_exif_metadata_write_errors():
     """Test ExifMetadata.write error handling."""
     from datetime import datetime
+
     from cl_ml_tools.utils.random_media_generator.exif_metadata import ExifMetadata
-    
+
     # 1. Empty metadata
     meta = ExifMetadata(MIMEType="image/jpeg")
     meta.write("file.jpg") # Should just print and return
-    
+
     # 2. CalledProcessError
     meta = ExifMetadata(MIMEType="image/jpeg", CreateDate=datetime(2023, 1, 1))
     with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error")):
         with pytest.raises(Exception, match="Error calling ExifTool"):
             meta.write("file.jpg")
-            
+
     # 3. FileNotFoundError (ExifTool not found)
     with patch("subprocess.run", side_effect=FileNotFoundError()):
         with pytest.raises(Exception, match="ExifTool not found"):

@@ -3,23 +3,21 @@
 Tests schema validation, MD5/SHA512 algorithms, task execution, routes, and full job lifecycle.
 """
 
-import json
 import hashlib
+import json
 import subprocess
 from io import BytesIO
 from pathlib import Path
-from unittest.mock import patch, MagicMock
-import numpy as np
+from unittest.mock import MagicMock, patch
+
 import pytest
-from PIL import Image
 
 from cl_ml_tools.plugins.hash.algo.generic import sha512hash_generic
 from cl_ml_tools.plugins.hash.algo.image import sha512hash_image
-from cl_ml_tools.plugins.hash.algo.video import sha512hash_video2
 from cl_ml_tools.plugins.hash.algo.md5 import get_md5_hexdigest, validate_md5String
+from cl_ml_tools.plugins.hash.algo.video import sha512hash_video2
 from cl_ml_tools.plugins.hash.schema import HashOutput, HashParams
 from cl_ml_tools.plugins.hash.task import HashTask
-
 
 # ============================================================================
 # SCHEMA TESTS
@@ -278,20 +276,20 @@ def test_sha512_video_algo_with_real_video(sample_video_path: Path):
 
     # Mock ffprobe output because MP4 via stdin might not be seekable/streamable
     # We need to provide a valid CSV row that matches at least one frame in the file
-    # For a 30s HD video, there are definitely many I-frames. 
+    # For a 30s HD video, there are definitely many I-frames.
     # Let's mock a simple one-frame hash for testing the loop.
     mock_csv = "0,10,I\n" # offset 0, size 10, type I
-    
+
     mock_result = MagicMock()
     mock_result.returncode = 0
     mock_result.stdout = mock_csv.encode("utf-8")
-    
+
     with patch("subprocess.run", return_value=mock_result):
         hash_bytes = sha512hash_video2(bytes_io)
 
     assert isinstance(hash_bytes, bytes)
     assert len(hash_bytes) == 64
-    
+
     # Verify the hash matches what we expect (SHA512 of first 10 bytes)
     expected_hash = hashlib.sha512(video_bytes[:10]).digest()
     assert hash_bytes == expected_hash
@@ -313,12 +311,12 @@ def test_sha512_video_algo_consistency(sample_video_path: Path):
 
     with patch("subprocess.run", return_value=mock_result):
         hash1 = sha512hash_video2(bytes_io1)
-    
+
     with patch("subprocess.run", return_value=mock_result):
         hash2 = sha512hash_video2(bytes_io2)
 
     assert hash1 == hash2
-    
+
     # Expected: hash(data[0:10] + data[20:30])
     expected = hashlib.sha512(data[0:10] + data[20:30]).digest()
     assert hash1 == expected
@@ -329,23 +327,23 @@ def test_sha512_video_algo_errors(sample_video_path: Path):
     """Test SHA512 video hash error handling."""
     from cl_ml_tools.plugins.hash.algo.video import UnsupportedMediaType
     bytes_io = BytesIO(b"dummy data")
-    
+
     # 1. Timeout
     with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 30)):
         with pytest.raises(UnsupportedMediaType, match="ffprobe command timed out"):
             sha512hash_video2(bytes_io)
-            
+
     # 2. OSError
     with patch("subprocess.run", side_effect=OSError("fail")):
         with pytest.raises(UnsupportedMediaType, match="An error occurred while running ffprobe"):
             sha512hash_video2(bytes_io)
-            
+
     # 3. Non-zero return code
     mock_res = MagicMock(returncode=1, stderr=b"some error")
     with patch("subprocess.run", return_value=mock_res):
         with pytest.raises(UnsupportedMediaType, match="ffprobe error: some error"):
             sha512hash_video2(bytes_io)
-            
+
     # 4. Empty output
     mock_res = MagicMock(returncode=0, stdout=b"  \n")
     with patch("subprocess.run", return_value=mock_res):

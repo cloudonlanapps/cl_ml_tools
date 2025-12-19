@@ -37,8 +37,8 @@ def generate_hls_test_video(
         ImportError: If cv2 (OpenCV) is not available
     """
     try:
-        from cl_ml_tools.utils.random_media_generator.video_generator import VideoGenerator
         from cl_ml_tools.utils.random_media_generator.scene_generator import SceneGenerator
+        from cl_ml_tools.utils.random_media_generator.video_generator import VideoGenerator
     except ImportError as e:
         raise ImportError(
             "OpenCV (cv2) is required for video generation. "

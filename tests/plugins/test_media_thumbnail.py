@@ -20,7 +20,6 @@ from cl_ml_tools.plugins.media_thumbnail.schema import (
 )
 from cl_ml_tools.plugins.media_thumbnail.task import MediaThumbnailTask
 
-
 # ============================================================================
 # SCHEMA TESTS
 # ============================================================================

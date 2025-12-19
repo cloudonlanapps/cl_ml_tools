@@ -4,7 +4,6 @@ Tests schema validation, embedding generation with quality scores, normalization
 Requires ML models downloaded.
 """
 
-import json
 from pathlib import Path
 
 import numpy as np
@@ -15,7 +14,6 @@ from cl_ml_tools.plugins.face_embedding.schema import (
     FaceEmbeddingParams,
 )
 from cl_ml_tools.plugins.face_embedding.task import FaceEmbeddingTask
-
 
 # ============================================================================
 # SCHEMA TESTS
