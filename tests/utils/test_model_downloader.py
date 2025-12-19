@@ -48,7 +48,7 @@ def test_compute_sha256(downloader: ModelDownloader, tmp_path: Path):
     _ = test_file.write_bytes(content)
 
     expected = hashlib.sha256(content).hexdigest()
-    assert downloader._compute_sha256(test_file) == expected # pyright: ignore[reportPrivateUsage]
+    assert downloader._compute_sha256(test_file) == expected  # pyright: ignore[reportPrivateUsage]
 
 
 def test_download_exists_no_hash(downloader: ModelDownloader, cache_dir: Path):
@@ -71,14 +71,14 @@ def test_download_exists_with_valid_hash(downloader: ModelDownloader, cache_dir:
     expected_hash = hashlib.sha256(content).hexdigest()
 
     path = downloader.download(
-        url="http://example.com/model.onnx",
-        filename=filename,
-        expected_sha256=expected_hash
+        url="http://example.com/model.onnx", filename=filename, expected_sha256=expected_hash
     )
     assert path == model_path
 
 
-def test_download_exists_with_invalid_hash_redownloads(downloader: ModelDownloader, cache_dir: Path):
+def test_download_exists_with_invalid_hash_redownloads(
+    downloader: ModelDownloader, cache_dir: Path
+):
     """Test download when file exists but hash mismatches."""
     filename = "model.onnx"
     model_path = cache_dir / filename
@@ -97,9 +97,7 @@ def test_download_exists_with_invalid_hash_redownloads(downloader: ModelDownload
         mock_stream.return_value.__enter__.return_value = mock_response
 
         path = downloader.download(
-            url="http://example.com/model.onnx",
-            filename=filename,
-            expected_sha256=new_hash
+            url="http://example.com/model.onnx", filename=filename, expected_sha256=new_hash
         )
 
         assert path == model_path
@@ -134,9 +132,7 @@ def test_download_hash_mismatch_after_download(downloader: ModelDownloader, cach
 
         with pytest.raises(ValueError, match="Downloaded model hash mismatch"):
             _ = downloader.download(
-                url="http://example.com/model.onnx",
-                filename=filename,
-                expected_sha256="wrong_hash"
+                url="http://example.com/model.onnx", filename=filename, expected_sha256="wrong_hash"
             )
 
     assert not (cache_dir / filename).exists()
@@ -167,9 +163,7 @@ def test_download_and_extract_zip(downloader: ModelDownloader, cache_dir: Path, 
 
         # Test without pattern (should return first file)
         path = downloader.download(
-            url="http://example.com/model.zip",
-            filename=zip_filename,
-            auto_extract=True
+            url="http://example.com/model.zip", filename=zip_filename, auto_extract=True
         )
         assert path.name == onnx_filename
         assert path.read_bytes() == onnx_content
@@ -179,7 +173,7 @@ def test_download_and_extract_zip(downloader: ModelDownloader, cache_dir: Path, 
             url="http://example.com/model.zip",
             filename=zip_filename,
             auto_extract=True,
-            extract_pattern="*.onnx"
+            extract_pattern="*.onnx",
         )
         assert path.name == onnx_filename
         assert path.suffix == ".onnx"

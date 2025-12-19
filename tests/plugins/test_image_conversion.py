@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 from PIL import Image
+
 from cl_ml_tools.common.file_storage import SavedJobFile
 
 if TYPE_CHECKING:
@@ -304,15 +305,24 @@ async def test_image_conversion_task_run_success(sample_image_path: Path, tmp_pa
     job_id = "test-job-123"
 
     class MockStorage:
-        def create_directory(self, _id: str) -> None: pass
-        def remove(self, _id: str) -> bool: return True
-        async def save(self, _id, _path, _file, **_k) -> SavedJobFile:
-            return SavedJobFile(relative_path=_path, size=0)
-        async def open(self, _id, _path) -> Any: return None
-        def resolve_path(self, job_id: str, relative_path: str) -> Path:
-            return tmp_path / job_id / relative_path
+        def create_directory(self, job_id: str) -> None:
+            pass
 
-        def allocate_path(self, job_id: str, relative_path: str) -> Path:
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> SavedJobFile:
+            return SavedJobFile(relative_path=relative_path, size=0)
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
+        def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
+            return tmp_path / job_id / (relative_path or "")
+
+        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / "output" / "converted.png"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -341,12 +351,23 @@ async def test_image_conversion_task_run_file_not_found(tmp_path: Path):
     job_id = "test-job-789"
 
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> Any: return None
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> Any:
+            return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
+
         def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             return tmp_path / "output" / "converted.png"
 
@@ -372,15 +393,24 @@ async def test_image_conversion_task_progress_callback(sample_image_path: Path, 
     job_id = "test-job-progress"
 
     class MockStorage:
-        def create_directory(self, _id: str) -> None: pass
-        def remove(self, _id: str) -> bool: return True
-        async def save(self, _id, _path, _file, **_k) -> SavedJobFile:
-            return SavedJobFile(relative_path=_path, size=0)
-        async def open(self, _id, _path) -> Any: return None
-        def resolve_path(self, job_id: str, relative_path: str) -> Path:
-            return tmp_path / job_id / relative_path
+        def create_directory(self, job_id: str) -> None:
+            pass
 
-        def allocate_path(self, job_id: str, relative_path: str) -> Path:
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> SavedJobFile:
+            return SavedJobFile(relative_path=relative_path, size=0)
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
+        def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
+            return tmp_path / job_id / (relative_path or "")
+
+        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / "output" / "converted.png"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path

@@ -324,7 +324,9 @@ def job_repository():
             job = self._jobs[job_id]
             # Convert Pydantic model to dict if needed
             updates_dict: dict[str, Any] = (
-                updates.model_dump(exclude_none=True) if hasattr(updates, "model_dump") else cast("dict[str, Any]", updates)
+                updates.model_dump(exclude_none=True)
+                if hasattr(updates, "model_dump")
+                else cast("dict[str, Any]", updates)
             )
             for key, value in updates_dict.items():
                 if hasattr(job, key):

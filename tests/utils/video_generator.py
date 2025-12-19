@@ -51,12 +51,13 @@ def generate_hls_test_video(
     # Each scene is ~5 seconds, so 30 seconds = 6 scenes
     scenes_per_video = duration_seconds // 5
     from cl_ml_tools.utils.random_media_generator.scene_generator import SceneGenerator
+
     scenes: list[SceneGenerator] = []
 
     colors = [
-        (255, 0, 0),    # Red
-        (0, 255, 0),    # Green
-        (0, 0, 255),    # Blue
+        (255, 0, 0),  # Red
+        (0, 255, 0),  # Green
+        (0, 0, 255),  # Blue
         (255, 255, 0),  # Yellow
         (255, 0, 255),  # Magenta
         (0, 255, 255),  # Cyan
@@ -94,8 +95,7 @@ def generate_hls_test_video(
 
         file_size = output_path.stat().st_size
         logger.info(
-            f"Generated test video: {output_path} "
-            + f"({file_size:,} bytes, {duration_seconds}s)"
+            f"Generated test video: {output_path} " + f"({file_size:,} bytes, {duration_seconds}s)"
         )
 
         return output_path
@@ -128,7 +128,7 @@ def ensure_hls_test_videos_exist(videos_dir: Path, count: int = 2) -> list[Path]
     logger.info(f"Generating {needed} test videos for HLS streaming tests")
     videos = existing.copy()
     for i in range(len(existing), count):
-        video_path = videos_dir / f"test_video_{i+1}.mp4"
+        video_path = videos_dir / f"test_video_{i + 1}.mp4"
         try:
             # Create longer videos with higher quality for HLS segmentation
             # 30 seconds at 1280x720 should generate multiple .ts segments
@@ -141,7 +141,7 @@ def ensure_hls_test_videos_exist(videos_dir: Path, count: int = 2) -> list[Path]
             )
             videos.append(generated)
         except (RuntimeError, ImportError) as exc:
-            logger.warning(f"Failed to generate video {i+1}: {exc}")
+            logger.warning(f"Failed to generate video {i + 1}: {exc}")
             # If we can't generate, just return what we have
             break
 

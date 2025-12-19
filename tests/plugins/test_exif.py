@@ -102,7 +102,7 @@ def test_exif_output_from_raw_metadata():
         "DateTimeOriginal": "2023:10:15 14:30:00",
     }
 
-    output = ExifMetadataOutput.from_raw_metadata(cast(Any, raw_meta))
+    output = ExifMetadataOutput.from_raw_metadata(cast("Any", raw_meta))
 
     assert output.make == "Canon"
     assert output.model == "EOS 5D Mark IV"
@@ -306,10 +306,18 @@ async def test_exif_task_progress_callback(sample_image_path: Path, tmp_path: Pa
     job_id = "test-job-progress"
 
     class MockStorage:
-        def create_directory(self, _id: str) -> None: pass
-        def remove(self, _id: str) -> bool: return True
-        async def save(self, _id, _path, _file, **_k) -> Any: return None
-        async def open(self, _id, _path) -> Any: return None
+        def create_directory(self, _id: str) -> None:
+            pass
+
+        def remove(self, _id: str) -> bool:
+            return True
+
+        async def save(self, _id, _path, _file, **_k) -> Any:
+            return None
+
+        async def open(self, _id, _path) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str) -> Path:
             return tmp_path / job_id / relative_path
 

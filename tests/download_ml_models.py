@@ -21,6 +21,7 @@ print()
 print("1. Downloading CLIP (MobileCLIP-S2) model...")
 try:
     from cl_ml_tools.plugins.clip_embedding.algo.clip_embedder import ClipEmbedder
+
     embedder = ClipEmbedder()
     print("   ✓ CLIP model downloaded")
 except Exception as e:
@@ -32,6 +33,7 @@ print()
 print("2. Downloading DINO (DINOv2) model...")
 try:
     from cl_ml_tools.plugins.dino_embedding.algo.dino_embedder import DinoEmbedder
+
     embedder = DinoEmbedder()
     print("   ✓ DINO model downloaded")
 except Exception as e:
@@ -43,6 +45,7 @@ print()
 print("3. Downloading Face Detection (MediaPipe) model...")
 try:
     from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
+
     detector = FaceDetector()
     print("   ✓ Face Detection model downloaded")
 except Exception as e:
@@ -54,6 +57,7 @@ print()
 print("4. Downloading Face Embedding (ArcFace) model...")
 try:
     from cl_ml_tools.plugins.face_embedding.algo.face_embedder import FaceEmbedder
+
     embedder = FaceEmbedder()
     print("   ✓ Face Embedding model downloaded")
 except Exception as e:

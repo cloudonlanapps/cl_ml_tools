@@ -2,6 +2,7 @@
 
 Tests media list validation, MIME type support, configuration, and actual media generation.
 """
+
 import subprocess
 from pathlib import Path
 from unittest.mock import patch
@@ -106,7 +107,7 @@ def test_media_list_validation_requires_out_dir():
     """Test media list validation fails without out_dir."""
     # This should fail during validation because out_dir is required
     with pytest.raises((ValidationError, JSONValidationError)):
-        _ = RandomMediaGenerator( # pyright: ignore[reportCallIssue] - Testing missing out_dir
+        _ = RandomMediaGenerator(  # pyright: ignore[reportCallIssue] - Testing missing out_dir
             media_list=[
                 {
                     "MIMEType": "image/jpeg",
@@ -124,7 +125,7 @@ def test_media_list_validation_with_image_type(tmp_path: Path):
     with pytest.raises((ValidationError, JSONValidationError)):
         _ = RandomMediaGenerator(
             out_dir=str(tmp_path),
-            media_list=[ # pyright: ignore[reportArgumentType]
+            media_list=[  # pyright: ignore[reportArgumentType]
                 {
                     "MIMEType": "image/jpeg",
                     "width": 800,
@@ -141,7 +142,7 @@ def test_media_list_validation_with_video_type(tmp_path: Path):
     with pytest.raises((ValidationError, JSONValidationError)):
         _ = RandomMediaGenerator(
             out_dir=str(tmp_path),
-            media_list=[ # pyright: ignore[reportArgumentType]
+            media_list=[  # pyright: ignore[reportArgumentType]
                 {
                     "MIMEType": "video/mp4",
                     "width": 1920,
@@ -158,7 +159,7 @@ def test_media_list_validation_invalid_mime_type(tmp_path: Path):
     with pytest.raises((ValidationError, TypeError)):
         _ = RandomMediaGenerator(
             out_dir=str(tmp_path),
-            media_list=[ # pyright: ignore[reportArgumentType]
+            media_list=[  # pyright: ignore[reportArgumentType]
                 {
                     "MIMEType": "application/pdf",
                     "width": 800,
@@ -255,7 +256,7 @@ def test_random_media_generator_validation_error_message(tmp_path: Path):
     with pytest.raises((ValidationError, JSONValidationError)) as exc_info:
         _ = RandomMediaGenerator(
             out_dir=str(tmp_path),
-            media_list=[ # pyright: ignore[reportArgumentType]
+            media_list=[  # pyright: ignore[reportArgumentType]
                 {
                     "MIMEType": "image/jpeg",
                     "width": 800,
@@ -311,16 +312,13 @@ def test_image_generation_with_shapes(tmp_path: Path):
     """Test actual image generation with various shapes."""
     generator = RandomMediaGenerator(
         out_dir=str(tmp_path),
-        media_list=[ # pyright: ignore[reportArgumentType]
+        media_list=[  # pyright: ignore[reportArgumentType]
             {
                 "MIMEType": "image/jpeg",
                 "width": 100,
                 "height": 100,
                 "fileName": "test_shapes",
-                "frame": {
-                    "background_color": [255, 0, 0],
-                    "num_shapes": 5
-                }
+                "frame": {"background_color": [255, 0, 0], "num_shapes": 5},
             }
         ],
     )
@@ -337,7 +335,7 @@ def test_video_generation_with_scenes(tmp_path: Path):
     """Test actual video generation with scenes."""
     generator = RandomMediaGenerator(
         out_dir=str(tmp_path),
-        media_list=[ # pyright: ignore[reportArgumentType]
+        media_list=[  # pyright: ignore[reportArgumentType]
             {
                 "MIMEType": "video/mp4",
                 "width": 160,
@@ -345,12 +343,8 @@ def test_video_generation_with_scenes(tmp_path: Path):
                 "fileName": "test_video",
                 "fps": 10,
                 "scenes": [
-                    {
-                        "duration_seconds": 1,
-                        "background_color": [0, 255, 0],
-                        "num_shapes": 2
-                    }
-                ]
+                    {"duration_seconds": 1, "background_color": [0, 255, 0], "num_shapes": 2}
+                ],
             }
         ],
     )
@@ -369,7 +363,7 @@ def test_image_generation_with_metadata(tmp_path: Path):
 
     generator = RandomMediaGenerator(
         out_dir=str(tmp_path),
-        media_list=[ # pyright: ignore[reportArgumentType]
+        media_list=[  # pyright: ignore[reportArgumentType]
             {
                 "MIMEType": "image/jpeg",
                 "width": 100,
@@ -378,8 +372,8 @@ def test_image_generation_with_metadata(tmp_path: Path):
                 "frame": {"num_shapes": 1},
                 "metadata": {
                     "CreateDate": datetime(2023, 1, 1, 12, 0, 0),
-                    "UserComments": ["Test Comment"]
-                }
+                    "UserComments": ["Test Comment"],
+                },
             }
         ],
     )
@@ -401,12 +395,13 @@ def test_scene_generator_num_frames():
     scene_no_duration = SceneGenerator(duration_seconds=None)
     assert scene_no_duration.num_frames(fps=30) == 0
 
-
     with pytest.raises(JSONValidationError, match="Invalid Color"):
-        _ = FrameGenerator(background_color=(255, 0, 0)) # Fixed to 3 values, but should still fail if that's what's intended?
+        _ = FrameGenerator(
+            background_color=(255, 0, 0)
+        )  # Fixed to 3 values, but should still fail if that's what's intended?
         # Actually, the test was testing that [255, 0] is invalid.
         # But FrameGenerator expects a tuple or None.
-        _ = FrameGenerator(background_color=[255, 0]) # pyright: ignore[reportArgumentType]
+        _ = FrameGenerator(background_color=[255, 0])  # pyright: ignore[reportArgumentType]
 
 
 def test_basic_shapes_direct_draw():
@@ -417,6 +412,7 @@ def test_basic_shapes_direct_draw():
         Rectangle,
         Triangle,
     )
+
     frame = np.zeros((100, 100, 3), dtype=np.uint8)
 
     # Test each shape type
@@ -436,11 +432,14 @@ def test_animated_shapes_direct_draw():
         PulsatingTriangle,
         RotatingSquare,
     )
+
     frame = np.zeros((100, 100, 3), dtype=np.uint8)
 
     # Test each animated shape
     BouncingCircle(center=(50, 50), radius=10, color=(255, 0, 0), dx=2, dy=2).draw(frame)
-    MovingLine(center=(50, 50), length=20, angle_degrees=45, color=(0, 255, 0), dx=5, dy=5).draw(frame)
+    MovingLine(center=(50, 50), length=20, angle_degrees=45, color=(0, 255, 0), dx=5, dy=5).draw(
+        frame
+    )
     PulsatingTriangle(center=(50, 50), base_size=20, color=(0, 0, 255), pulse_speed=0.1).draw(frame)
     RotatingSquare(center=(50, 50), size=20, color=(255, 255, 0), angular_speed=3).draw(frame)
 
@@ -455,9 +454,7 @@ def test_exif_metadata_video_logic():
 
     # Test video branches
     meta = ExifMetadata(
-        MIMEType="video/mp4",
-        CreateDate=datetime(2023, 1, 1),
-        UserComments=["Video Comment"]
+        MIMEType="video/mp4", CreateDate=datetime(2023, 1, 1), UserComments=["Video Comment"]
     )
     # We call these to trigger the cmd expansion logic
     meta.updateCreateDate()
@@ -477,11 +474,13 @@ def test_exif_metadata_write_errors():
 
     # 1. Empty metadata
     meta = ExifMetadata(MIMEType="image/jpeg")
-    meta.write("file.jpg") # Should just print and return
+    meta.write("file.jpg")  # Should just print and return
 
     # 2. CalledProcessError
     meta = ExifMetadata(MIMEType="image/jpeg", CreateDate=datetime(2023, 1, 1))
-    with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error")):
+    with patch(
+        "subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error")
+    ):
         with pytest.raises(Exception, match="Error calling ExifTool"):
             meta.write("file.jpg")
 
@@ -492,4 +491,4 @@ def test_exif_metadata_write_errors():
 
     # 4. General Exception
     with patch("subprocess.run", side_effect=RuntimeError("unknown")):
-        meta.write("file.jpg") # Should just log warning/print
+        meta.write("file.jpg")  # Should just log warning/print

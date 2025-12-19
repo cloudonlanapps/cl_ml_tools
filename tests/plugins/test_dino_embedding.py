@@ -151,12 +151,23 @@ async def test_dino_task_run_success(sample_image_path: Path, tmp_path: Path):
     job_id = "test-job-123"
 
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> Any: return None
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> Any:
+            return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
+
         def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / "output" / "embedding.npy"
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -185,12 +196,23 @@ async def test_dino_task_run_file_not_found(tmp_path: Path):
     job_id = "test-job-789"
 
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> Any: return None
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> Any:
+            return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
+
         def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             return tmp_path / "output" / "embedding.npy"
 

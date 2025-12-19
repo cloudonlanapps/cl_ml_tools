@@ -99,10 +99,9 @@ def test_to_hls_playlist_not_created(ffmpeg_commands: FFMPEGCommands, tmp_path: 
 
     mock_result = MagicMock()
     mock_result.returncode = 0
-    mock_result.stderr = "" # Ensure it's a string to avoid TypeError in join
+    mock_result.stderr = ""  # Ensure it's a string to avoid TypeError in join
 
     with patch("subprocess.run", return_value=mock_result):
         # playlist_file is NOT created
         with pytest.raises(NotFound, match="Failed to create"):
             ffmpeg_commands.to_hls(str(input_file), str(output_dir))
-

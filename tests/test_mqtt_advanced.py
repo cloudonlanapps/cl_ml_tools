@@ -15,9 +15,10 @@ from cl_ml_tools.utils.mqtt.mqtt_impl import BroadcasterBase, MQTTBroadcaster, N
 # BroadcasterBase Tests
 # ============================================================================
 
+
 class ConcreteBroadcaster(BroadcasterBase):
     """Concrete subclass for testing BroadcasterBase defaults."""
-    pass
+
 
 def test_broadcaster_base_defaults():
     """Test default implementations in BroadcasterBase."""
@@ -29,12 +30,13 @@ def test_broadcaster_base_defaults():
     assert base.clear_retained("topic") is False
     assert base.subscribe(topic="t", callback=lambda x, y: None) is None
     assert base.unsubscribe("id") is False
-    base.disconnect() # Should not raise
+    base.disconnect()  # Should not raise
 
 
 # ============================================================================
 # MQTTBroadcaster Tests
 # ============================================================================
+
 
 def test_mqtt_broadcaster_init_error():
     """Test MQTTBroadcaster raises exception on missing config."""
@@ -63,7 +65,7 @@ def test_mqtt_broadcaster_publish_errors():
     broadcaster.client = MagicMock()
 
     mock_info = MagicMock()
-    mock_info.rc = 1 # Error
+    mock_info.rc = 1  # Error
     broadcaster.client.publish.return_value = mock_info
     assert broadcaster.publish_event(topic="t", payload="p") is False
 
@@ -94,7 +96,7 @@ def test_mqtt_broadcaster_subscribe_errors():
     broadcaster.client = MagicMock()
 
     # MQTT library returns error
-    broadcaster.client.subscribe.return_value = (1, 1) # (rc, mid)
+    broadcaster.client.subscribe.return_value = (1, 1)  # (rc, mid)
     assert broadcaster.subscribe(topic="t", callback=lambda x, y: None) is None
 
     # Connection established but subscription raises exception
@@ -136,7 +138,8 @@ def test_mqtt_broadcaster_on_connect_fail():
 def test_mqtt_broadcaster_on_message_callback_error():
     """Test callback failures don't crash the message loop."""
     broadcaster = MQTTBroadcaster("localhost", 1883)
-    def failing_callback(t: str, p: Any): # pyright: ignore[reportUnusedParameter]
+
+    def failing_callback(t: str, p: Any):  # pyright: ignore[reportUnusedParameter]
         raise Exception("callback explosion")
 
     broadcaster.subscriptions["sub1"] = ("test/topic", failing_callback)
@@ -146,7 +149,7 @@ def test_mqtt_broadcaster_on_message_callback_error():
     msg.payload = b"test payload"
 
     # Should log error but not raise
-    broadcaster._on_message(None, None, msg) # pyright: ignore[reportPrivateUsage, reportArgumentType]
+    broadcaster._on_message(None, None, msg)  # pyright: ignore[reportPrivateUsage, reportArgumentType]
 
 
 def test_mqtt_broadcaster_topic_matches_edge_cases():
@@ -160,15 +163,18 @@ def test_mqtt_broadcaster_topic_matches_edge_cases():
     # Plus wildcard
     assert broadcaster._topic_matches("home/+/temp", "home/kitchen/temp") is True
     assert broadcaster._topic_matches("home/+/temp", "home/kitchen/humidity") is False
-    assert broadcaster._topic_matches("home/+/temp", "home/living/dining/temp") is False # Multi level
+    assert (
+        broadcaster._topic_matches("home/+/temp", "home/living/dining/temp") is False
+    )  # Multi level
 
     # No wildcard mismatch
-    assert broadcaster._topic_matches("fixed/topic", "different/topic") is False # pyright: ignore[reportPrivateUsage]
+    assert broadcaster._topic_matches("fixed/topic", "different/topic") is False  # pyright: ignore[reportPrivateUsage]
 
 
 # ============================================================================
 # NoOpBroadcaster Tests
 # ============================================================================
+
 
 def test_noop_broadcaster_more():
     """Test NoOpBroadcaster failure returns."""

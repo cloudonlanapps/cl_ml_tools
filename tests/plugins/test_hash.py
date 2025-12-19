@@ -286,7 +286,7 @@ def test_sha512_video_algo_with_real_video(sample_video_path: Path):
     # We need to provide a valid CSV row that matches at least one frame in the file
     # For a 30s HD video, there are definitely many I-frames.
     # Let's mock a simple one-frame hash for testing the loop.
-    mock_csv = "0,10,I\n" # offset 0, size 10, type I
+    mock_csv = "0,10,I\n"  # offset 0, size 10, type I
 
     mock_result = MagicMock()
     mock_result.returncode = 0
@@ -334,6 +334,7 @@ def test_sha512_video_algo_consistency(sample_video_path: Path):
 def test_sha512_video_algo_errors(sample_video_path: Path):
     """Test SHA512 video hash error handling."""
     from cl_ml_tools.plugins.hash.algo.video import UnsupportedMediaType
+
     bytes_io = BytesIO(b"dummy data")
 
     # 1. Timeout
@@ -369,18 +370,18 @@ def test_sha512_video_algo_errors(sample_video_path: Path):
     with patch("subprocess.run", return_value=mock_res):
         with patch.object(bytes_io, "read", side_effect=OSError("read fail")):
             with pytest.raises(UnsupportedMediaType, match="Error processing video data"):
-                 sha512hash_video2(bytes_io)
+                sha512hash_video2(bytes_io)
 
     # 7. Incomplete read
-    bytes_io = BytesIO(b"enough data to pass validate_csv") # say 20 bytes
-    bytes_io.getbuffer().nbytes # ensuring it's 20
+    bytes_io = BytesIO(b"enough data to pass validate_csv")  # say 20 bytes
+    bytes_io.getbuffer().nbytes  # ensuring it's 20
     # Actually just create it with 20 bytes
     bytes_io = BytesIO(b"A" * 20)
     mock_res = MagicMock(returncode=0, stdout=b"0,10,I\n")
     with patch("subprocess.run", return_value=mock_res):
-        with patch.object(bytes_io, "read", return_value=b"short"): # returns 5 bytes instead of 10
+        with patch.object(bytes_io, "read", return_value=b"short"):  # returns 5 bytes instead of 10
             with pytest.raises(UnsupportedMediaType, match="Failed to read complete frame"):
-                 sha512hash_video2(bytes_io)
+                sha512hash_video2(bytes_io)
 
 
 # ============================================================================
@@ -411,12 +412,23 @@ async def test_hash_task_run_success_md5(sample_image_path: Path, file_storage, 
 
     # Mock storage with resolve_path
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> Any: return None
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> Any:
+            return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
+
         def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / job_id / relative_path
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -465,12 +477,23 @@ async def test_hash_task_run_success_sha512(sample_image_path: Path, tmp_path: P
 
     # Mock storage with resolve_path
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> Any: return None
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> Any:
+            return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
+
         def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / job_id / relative_path
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -508,12 +531,23 @@ async def test_hash_task_run_file_not_found(tmp_path: Path):
 
     # Mock storage with resolve_path
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> Any: return None
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> Any:
+            return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
+
         def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             return tmp_path / job_id / relative_path
 
@@ -545,12 +579,23 @@ async def test_hash_task_progress_callback(sample_image_path: Path, tmp_path: Pa
 
     # Mock storage with resolve_path
     class MockStorage:
-        def create_directory(self, job_id: str) -> None: pass
-        def remove(self, job_id: str) -> bool: return True
-        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> Any: return None
-        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def create_directory(self, job_id: str) -> None:
+            pass
+
+        def remove(self, job_id: str) -> bool:
+            return True
+
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+        ) -> Any:
+            return None
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
+            return None
+
         def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
             return tmp_path / job_id / (relative_path or "")
+
         def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / job_id / relative_path
             output_path.parent.mkdir(parents=True, exist_ok=True)

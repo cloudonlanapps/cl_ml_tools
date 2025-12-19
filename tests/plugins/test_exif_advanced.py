@@ -18,11 +18,14 @@ def test_metadata_extractor_init_fail():
             MetadataExtractor()
 
 
-@pytest.mark.parametrize("exception", [
-    FileNotFoundError,
-    subprocess.CalledProcessError(1, ["exiftool"]),
-    subprocess.TimeoutExpired(["exiftool"], 5)
-])
+@pytest.mark.parametrize(
+    "exception",
+    [
+        FileNotFoundError,
+        subprocess.CalledProcessError(1, ["exiftool"]),
+        subprocess.TimeoutExpired(["exiftool"], 5),
+    ],
+)
 def test_is_exiftool_available_exceptions(exception):
     """Test is_exiftool_available handles various exceptions."""
     with patch("subprocess.run", side_effect=exception):
@@ -51,7 +54,10 @@ def test_extract_metadata_called_process_error():
     with patch.object(MetadataExtractor, "is_exiftool_available", return_value=True):
         extractor = MetadataExtractor()
         with patch("pathlib.Path.exists", return_value=True):
-            with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error")):
+            with patch(
+                "subprocess.run",
+                side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error"),
+            ):
                 assert extractor.extract_metadata("file.jpg", ["Artist"]) == {}
 
 
@@ -97,7 +103,10 @@ def test_extract_metadata_all_exceptions():
                     extractor.extract_metadata_all("file.jpg")
 
             # CalledProcessError
-            with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error")):
+            with patch(
+                "subprocess.run",
+                side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error"),
+            ):
                 assert extractor.extract_metadata_all("file.jpg") == {}
 
             # Timeout
