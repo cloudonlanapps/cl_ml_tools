@@ -62,17 +62,19 @@ def pytest_runtest_setup(item):
         pytest.fail(
             "FFmpeg not installed. "
             "Install: brew install ffmpeg (macOS) or apt-get install ffmpeg (Linux)\n"
-            "Or exclude with: pytest -m 'not requires_ffmpeg'"
+            "Or exclude with: pytest -m 'not requires_ffmpeg'",
+            pytrace=False,
         )
 
     # Check ExifTool
-    if item.get_closest_marker("requires_exiftool"):
-        if not shutil.which("exiftool"):
-            pytest.fail(
-                "ExifTool not installed. "
-                "Install: brew install exiftool (macOS) or apt-get install libimage-exiftool-perl (Linux)\n"
-                "Or exclude with: pytest -m 'not requires_exiftool'"
-            )
+    if item.get_closest_marker("requires_exiftool") and not shutil.which("exiftool"):
+        pytest.fail(
+            "ExifTool not installed. "
+            "Install: brew install exiftool (macOS) or "
+            "apt-get install libimage-exiftool-perl (Linux)\n"
+            "Or exclude with: pytest -m 'not requires_exiftool'",
+            pytrace=False,
+        )
 
     # Check ML models (verify models directory exists with expected files)
     if item.get_closest_marker("requires_models"):
@@ -82,7 +84,8 @@ def pytest_runtest_setup(item):
         if not model_dir.exists() or not any(model_dir.iterdir()):
             pytest.fail(
                 "ML models not downloaded. Models are downloaded on first use.\n"
-                "Or exclude with: pytest -m 'not requires_models'"
+                "Or exclude with: pytest -m 'not requires_models'",
+                pytrace=False,
             )
 
 
@@ -143,7 +146,7 @@ def validate_test_media():
                 errors.append(
                     f"Checksum mismatch: {relative_path}\n"
                     f"  Expected: {expected_md5}\n"
-                    f"  Actual:   {actual_md5}"
+                    f"  Actual:   {actual_md5}",
                 )
 
     if errors:
@@ -206,7 +209,7 @@ def sample_video_path() -> Path:
         pytest.fail(
             f"OpenCV (cv2) not installed. Required for video generation.\n"
             f"Install with: pip install opencv-python\n"
-            f"Error: {exc}"
+            f"Error: {exc}",
         )
     except RuntimeError as exc:
         pytest.fail(f"Video generation failed: {exc}")
@@ -326,7 +329,7 @@ def job_repository():
             updates_dict: dict[str, Any] = (
                 updates.model_dump(exclude_none=True)
                 if hasattr(updates, "model_dump")
-                else cast("dict[str, Any]", updates)
+                else cast("dict[str, Any]", cast("Any", updates))
             )
             for key, value in updates_dict.items():
                 if hasattr(job, key):

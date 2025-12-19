@@ -42,7 +42,7 @@ def generate_hls_test_video(
     except ImportError as e:
         raise ImportError(
             "OpenCV (cv2) is required for video generation. "
-            + "Install with: pip install opencv-python"
+             "Install with: pip install opencv-python",
         ) from e
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -75,7 +75,7 @@ def generate_hls_test_video(
     try:
         logger.info(
             f"Generating test video: {output_path} "
-            + f"({duration_seconds}s, {width}x{height} @ {fps}fps)"
+             f"({duration_seconds}s, {width}x{height} @ {fps}fps)",
         )
 
         generator = VideoGenerator(
@@ -95,7 +95,7 @@ def generate_hls_test_video(
 
         file_size = output_path.stat().st_size
         logger.info(
-            f"Generated test video: {output_path} " + f"({file_size:,} bytes, {duration_seconds}s)"
+            f"Generated test video: {output_path} " + f"({file_size:,} bytes, {duration_seconds}s)",
         )
 
         return output_path

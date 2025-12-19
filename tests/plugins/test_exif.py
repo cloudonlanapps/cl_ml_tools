@@ -14,9 +14,9 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.file_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
 
+from cl_ml_tools.common.file_storage import JobStorage, SavedJobFile
 from cl_ml_tools.plugins.exif.algo.exif_tool_wrapper import MetadataExtractor
 from cl_ml_tools.plugins.exif.schema import ExifMetadataOutput, ExifMetadataParams
 from cl_ml_tools.plugins.exif.task import ExifTask
@@ -202,10 +202,14 @@ async def test_exif_task_run_success(sample_image_path: Path, tmp_path: Path):
 
     # Mock storage
     class MockStorage:
-        def resolve_path(self, job_id: str, relative_path: str) -> Path:
-            return tmp_path / job_id / relative_path
-
-        def allocate_path(self, job_id: str, relative_path: str) -> Path:
+        def create_directory(self, job_id: str) -> None: pass
+        def remove(self, job_id: str) -> bool: return True
+        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> SavedJobFile:
+            return SavedJobFile(relative_path=relative_path, size=0, hash=None)
+        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
+            return tmp_path / job_id / (relative_path or "")
+        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / "output" / "exif.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -245,10 +249,14 @@ async def test_exif_task_run_with_specific_tags(sample_image_path: Path, tmp_pat
     job_id = "test-job-456"
 
     class MockStorage:
-        def resolve_path(self, job_id: str, relative_path: str) -> Path:
-            return tmp_path / job_id / relative_path
-
-        def allocate_path(self, job_id: str, relative_path: str) -> Path:
+        def create_directory(self, job_id: str) -> None: pass
+        def remove(self, job_id: str) -> bool: return True
+        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> SavedJobFile:
+            return SavedJobFile(relative_path=relative_path, size=0, hash=None)
+        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
+            return tmp_path / job_id / (relative_path or "")
+        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / "output" / "exif.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -274,10 +282,14 @@ async def test_exif_task_run_file_not_found(tmp_path: Path):
     job_id = "test-job-789"
 
     class MockStorage:
-        def resolve_path(self, job_id: str, relative_path: str) -> Path:
-            return tmp_path / job_id / relative_path
-
-        def allocate_path(self, job_id: str, relative_path: str) -> Path:
+        def create_directory(self, job_id: str) -> None: pass
+        def remove(self, job_id: str) -> bool: return True
+        async def save(self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True) -> SavedJobFile:
+            return SavedJobFile(relative_path=relative_path, size=0, hash=None)
+        async def open(self, job_id: str, relative_path: str) -> Any: return None
+        def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
+            return tmp_path / job_id / (relative_path or "")
+        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / "output" / "exif.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path
@@ -306,22 +318,24 @@ async def test_exif_task_progress_callback(sample_image_path: Path, tmp_path: Pa
     job_id = "test-job-progress"
 
     class MockStorage:
-        def create_directory(self, _id: str) -> None:
+        def create_directory(self, job_id: str) -> None:
             pass
 
-        def remove(self, _id: str) -> bool:
+        def remove(self, job_id: str) -> bool:
             return True
 
-        async def save(self, _id, _path, _file, **_k) -> Any:
+        async def save(
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
+        ) -> SavedJobFile:
+            return SavedJobFile(relative_path=relative_path, size=0, hash=None)
+
+        async def open(self, job_id: str, relative_path: str) -> Any:
             return None
 
-        async def open(self, _id, _path) -> Any:
-            return None
+        def resolve_path(self, job_id: str, relative_path: str | None = None) -> Path:
+            return tmp_path / job_id / (relative_path or "")
 
-        def resolve_path(self, job_id: str, relative_path: str) -> Path:
-            return tmp_path / job_id / relative_path
-
-        def allocate_path(self, job_id: str, relative_path: str) -> Path:
+        def allocate_path(self, job_id: str, relative_path: str, *, mkdirs: bool = True) -> Path:
             output_path = tmp_path / "output" / "exif.json"
             output_path.parent.mkdir(parents=True, exist_ok=True)
             return output_path

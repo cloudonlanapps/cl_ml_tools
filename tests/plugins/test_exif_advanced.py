@@ -53,12 +53,11 @@ def test_extract_metadata_called_process_error():
     """Test extract_metadata handles subprocess failure."""
     with patch.object(MetadataExtractor, "is_exiftool_available", return_value=True):
         extractor = MetadataExtractor()
-        with patch("pathlib.Path.exists", return_value=True):
-            with patch(
-                "subprocess.run",
-                side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error"),
-            ):
-                assert extractor.extract_metadata("file.jpg", ["Artist"]) == {}
+        with patch("pathlib.Path.exists", return_value=True), patch(
+            "subprocess.run",
+            side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error"),
+        ):
+            assert extractor.extract_metadata("file.jpg", ["Artist"]) == {}
 
 
 def test_extract_metadata_timeout():

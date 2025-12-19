@@ -230,7 +230,7 @@ def test_sha512_image_algo_synthetic_image(synthetic_image: Path):
 
 
 def test_sha512_image_different_images_different_hashes(
-    sample_image_path: Path, synthetic_image: Path
+    sample_image_path: Path, synthetic_image: Path,
 ):
     """Test different images produce different SHA512 hashes."""
     with open(sample_image_path, "rb") as f:
@@ -251,7 +251,7 @@ def test_sha512_image_different_images_different_hashes(
 
 
 def test_hash_different_media_types_produce_different_hashes(
-    sample_image_path: Path, tmp_path: Path
+    sample_image_path: Path, tmp_path: Path,
 ):
     """Test same data with different media type detection produces different hashes."""
     # Read image data
@@ -419,7 +419,7 @@ async def test_hash_task_run_success_md5(sample_image_path: Path, file_storage, 
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -484,7 +484,7 @@ async def test_hash_task_run_success_sha512(sample_image_path: Path, tmp_path: P
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -538,7 +538,7 @@ async def test_hash_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -586,7 +586,7 @@ async def test_hash_task_progress_callback(sample_image_path: Path, tmp_path: Pa
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 

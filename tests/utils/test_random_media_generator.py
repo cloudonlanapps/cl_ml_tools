@@ -114,8 +114,8 @@ def test_media_list_validation_requires_out_dir():
                     "width": 800,
                     "height": 600,
                     "fileName": "test",
-                }
-            ]
+                },
+            ],
         )
 
 
@@ -131,7 +131,7 @@ def test_media_list_validation_with_image_type(tmp_path: Path):
                     "width": 800,
                     "height": 600,
                     "fileName": "test",
-                }
+                },
             ],
         )
 
@@ -148,7 +148,7 @@ def test_media_list_validation_with_video_type(tmp_path: Path):
                     "width": 1920,
                     "height": 1080,
                     "fileName": "test",
-                }
+                },
             ],
         )
 
@@ -165,7 +165,7 @@ def test_media_list_validation_invalid_mime_type(tmp_path: Path):
                     "width": 800,
                     "height": 600,
                     "fileName": "test",
-                }
+                },
             ],
         )
 
@@ -263,7 +263,7 @@ def test_random_media_generator_validation_error_message(tmp_path: Path):
                     "height": 600,
                     "fileName": "test",
                     # Missing required 'frame' field
-                }
+                },
             ],
         )
 
@@ -319,7 +319,7 @@ def test_image_generation_with_shapes(tmp_path: Path):
                 "height": 100,
                 "fileName": "test_shapes",
                 "frame": {"background_color": [255, 0, 0], "num_shapes": 5},
-            }
+            },
         ],
     )
 
@@ -343,9 +343,9 @@ def test_video_generation_with_scenes(tmp_path: Path):
                 "fileName": "test_video",
                 "fps": 10,
                 "scenes": [
-                    {"duration_seconds": 1, "background_color": [0, 255, 0], "num_shapes": 2}
+                    {"duration_seconds": 1, "background_color": [0, 255, 0], "num_shapes": 2},
                 ],
-            }
+            },
         ],
     )
 
@@ -374,7 +374,7 @@ def test_image_generation_with_metadata(tmp_path: Path):
                     "CreateDate": datetime(2023, 1, 1, 12, 0, 0),
                     "UserComments": ["Test Comment"],
                 },
-            }
+            },
         ],
     )
 
@@ -397,7 +397,7 @@ def test_scene_generator_num_frames():
 
     with pytest.raises(JSONValidationError, match="Invalid Color"):
         _ = FrameGenerator(
-            background_color=(255, 0, 0)
+            background_color=(255, 0, 0),
         )  # Fixed to 3 values, but should still fail if that's what's intended?
         # Actually, the test was testing that [255, 0] is invalid.
         # But FrameGenerator expects a tuple or None.
@@ -438,7 +438,7 @@ def test_animated_shapes_direct_draw():
     # Test each animated shape
     BouncingCircle(center=(50, 50), radius=10, color=(255, 0, 0), dx=2, dy=2).draw(frame)
     MovingLine(center=(50, 50), length=20, angle_degrees=45, color=(0, 255, 0), dx=5, dy=5).draw(
-        frame
+        frame,
     )
     PulsatingTriangle(center=(50, 50), base_size=20, color=(0, 0, 255), pulse_speed=0.1).draw(frame)
     RotatingSquare(center=(50, 50), size=20, color=(255, 255, 0), angular_speed=3).draw(frame)
@@ -454,7 +454,7 @@ def test_exif_metadata_video_logic():
 
     # Test video branches
     meta = ExifMetadata(
-        MIMEType="video/mp4", CreateDate=datetime(2023, 1, 1), UserComments=["Video Comment"]
+        MIMEType="video/mp4", CreateDate=datetime(2023, 1, 1), UserComments=["Video Comment"],
     )
     # We call these to trigger the cmd expansion logic
     meta.updateCreateDate()
@@ -479,10 +479,9 @@ def test_exif_metadata_write_errors():
     # 2. CalledProcessError
     meta = ExifMetadata(MIMEType="image/jpeg", CreateDate=datetime(2023, 1, 1))
     with patch(
-        "subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error")
-    ):
-        with pytest.raises(Exception, match="Error calling ExifTool"):
-            meta.write("file.jpg")
+        "subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error"),
+    ), pytest.raises(Exception, match="Error calling ExifTool"):
+        meta.write("file.jpg")
 
     # 3. FileNotFoundError (ExifTool not found)
     with patch("subprocess.run", side_effect=FileNotFoundError()):

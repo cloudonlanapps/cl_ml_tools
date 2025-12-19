@@ -142,7 +142,7 @@ def test_face_detection_output_schema_validation():
 def mock_face_detector():
     """Fixture for FaceDetector with mocked ONNX session."""
     with patch(
-        "cl_ml_tools.plugins.face_detection.algo.face_detector.ort.InferenceSession"
+        "cl_ml_tools.plugins.face_detection.algo.face_detector.ort.InferenceSession",
     ) as mock_sess:
         # Mock session input/output names
         mock_instance = mock_sess.return_value
@@ -216,7 +216,7 @@ def test_face_detector_postprocess_center_format(mock_face_detector):
 
     original_size = (1000, 1000)
     detections: list[dict[str, Any]] = mock_face_detector.postprocess(
-        [boxes, scores], original_size
+        [boxes, scores], original_size,
     )
 
     assert len(detections) == 1
@@ -242,7 +242,7 @@ def test_face_detector_postprocess_corner_format(mock_face_detector):
 
     original_size = (1000, 1000)
     detections: list[dict[str, Any]] = mock_face_detector.postprocess(
-        [boxes, scores], original_size
+        [boxes, scores], original_size,
     )
 
     assert len(detections) == 1
@@ -380,7 +380,7 @@ async def test_face_detection_task_run_success(sample_image_path: Path, tmp_path
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> "SavedJobFile":
             from cl_ml_tools.common.file_storage import SavedJobFile
 
@@ -441,7 +441,7 @@ async def test_face_detection_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 

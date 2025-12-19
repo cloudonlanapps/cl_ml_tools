@@ -26,10 +26,7 @@ def check_exiftool_installed() -> bool:
             text=True,
             timeout=5,
         )
-        if result.returncode == 0:
-            print(f"✓ ExifTool version: {result.stdout.strip()}")
-            return True
-        return False
+        return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return False
 
@@ -74,8 +71,6 @@ def generate_gps_image() -> Path:
         capture_output=True,
     )
 
-    print(f"  ✓ Created: {output_path.name}")
-    print("    GPS: 37.7749° N, 122.4194° W")
     return output_path
 
 
@@ -105,8 +100,6 @@ def generate_camera_settings_image() -> Path:
         capture_output=True,
     )
 
-    print(f"  ✓ Created: {output_path.name}")
-    print("    Camera: Canon EOS R5, ISO 400, f/2.8, 1/100s")
     return output_path
 
 
@@ -132,8 +125,6 @@ def generate_datetime_image() -> Path:
         capture_output=True,
     )
 
-    print(f"  ✓ Created: {output_path.name}")
-    print("    DateTime: 2024-01-15 14:30:00")
     return output_path
 
 
@@ -165,8 +156,6 @@ def generate_all_metadata_image() -> Path:
         capture_output=True,
     )
 
-    print(f"  ✓ Created: {output_path.name}")
-    print("    GPS + Camera + DateTime (New York)")
     return output_path
 
 
@@ -187,8 +176,6 @@ def generate_no_exif_image() -> Path:
         capture_output=True,
     )
 
-    print(f"  ✓ Created: {output_path.name}")
-    print("    No EXIF metadata")
     return output_path
 
 
@@ -233,35 +220,19 @@ def update_manifest(generated_files: list[Path]) -> None:
             for entry in new_entries:
                 _ = f.write(entry + "\n")
 
-    print(f"\n✓ Updated manifest: {MANIFEST_FILE.relative_to(TESTS_DIR)}")
-    print(f"  Added {len(new_entries)} EXIF test images")
 
 
 def main() -> None:
     """Main execution function."""
-    print("=" * 70)
-    print("Generating EXIF test media for cl_ml_tools")
-    print("=" * 70)
-    print()
 
     # Check exiftool
-    print("Step 1: Checking for exiftool...")
     if not check_exiftool_installed():
-        print("\n❌ Error: exiftool not found!")
-        print("\nPlease install exiftool:")
-        print("  macOS:  brew install exiftool")
-        print("  Linux:  apt-get install libimage-exiftool-perl")
         return
-    print()
 
     # Create output directory
-    print("Step 2: Creating output directory...")
     TARGET_DIR.mkdir(parents=True, exist_ok=True)
-    print(f"  ✓ Created: {TARGET_DIR.relative_to(TESTS_DIR)}")
-    print()
 
     # Generate test images
-    print("Step 3: Generating test images with EXIF metadata...")
     generated_files: list[Path] = []
 
     generated_files.append(generate_gps_image())
@@ -270,23 +241,12 @@ def main() -> None:
     generated_files.append(generate_all_metadata_image())
     generated_files.append(generate_no_exif_image())
 
-    print(f"\n  ✓ Generated {len(generated_files)} test images")
-    print()
 
     # Update manifest
-    print("Step 4: Updating MANIFEST.md5...")
     update_manifest(generated_files)
-    print()
 
-    print("=" * 70)
-    print("✓ EXIF test media generation complete!")
-    print("=" * 70)
-    print()
-    print("Generated files:")
-    for file_path in generated_files:
-        print(f"  - {file_path.relative_to(TESTS_DIR)}")
-    print()
-    print("These files can now be used in EXIF extraction tests with known metadata.")
+    for _file_path in generated_files:
+        pass
 
 
 if __name__ == "__main__":

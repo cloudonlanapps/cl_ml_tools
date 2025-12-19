@@ -147,7 +147,7 @@ def test_clip_algo_consistency(sample_image_path: Path):
 
 @pytest.mark.requires_models
 def test_clip_algo_different_images_different_embeddings(
-    sample_image_path: Path, synthetic_image: Path
+    sample_image_path: Path, synthetic_image: Path,
 ):
     """Test different images produce different embeddings."""
     from cl_ml_tools.plugins.clip_embedding.algo.clip_embedder import ClipEmbedder
@@ -206,7 +206,7 @@ async def test_clip_task_run_success(sample_image_path: Path, tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -258,7 +258,7 @@ async def test_clip_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 

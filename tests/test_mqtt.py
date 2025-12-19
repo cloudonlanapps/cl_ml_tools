@@ -50,7 +50,7 @@ def skip_if_no_mqtt():
     if not is_mqtt_running():
         pytest.fail(
             "MQTT broker not running on localhost:1883.\n"
-            "Start broker or exclude MQTT tests with: pytest -m 'not mqtt'"
+            "Start broker or exclude MQTT tests with: pytest -m 'not mqtt'",
         )
 
 
@@ -106,7 +106,7 @@ class TestNoOpBroadcaster:
                     "event_type": "test",
                     "job_id": "job-123",
                     "status": "processing",
-                }
+                },
             ),
         )
         assert result is True
@@ -119,7 +119,7 @@ class TestNoOpBroadcaster:
     def test_publish_retained(self, noop_broadcaster: NoOpBroadcaster):
         """Test NoOp publish_retained always succeeds."""
         result: bool = noop_broadcaster.publish_retained(
-            topic="test/retained", payload="test message"
+            topic="test/retained", payload="test message",
         )
         assert result is True
 
@@ -131,7 +131,7 @@ class TestNoOpBroadcaster:
     def test_subscribe(self, noop_broadcaster: NoOpBroadcaster):
         """Test NoOp subscribe returns None."""
         result: str | None = noop_broadcaster.subscribe(
-            topic="test/topic", callback=lambda topic, payload: None, qos=1
+            topic="test/topic", callback=lambda topic, payload: None, qos=1,
         )
         assert result is None
 
@@ -158,7 +158,7 @@ class TestMQTTBroadcaster:
         if not is_mqtt_running():
             pytest.fail(
                 "MQTT broker is not running on localhost:1883. "
-                + "Please start MQTT broker to run these tests."
+                 "Please start MQTT broker to run these tests.",
             )
 
     def test_init_without_broker(self):
@@ -220,7 +220,7 @@ class TestMQTTBroadcaster:
                     "job_id": job_id,
                     "status": "processing",
                     "progress": 0.0,
-                }
+                },
             ),
         )
 
@@ -242,7 +242,7 @@ class TestMQTTBroadcaster:
                     "job_id": job_id,
                     "progress": 50,
                     "status": "processing",
-                }
+                },
             ),
         )
         assert result is True
@@ -259,7 +259,7 @@ class TestMQTTBroadcaster:
                     "job_id": "job-123",
                     "event_type": "test",
                     "timestamp": int(time.time() * 1000),
-                }
+                },
             ),
         )
 
@@ -308,7 +308,7 @@ class TestMQTTBroadcaster:
 
         # Set will after connecting (limitation of current implementation)
         result: bool = broadcaster.set_will(
-            topic=will_topic, payload=will_payload, qos=1, retain=True
+            topic=will_topic, payload=will_payload, qos=1, retain=True,
         )
         assert result is True
 
@@ -397,7 +397,7 @@ class TestMQTTBroadcaster:
 
         # Subscribe first
         subscription_id: str | None = mqtt_broadcaster.subscribe(
-            topic=test_topic, callback=callback
+            topic=test_topic, callback=callback,
         )
         assert subscription_id is not None
 
@@ -413,7 +413,7 @@ class TestMQTTBroadcaster:
         assert result is False
 
     def test_multiple_subscriptions_same_topic(
-        self, mqtt_broadcaster: MQTTBroadcaster, test_topic: str
+        self, mqtt_broadcaster: MQTTBroadcaster, test_topic: str,
     ):
         """Test multiple callbacks for same topic."""
         _ = mqtt_broadcaster.connect()
@@ -505,19 +505,19 @@ class TestMQTTBroadcaster:
 
         # QoS 0
         id0: str | None = mqtt_broadcaster.subscribe(
-            topic=f"{test_topic}/qos0", callback=callback, qos=0
+            topic=f"{test_topic}/qos0", callback=callback, qos=0,
         )
         assert id0 is not None
 
         # QoS 1
         id1: str | None = mqtt_broadcaster.subscribe(
-            topic=f"{test_topic}/qos1", callback=callback, qos=1
+            topic=f"{test_topic}/qos1", callback=callback, qos=1,
         )
         assert id1 is not None
 
         # QoS 2
         id2: str | None = mqtt_broadcaster.subscribe(
-            topic=f"{test_topic}/qos2", callback=callback, qos=2
+            topic=f"{test_topic}/qos2", callback=callback, qos=2,
         )
         assert id2 is not None
 
@@ -543,7 +543,7 @@ class TestGlobalBroadcaster:
         skip_if_no_mqtt()
 
         broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="mqtt", broker="localhost", port=1883
+            broadcast_type="mqtt", broker="localhost", port=1883,
         )
 
         assert isinstance(broadcaster, MQTTBroadcaster)
@@ -552,7 +552,7 @@ class TestGlobalBroadcaster:
     def test_get_broadcaster_noop(self):
         """Test getting NoOp broadcaster."""
         broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="noop", broker="localhost", port=1883
+            broadcast_type="noop", broker="localhost", port=1883,
         )
 
         assert isinstance(broadcaster, NoOpBroadcaster)
@@ -560,11 +560,11 @@ class TestGlobalBroadcaster:
     def test_get_broadcaster_singleton(self):
         """Test that get_broadcaster returns same instance."""
         broadcaster1: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="noop", broker="localhost", port=1883
+            broadcast_type="noop", broker="localhost", port=1883,
         )
 
         broadcaster2: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="noop", broker="localhost", port=1883
+            broadcast_type="noop", broker="localhost", port=1883,
         )
 
         assert broadcaster1 is broadcaster2
@@ -572,7 +572,7 @@ class TestGlobalBroadcaster:
     def test_shutdown_broadcaster(self):
         """Test shutting down global broadcaster."""
         broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="noop", broker="localhost", port=1883
+            broadcast_type="noop", broker="localhost", port=1883,
         )
 
         assert broadcaster is not None
@@ -581,7 +581,7 @@ class TestGlobalBroadcaster:
 
         # After shutdown, getting broadcaster should create new instance
         new_broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="noop", broker="localhost", port=1883
+            broadcast_type="noop", broker="localhost", port=1883,
         )
 
         assert new_broadcaster is not broadcaster
@@ -590,14 +590,14 @@ class TestGlobalBroadcaster:
         """Test switching broadcaster type (NoOp to MQTT and back)."""
         # Start with NoOp
         broadcaster1: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="noop", broker="localhost", port=1883
+            broadcast_type="noop", broker="localhost", port=1883,
         )
         assert isinstance(broadcaster1, NoOpBroadcaster)
 
         # Switch to MQTT (if broker is running)
         if is_mqtt_running():
             broadcaster2: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-                broadcast_type="mqtt", broker="localhost", port=1883
+                broadcast_type="mqtt", broker="localhost", port=1883,
             )
             assert isinstance(broadcaster2, MQTTBroadcaster)
             assert broadcaster2 is not broadcaster1
@@ -605,7 +605,7 @@ class TestGlobalBroadcaster:
 
             # Switch back to NoOp
             broadcaster3: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-                broadcast_type="noop", broker="localhost", port=1883
+                broadcast_type="noop", broker="localhost", port=1883,
             )
             assert isinstance(broadcaster3, NoOpBroadcaster)
             assert broadcaster3 is not broadcaster2
@@ -613,12 +613,12 @@ class TestGlobalBroadcaster:
     def test_broadcaster_config_change(self):
         """Test changing broker configuration forces new instance."""
         broadcaster1: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="noop", broker="localhost", port=1883
+            broadcast_type="noop", broker="localhost", port=1883,
         )
 
         # Change port should create new instance
         broadcaster2: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="noop", broker="localhost", port=1884
+            broadcast_type="noop", broker="localhost", port=1884,
         )
         assert broadcaster2 is not broadcaster1
 
@@ -626,7 +626,7 @@ class TestGlobalBroadcaster:
         """Test get_broadcaster with invalid MQTT configuration."""
         # This should create a broadcaster but fail to connect
         broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
-            broadcast_type="mqtt", broker="invalid-host", port=9999
+            broadcast_type="mqtt", broker="invalid-host", port=9999,
         )
         # Broadcaster is created but not connected
         assert isinstance(broadcaster, MQTTBroadcaster)
@@ -647,7 +647,7 @@ class TestMQTTIntegration:
 
         # Job started
         _ = mqtt_broadcaster.publish_event(
-            topic=test_topic, payload=json.dumps({"status": "processing"})
+            topic=test_topic, payload=json.dumps({"status": "processing"}),
         )
 
         # Job failed
@@ -673,7 +673,7 @@ class TestMQTTSubscription:
 
         # Subscribe
         subscription_id: str | None = mqtt_broadcaster.subscribe(
-            topic=test_topic, callback=callback
+            topic=test_topic, callback=callback,
         )
         assert subscription_id is not None
 
@@ -717,7 +717,7 @@ class TestMQTTSubscription:
         assert received_messages == messages
 
     def test_multiple_subscriptions_same_topic_both_called(
-        self, mqtt_broadcaster: MQTTBroadcaster, test_topic: str
+        self, mqtt_broadcaster: MQTTBroadcaster, test_topic: str,
     ):
         """Test multiple callbacks to same topic all invoked."""
         _ = mqtt_broadcaster.connect()
@@ -789,7 +789,7 @@ class TestMQTTSubscription:
 
         # Subscribe and receive first message
         subscription_id: str | None = mqtt_broadcaster.subscribe(
-            topic=test_topic, callback=callback
+            topic=test_topic, callback=callback,
         )
         assert subscription_id is not None
         time.sleep(0.2)
@@ -925,7 +925,7 @@ class TestBroadcasterMethods:
             if not hasattr(broadcaster, "clear_retained"):
                 pytest.fail(
                     "clear_retained method not yet implemented in cl_server_shared.\n"
-                    "Update cl_server_shared package to include this method."
+                    "Update cl_server_shared package to include this method.",
                 )
 
             assert callable(broadcaster.clear_retained)

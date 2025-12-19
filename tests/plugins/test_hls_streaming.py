@@ -162,7 +162,7 @@ async def test_hls_streaming_task_run_success(sample_video_path: Path, tmp_path:
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -210,7 +210,7 @@ async def test_hls_streaming_task_creates_master_playlist(sample_video_path: Pat
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -253,7 +253,7 @@ async def test_hls_streaming_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -298,7 +298,7 @@ async def test_hls_streaming_task_progress_callback(sample_video_path: Path, tmp
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -370,7 +370,7 @@ async def test_hls_streaming_task_audio_only_failure(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -416,7 +416,7 @@ async def test_hls_streaming_task_with_original(sample_video_path: Path, tmp_pat
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -474,7 +474,7 @@ def test_hls_streaming_route_job_submission(api_client: "TestClient", sample_vid
 
 @pytest.mark.requires_ffmpeg
 def test_hls_streaming_route_with_custom_variants(
-    api_client: "TestClient", sample_video_path: Path
+    api_client: "TestClient", sample_video_path: Path,
 ):
     """Test job submission with custom variant configuration."""
 

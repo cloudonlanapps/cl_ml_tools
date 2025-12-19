@@ -197,7 +197,8 @@ def test_face_embedding_algo_consistency(sample_image_path: Path):
     if embedding1 is not None and embedding2 is not None:
         assert np.allclose(cast("Any", embedding1), cast("Any", embedding2), rtol=1e-5)
     else:
-        assert embedding1 is None and embedding2 is None
+        assert embedding1 is None
+        assert embedding2 is None
 
 
 @pytest.mark.requires_models
@@ -261,7 +262,7 @@ async def test_face_embedding_task_run_success(sample_image_path: Path, tmp_path
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 
@@ -306,7 +307,7 @@ async def test_face_embedding_task_run_file_not_found(tmp_path: Path):
             return True
 
         async def save(
-            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True
+            self, job_id: str, relative_path: str, file: Any, *, mkdirs: bool = True,
         ) -> Any:
             return None
 

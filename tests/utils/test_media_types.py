@@ -282,7 +282,7 @@ def test_contains_url_regex_pattern():
     """Test contains_url regex pattern matches expected formats."""
     # The regex should be strict about URL format
     pattern = re.compile(
-        r"^http[s]?:\/\/(?:[a-zA-Z0-9\-._~:/?#[\]@!$&\'()*+,;=]|%[0-9a-fA-F][0-9a-fA-F])+$"
+        r"^http[s]?:\/\/(?:[a-zA-Z0-9\-._~:/?#[\]@!$&\'()*+,;=]|%[0-9a-fA-F][0-9a-fA-F])+$",
     )
 
     assert pattern.match("https://example.com") is not None

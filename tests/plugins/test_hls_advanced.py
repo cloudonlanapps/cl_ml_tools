@@ -63,7 +63,7 @@ def test_hls_generator_check_stream_exception():
             side_effect=[True, True],
         ):
             with patch(
-                "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan"
+                "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan",
             ):
                 gen = HLSStreamGenerator("input.mp4", "/tmp/out")
 
@@ -80,7 +80,7 @@ def test_hls_generator_update_failures():
         return_value=True,
     ):
         with patch(
-            "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan"
+            "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan",
         ):
             gen = HLSStreamGenerator("input.mp4", "/tmp/out")
 
@@ -100,22 +100,20 @@ def test_hls_generator_update_failures():
                         gen.update([HLSVariant(720, 3500)])
 
     # Simulate empty master playlist
-    with patch.object(gen, "run_command"):
+    with patch.object(gen, "run_command"), patch(
+        "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.os.path.exists",
+        return_value=True,
+    ):
+        mock_pl = MagicMock()
+        mock_pl.playlists = []
         with patch(
-            "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.os.path.exists",
-            return_value=True,
-        ):
-            mock_pl = MagicMock()
-            mock_pl.playlists = []
-            with patch(
-                "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.m3u8.load",
-                return_value=mock_pl,
+            "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.m3u8.load",
+            return_value=mock_pl,
+        ), patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.os.remove"):
+            with pytest.raises(
+                InternalServerError, match="no stream found in the create master_pl",
             ):
-                with patch("cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.os.remove"):
-                    with pytest.raises(
-                        InternalServerError, match="no stream found in the create master_pl"
-                    ):
-                        gen.update([HLSVariant(720, 3500)])
+                gen.update([HLSVariant(720, 3500)])
 
 
 def test_hls_generator_add_variants_errors():
@@ -125,7 +123,7 @@ def test_hls_generator_add_variants_errors():
         return_value=True,
     ):
         with patch(
-            "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan"
+            "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan",
         ):
             gen = HLSStreamGenerator("input.mp4", "/tmp/out")
 
@@ -146,18 +144,17 @@ def test_hls_generator_add_original_validation_fail():
         return_value=True,
     ):
         with patch(
-            "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan"
+            "cl_ml_tools.plugins.hls_streaming.algo.hls_stream_generator.HLSStreamGenerator.scan",
         ):
             gen = HLSStreamGenerator("input.mp4", "/tmp/out")
 
-    with patch.object(gen, "createOriginal"):
-        with patch.object(
-            HLSVariant, "check", side_effect=[False, False]
-        ):  # Fails before and after create
-            with pytest.raises(
-                InternalServerError, match="is either invalid or partial or corrupted"
-            ):
-                gen.addOriginal()
+    with patch.object(gen, "createOriginal"), patch.object(
+        HLSVariant, "check", side_effect=[False, False],
+    ):  # Fails before and after create
+        with pytest.raises(
+            InternalServerError, match="is either invalid or partial or corrupted",
+        ):
+            gen.addOriginal()
 
 
 # ============================================================================
@@ -197,7 +194,7 @@ def test_hls_validator_missing_segments():
     with patch("os.path.exists", side_effect=exists_mock):
         mock_master = MagicMock()
         mock_master.playlists = [
-            MagicMock(uri="variant.m3u8", stream_info=MagicMock(bandwidth=1000))
+            MagicMock(uri="variant.m3u8", stream_info=MagicMock(bandwidth=1000)),
         ]
 
         mock_variant = MagicMock()
@@ -223,7 +220,7 @@ def test_hls_validator_exception():
 def test_validate_hls_output_failure():
     """Test validate_hls_output returns error string on failure."""
     with patch(
-        "cl_ml_tools.plugins.hls_streaming.algo.hls_validator.HLSValidator.validate"
+        "cl_ml_tools.plugins.hls_streaming.algo.hls_validator.HLSValidator.validate",
     ) as mock_val:
         mock_result = MagicMock()
         mock_result.is_valid = False

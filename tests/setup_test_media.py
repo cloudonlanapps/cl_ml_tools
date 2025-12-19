@@ -38,7 +38,7 @@ def copy_test_media() -> list[tuple[Path, str]]:
     if not SOURCE_DIR.exists():
         raise FileNotFoundError(
             f"Source directory not found: {SOURCE_DIR}\n"
-            f"Please ensure test media is available at this location."
+            f"Please ensure test media is available at this location.",
         )
 
     # Create target directory structure
@@ -58,7 +58,6 @@ def copy_test_media() -> list[tuple[Path, str]]:
                 relative_path = dst_file.relative_to(TESTS_DIR)
                 md5_hash = calculate_md5(dst_file)
                 manifest_entries.append((relative_path, md5_hash))
-                print(f"  Copied: {relative_path}")
 
     # Copy videos
     if (SOURCE_DIR / "videos").exists():
@@ -69,7 +68,6 @@ def copy_test_media() -> list[tuple[Path, str]]:
                 relative_path = dst_file.relative_to(TESTS_DIR)
                 md5_hash = calculate_md5(dst_file)
                 manifest_entries.append((relative_path, md5_hash))
-                print(f"  Copied: {relative_path}")
 
     # Copy audio
     if (SOURCE_DIR / "audio").exists():
@@ -80,7 +78,6 @@ def copy_test_media() -> list[tuple[Path, str]]:
                 relative_path = dst_file.relative_to(TESTS_DIR)
                 md5_hash = calculate_md5(dst_file)
                 manifest_entries.append((relative_path, md5_hash))
-                print(f"  Copied: {relative_path}")
 
     return manifest_entries
 
@@ -89,7 +86,6 @@ def create_keep_file() -> None:
     """Create .keep file in test_media directory for git."""
     keep_file = TARGET_DIR / ".keep"
     keep_file.write_text("# Placeholder file for git - test_media/ is not committed\n")
-    print(f"  Created: {keep_file.relative_to(TESTS_DIR)}")
 
 
 def generate_manifest(entries: list[tuple[Path, str]]) -> None:
@@ -115,42 +111,18 @@ def generate_manifest(entries: list[tuple[Path, str]]) -> None:
             path_str = str(relative_path).replace("\\", "/")
             f.write(f"{md5_hash}  {path_str}\n")
 
-    print(f"\n✓ Generated manifest: {MANIFEST_FILE.relative_to(TESTS_DIR)}")
-    print(f"  Total files: {len(entries)}")
 
 
 def main() -> None:
     """Main execution function."""
-    print("=" * 70)
-    print("Setting up test media for cl_ml_tools")
-    print("=" * 70)
-    print()
 
-    print(f"Source: {SOURCE_DIR}")
-    print(f"Target: {TARGET_DIR}")
-    print()
 
-    print("Step 1: Copying test media files...")
     manifest_entries = copy_test_media()
-    print(f"  ✓ Copied {len(manifest_entries)} files")
-    print()
 
-    print("Step 2: Creating .keep file...")
     create_keep_file()
-    print()
 
-    print("Step 3: Generating MANIFEST.md5...")
     generate_manifest(manifest_entries)
-    print()
 
-    print("=" * 70)
-    print("✓ Test media setup complete!")
-    print("=" * 70)
-    print()
-    print("Next steps:")
-    print("  1. Run: python tests/generate_exif_test_media.py")
-    print("  2. Commit MANIFEST.md5 to git")
-    print("  3. Add test_media/ to .gitignore (only .keep should be tracked)")
 
 
 if __name__ == "__main__":
