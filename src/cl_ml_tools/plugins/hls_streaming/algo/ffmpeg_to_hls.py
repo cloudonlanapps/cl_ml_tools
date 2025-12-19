@@ -25,7 +25,7 @@ class FFMPEGCommands:
             raise NotFound("Input file does not exist")
 
         if not os.path.exists(output_dir):
-            os.makedirs(output_dir, exist_ok=True)
+            raise NotFound("Output directory does not exist")
 
         # ─────────────────────────────────────────────
         # Filter complex

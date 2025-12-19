@@ -35,6 +35,9 @@ def video_thumbnail(
     if not input_path.exists():
         raise FileNotFoundError(f"Input file not found: {input_path}")
 
+    if not output_path.parent.exists():
+        raise FileNotFoundError(f"Output directory not found: {output_path.parent}")
+
     # Default to 256x256 if neither specified
     if width is None and height is None:
         width = 256
