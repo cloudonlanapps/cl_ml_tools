@@ -5,10 +5,11 @@ Tests schema validation, MD5/SHA512 algorithms, task execution, routes, and full
 
 import json
 import hashlib
+import subprocess
 from io import BytesIO
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
+from unittest.mock import patch, MagicMock
+import numpy as np
 import pytest
 from PIL import Image
 
@@ -324,35 +325,56 @@ def test_sha512_video_algo_consistency(sample_video_path: Path):
 
 
 @pytest.mark.requires_ffmpeg
-def test_sha512_video_algo_invalid_csv(sample_video_path: Path):
-    """Test SHA512 video hash handles invalid CSV from ffprobe."""
-    bytes_io = BytesIO(b"data")
+def test_sha512_video_algo_errors(sample_video_path: Path):
+    """Test SHA512 video hash error handling."""
+    from cl_ml_tools.plugins.hash.algo.video import UnsupportedMediaType
+    bytes_io = BytesIO(b"dummy data")
     
-    mock_result = MagicMock()
-    mock_result.returncode = 0
-    mock_result.stdout = b"invalid,row\n" # Only 2 columns
-    
-    with patch("subprocess.run", return_value=mock_result):
-        from cl_ml_tools.plugins.hash.algo.video import UnsupportedMediaType
+    # 1. Timeout
+    with patch("subprocess.run", side_effect=subprocess.TimeoutExpired("cmd", 30)):
+        with pytest.raises(UnsupportedMediaType, match="ffprobe command timed out"):
+            sha512hash_video2(bytes_io)
+            
+    # 2. OSError
+    with patch("subprocess.run", side_effect=OSError("fail")):
+        with pytest.raises(UnsupportedMediaType, match="An error occurred while running ffprobe"):
+            sha512hash_video2(bytes_io)
+            
+    # 3. Non-zero return code
+    mock_res = MagicMock(returncode=1, stderr=b"some error")
+    with patch("subprocess.run", return_value=mock_res):
+        with pytest.raises(UnsupportedMediaType, match="ffprobe error: some error"):
+            sha512hash_video2(bytes_io)
+            
+    # 4. Empty output
+    mock_res = MagicMock(returncode=0, stdout=b"  \n")
+    with patch("subprocess.run", return_value=mock_res):
+        with pytest.raises(UnsupportedMediaType, match="No data returned from ffprobe"):
+            sha512hash_video2(bytes_io)
+
+    # 5. Invalid CSV values
+    mock_res = MagicMock(returncode=0, stdout=b"abc,10,I\n")
+    with patch("subprocess.run", return_value=mock_res):
         with pytest.raises(UnsupportedMediaType, match="CSV data is invalid"):
             sha512hash_video2(bytes_io)
 
-    # Another case: passes validation but fails in loop (e.g. invalid type)
-    # Actually validate_csv also checks for int types, so we need to bypass it 
-    # Or just hit another branch.
-    # If validate_csv passes, but a row has 4 columns?
-    # Actually iterate over rows.
-    
-    # Let's hit the "Invalid offset or size in CSV" branch
-    # But wait, validate_csv ALREADY checks this.
-    # Ah, sha512hash_video2 calls validate_csv(csv_output, video_size)
-    # THEN it processes the rows again.
-    
-    # Let's hit the "Frame data out of bounds" branch
-    mock_result.stdout = b"1000,10,I\n" # offset 1000 is > video size
-    with patch("subprocess.run", return_value=mock_result):
-        with pytest.raises(UnsupportedMediaType, match="CSV data is invalid"):
-             sha512hash_video2(bytes_io)
+    # 6. Read failure (IOError)
+    mock_res = MagicMock(returncode=0, stdout=b"0,10,I\n")
+    with patch("subprocess.run", return_value=mock_res):
+        with patch.object(bytes_io, "read", side_effect=IOError("read fail")):
+            with pytest.raises(UnsupportedMediaType, match="Error processing video data"):
+                 sha512hash_video2(bytes_io)
+
+    # 7. Incomplete read
+    bytes_io = BytesIO(b"enough data to pass validate_csv") # say 20 bytes
+    bytes_io.getbuffer().nbytes # ensuring it's 20
+    # Actually just create it with 20 bytes
+    bytes_io = BytesIO(b"A" * 20)
+    mock_res = MagicMock(returncode=0, stdout=b"0,10,I\n")
+    with patch("subprocess.run", return_value=mock_res):
+        with patch.object(bytes_io, "read", return_value=b"short"): # returns 5 bytes instead of 10
+            with pytest.raises(UnsupportedMediaType, match="Failed to read complete frame"):
+                 sha512hash_video2(bytes_io)
 
 
 # ============================================================================

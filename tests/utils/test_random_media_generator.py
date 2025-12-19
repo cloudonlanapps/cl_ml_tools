@@ -2,9 +2,9 @@
 
 Tests media list validation, MIME type support, configuration, and actual media generation.
 """
-
 from pathlib import Path
-
+from unittest.mock import patch, MagicMock
+import subprocess
 import numpy as np
 import pytest
 from pydantic import ValidationError
@@ -457,3 +457,28 @@ def test_exif_metadata_video_logic():
     assert "QuickTime:CreateDate" in cmd_str
     assert "QuickTime:Comment" in cmd_str
     assert meta.has_metadata is True
+
+
+def test_exif_metadata_write_errors():
+    """Test ExifMetadata.write error handling."""
+    from datetime import datetime
+    from cl_ml_tools.utils.random_media_generator.exif_metadata import ExifMetadata
+    
+    # 1. Empty metadata
+    meta = ExifMetadata(MIMEType="image/jpeg")
+    meta.write("file.jpg") # Should just print and return
+    
+    # 2. CalledProcessError
+    meta = ExifMetadata(MIMEType="image/jpeg", CreateDate=datetime(2023, 1, 1))
+    with patch("subprocess.run", side_effect=subprocess.CalledProcessError(1, "cmd", stderr="error")):
+        with pytest.raises(Exception, match="Error calling ExifTool"):
+            meta.write("file.jpg")
+            
+    # 3. FileNotFoundError (ExifTool not found)
+    with patch("subprocess.run", side_effect=FileNotFoundError()):
+        with pytest.raises(Exception, match="ExifTool not found"):
+            meta.write("file.jpg")
+
+    # 4. General Exception
+    with patch("subprocess.run", side_effect=RuntimeError("unknown")):
+        meta.write("file.jpg") # Should just log warning/print
