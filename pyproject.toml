@@ -4,7 +4,7 @@ version = "0.2.1"
 description = "Tools for master-worker media processing / ML - provides task plugins, worker runtime, and protocols for job persistence and file storage"
 readme = "README.md"
 requires-python = ">=3.12"
-license = {text = "MIT"}
+license = { file = "LICENSE" }
 authors = [
     {name = "Ananda Sarangaram"}
 ]
