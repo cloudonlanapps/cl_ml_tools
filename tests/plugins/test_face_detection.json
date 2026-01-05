@@ -1,0 +1,12 @@
+[
+    {
+        "absolute_path": "/Users/anandasarangaram/Work/cl_server/test_vectors/images/test_face_single.jpg",
+        "expected_count": 1,
+        "exact_match": true
+    },
+    {
+        "absolute_path": "/Users/anandasarangaram/Work/cl_server/test_vectors/images/test_face_multiple.jpg",
+        "expected_count": 3,
+        "exact_match": false
+    }
+]
