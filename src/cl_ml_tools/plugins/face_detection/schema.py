@@ -24,12 +24,23 @@ class FaceDetectionParams(BaseJobParams):
 
 class FaceLandmarks(BaseModel):
     """Facial landmarks with normalized coordinates [0.0, 1.0]."""
-    
+
+    model_config = {"ser_json_timedelta": "float", "ser_json_bytes": "base64"}
+
     right_eye: tuple[float, float] = Field(..., description="Right eye (x, y)")
     left_eye: tuple[float, float] = Field(..., description="Left eye (x, y)")
     nose_tip: tuple[float, float] = Field(..., description="Nose tip (x, y)")
     mouth_right: tuple[float, float] = Field(..., description="Right mouth corner (x, y)")
     mouth_left: tuple[float, float] = Field(..., description="Left mouth corner (x, y)")
+
+    def model_dump(self, **kwargs):
+        """Override to ensure tuples are serialized as lists for JSON compatibility."""
+        data = super().model_dump(**kwargs)
+        # Convert tuples to lists for JSON serialization
+        for key in ['right_eye', 'left_eye', 'nose_tip', 'mouth_right', 'mouth_left']:
+            if key in data and isinstance(data[key], tuple):
+                data[key] = list(data[key])
+        return data
 
     def to_absolute(self, width: int, height: int) -> dict[str, tuple[int, int]]:
         return {
