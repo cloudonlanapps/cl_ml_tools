@@ -9,7 +9,7 @@ from PIL import Image
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
 from .algo.face_detector import FaceDetector
-from .schema import BoundingBox, FaceDetectionOutput, FaceDetectionParams
+from .schema import BBox, DetectedFace, FaceDetectionOutput, FaceDetectionParams, FaceLandmarks
 
 logger = logging.getLogger(__name__)
 
@@ -62,16 +62,32 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
         with Image.open(input_path) as img:
             image_width, image_height = img.size
 
-        faces = [
-            BoundingBox(
-                x1=det["x1"],
-                y1=det["y1"],
-                x2=det["x2"],
-                y2=det["y2"],
-                confidence=det["confidence"],
+        faces = []
+        for det in detections:
+            # Normalize bounding box
+            bbox = BBox(
+                x1=max(0.0, min(1.0, det.bbox.x1 / image_width)),
+                y1=max(0.0, min(1.0, det.bbox.y1 / image_height)),
+                x2=max(0.0, min(1.0, det.bbox.x2 / image_width)),
+                y2=max(0.0, min(1.0, det.bbox.y2 / image_height)),
             )
-            for det in detections
-        ]
+            
+            # Normalize landmarks
+            landmarks = FaceLandmarks(
+                right_eye=(det.landmarks.right_eye[0] / image_width, det.landmarks.right_eye[1] / image_height),
+                left_eye=(det.landmarks.left_eye[0] / image_width, det.landmarks.left_eye[1] / image_height),
+                nose_tip=(det.landmarks.nose_tip[0] / image_width, det.landmarks.nose_tip[1] / image_height),
+                mouth_right=(det.landmarks.mouth_right[0] / image_width, det.landmarks.mouth_right[1] / image_height),
+                mouth_left=(det.landmarks.mouth_left[0] / image_width, det.landmarks.mouth_left[1] / image_height),
+            )
+
+            faces.append(
+                DetectedFace(
+                    bbox=bbox,
+                    confidence=det.confidence,
+                    landmarks=landmarks,
+                )
+            )
 
         output = FaceDetectionOutput(
             faces=faces,

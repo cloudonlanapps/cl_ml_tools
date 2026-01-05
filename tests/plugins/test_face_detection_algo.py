@@ -53,6 +53,13 @@ class TestFaceDetectorIntegration:
                         failures.append(
                             f"Case {image_path.name}: Expected at least {case.expected_count} faces, found {count}"
                         )
+                
+                # Check for landmarks in first detection if any found
+                if count > 0:
+                    first_det = detections[0]
+                    # Check if landmarks attribute exists and has data (basic check)
+                    if not first_det.landmarks:
+                         failures.append(f"Case {image_path.name}: Landmarks missing in detection")
             except Exception as e:
                 failures.append(
                     f"Case {image_path.name}: Exception during detection - {str(e)}"

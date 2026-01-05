@@ -6,10 +6,10 @@ Model File: face_detection_yunet_2023mar.onnx
 
 import logging
 from pathlib import Path
-from typing import TypedDict
 
 import cv2
 import numpy as np
+from pydantic import BaseModel
 from PIL import Image
 
 from ....utils.model_downloader import get_model_downloader
@@ -22,12 +22,25 @@ MODEL_FILENAME = "face_detection_yunet_2023mar.onnx"
 MODEL_SHA256: str | None = None
 
 
-class FaceDetection(TypedDict):
+class FaceLandmarks(BaseModel):
+    right_eye: tuple[float, float]
+    left_eye: tuple[float, float]
+    nose_tip: tuple[float, float]
+    mouth_right: tuple[float, float]
+    mouth_left: tuple[float, float]
+
+
+class BBox(BaseModel):
     x1: float
     y1: float
     x2: float
     y2: float
+
+
+class FaceDetection(BaseModel):
+    bbox: BBox
     confidence: float
+    landmarks: FaceLandmarks
 
 
 class FaceDetector:
@@ -96,15 +109,27 @@ class FaceDetector:
         if faces is not None:
             for face in faces:
                 x1, y1, w, h = face[0:4]
+                # Landmarks are pairs from index 4 to 13 (5 points)
+                # re_x, re_y, le_x, le_y, nt_x, nt_y, rcm_x, rcm_y, lcm_x, lcm_y
+                landmarks = FaceLandmarks(
+                    right_eye=(float(face[4]), float(face[5])),
+                    left_eye=(float(face[6]), float(face[7])),
+                    nose_tip=(float(face[8]), float(face[9])),
+                    mouth_right=(float(face[10]), float(face[11])),
+                    mouth_left=(float(face[12]), float(face[13])),
+                )
                 confidence = face[14]
                 
                 detections.append(
                     FaceDetection(
-                        x1=float(x1),
-                        y1=float(y1),
-                        x2=float(x1 + w),
-                        y2=float(y1 + h),
+                        bbox=BBox(
+                            x1=float(x1),
+                            y1=float(y1),
+                            x2=float(x1 + w),
+                            y2=float(y1 + h),
+                        ),
                         confidence=float(confidence),
+                        landmarks=landmarks,
                     )
                 )
 

@@ -22,39 +22,60 @@ class FaceDetectionParams(BaseJobParams):
     )
 
 
-class BoundingBox(BaseModel):
-    """Bounding box for a detected face.
+class FaceLandmarks(BaseModel):
+    """Facial landmarks with normalized coordinates [0.0, 1.0]."""
+    
+    right_eye: tuple[float, float] = Field(..., description="Right eye (x, y)")
+    left_eye: tuple[float, float] = Field(..., description="Left eye (x, y)")
+    nose_tip: tuple[float, float] = Field(..., description="Nose tip (x, y)")
+    mouth_right: tuple[float, float] = Field(..., description="Right mouth corner (x, y)")
+    mouth_left: tuple[float, float] = Field(..., description="Left mouth corner (x, y)")
 
-    Coordinates are normalized to [0.0, 1.0] range relative to image dimensions.
-    """
+    def to_absolute(self, width: int, height: int) -> dict[str, tuple[int, int]]:
+        return {
+            "right_eye": (int(self.right_eye[0] * width), int(self.right_eye[1] * height)),
+            "left_eye": (int(self.left_eye[0] * width), int(self.left_eye[1] * height)),
+            "nose_tip": (int(self.nose_tip[0] * width), int(self.nose_tip[1] * height)),
+            "mouth_right": (int(self.mouth_right[0] * width), int(self.mouth_right[1] * height)),
+            "mouth_left": (int(self.mouth_left[0] * width), int(self.mouth_left[1] * height)),
+        }
 
+
+class BBox(BaseModel):
+    """Bounding box with normalized coordinates [0.0, 1.0]."""
     x1: float = Field(..., ge=0.0, le=1.0, description="Left coordinate (normalized)")
     y1: float = Field(..., ge=0.0, le=1.0, description="Top coordinate (normalized)")
     x2: float = Field(..., ge=0.0, le=1.0, description="Right coordinate (normalized)")
     y2: float = Field(..., ge=0.0, le=1.0, description="Bottom coordinate (normalized)")
-    confidence: float = Field(..., ge=0.0, le=1.0, description="Detection confidence score")
 
-    def to_absolute(self, image_width: int, image_height: int) -> dict[str, int]:
-        """Convert normalized coordinates to absolute pixel coordinates.
-
-        Args:
-            image_width: Image width in pixels
-            image_height: Image height in pixels
-
-        Returns:
-            Dict with absolute pixel coordinates (x1, y1, x2, y2)
-        """
+    def to_absolute(self, width: int, height: int) -> dict[str, int]:
         return {
-            "x1": int(self.x1 * image_width),
-            "y1": int(self.y1 * image_height),
-            "x2": int(self.x2 * image_width),
-            "y2": int(self.y2 * image_height),
+            "x1": int(self.x1 * width),
+            "y1": int(self.y1 * height),
+            "x2": int(self.x2 * width),
+            "y2": int(self.y2 * height),
+        }
+
+
+class DetectedFace(BaseModel):
+    """Detected face with bounding box and landmarks."""
+    
+    bbox: BBox = Field(..., description="Face bounding box")
+    confidence: float = Field(..., ge=0.0, le=1.0, description="Detection confidence score")
+    landmarks: FaceLandmarks = Field(..., description="Detected facial landmarks")
+
+    def to_absolute(self, image_width: int, image_height: int) -> dict:
+        """Convert all coordinates to absolute pixel values."""
+        return {
+            **self.bbox.to_absolute(image_width, image_height),
+            "confidence": self.confidence,
+            "landmarks": self.landmarks.to_absolute(image_width, image_height),
         }
 
 
 class FaceDetectionOutput(TaskOutput):
-    faces: list[BoundingBox] = Field(
-        default_factory=list, description="List of detected faces with bounding boxes"
+    faces: list[DetectedFace] = Field(
+        default_factory=list, description="List of detected faces"
     )
     num_faces: int = Field(..., description="Total number of faces detected")
     image_width: int = Field(..., description="Input image width in pixels")
