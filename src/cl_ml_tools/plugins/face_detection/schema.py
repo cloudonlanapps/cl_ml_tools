@@ -63,6 +63,7 @@ class DetectedFace(BaseModel):
     bbox: BBox = Field(..., description="Face bounding box")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Detection confidence score")
     landmarks: FaceLandmarks = Field(..., description="Detected facial landmarks")
+    file_path: str = Field(..., description="Relative path to the cropped face image")
 
     def to_absolute(self, image_width: int, image_height: int) -> dict:
         """Convert all coordinates to absolute pixel values."""
@@ -70,6 +71,7 @@ class DetectedFace(BaseModel):
             **self.bbox.to_absolute(image_width, image_height),
             "confidence": self.confidence,
             "landmarks": self.landmarks.to_absolute(image_width, image_height),
+            "file_path": self.file_path,
         }
 
 

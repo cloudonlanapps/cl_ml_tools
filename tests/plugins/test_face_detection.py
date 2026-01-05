@@ -109,7 +109,12 @@ def test_detected_face_to_absolute():
         mouth_right=(0.3, 0.7),
         mouth_left=(0.6, 0.7),
     )
-    face = DetectedFace(bbox=bbox, confidence=0.9, landmarks=landmarks)
+    face = DetectedFace(
+        bbox=bbox, 
+        confidence=0.9, 
+        landmarks=landmarks, 
+        file_path="faces/face_0.png"
+    )
 
     absolute = face.to_absolute(image_width=1000, image_height=800)
 
@@ -122,6 +127,9 @@ def test_detected_face_to_absolute():
     # Landmarks check
     assert absolute["landmarks"]["right_eye"] == (200, 240)
     assert absolute["landmarks"]["nose_tip"] == (500, 400)
+    
+    # File path check
+    assert absolute["file_path"] == "faces/face_0.png"
 
 
 def test_face_detection_output_schema_validation():
@@ -134,7 +142,12 @@ def test_face_detection_output_schema_validation():
         mouth_right=(0.25, 0.4),
         mouth_left=(0.35, 0.4),
     )
-    face = DetectedFace(bbox=bbox, confidence=0.9, landmarks=landmarks)
+    face = DetectedFace(
+        bbox=bbox, 
+        confidence=0.9, 
+        landmarks=landmarks, 
+        file_path="faces/face_0.png"
+    )
 
     output = FaceDetectionOutput(
         faces=[face],
@@ -287,6 +300,16 @@ async def test_face_detection_task_run_success(sample_image_path: Path, tmp_path
     assert output.num_faces >= 0
     assert output.image_width > 0
     assert output.image_height > 0
+
+    # Verify output faces
+    for i, face in enumerate(output.faces):
+        assert face.file_path == f"faces/face_{i}.png"
+        face_file = tmp_path / job_id / "faces" / f"face_{i}.png"
+        assert face_file.exists(), f"Face file {face_file} does not exist"
+        # Check if valid image
+        with Image.open(face_file) as f_img:
+            assert f_img.width > 0
+            assert f_img.height > 0
 
     # Verify output file
     output_file = tmp_path / job_id / "output" / "faces.json"

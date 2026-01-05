@@ -1,13 +1,15 @@
 """Face detection task implementation."""
 
+import cv2
 import json
 import logging
-from typing import Callable, override
-
+import numpy as np
 from PIL import Image
+from typing import Callable, override
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
+from .algo.face_aligner import align_and_crop
 from .algo.face_detector import FaceDetector
 from .schema import BBox, DetectedFace, FaceDetectionOutput, FaceDetectionParams, FaceLandmarks
 
@@ -59,11 +61,16 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
             nms_threshold=params.nms_threshold,
         )
 
-        with Image.open(input_path) as img:
-            image_width, image_height = img.size
+        # Read image for alignment
+        img_cv = cv2.imread(str(input_path))
+        if img_cv is None:
+             raise RuntimeError(f"Failed to read image with OpenCV: {input_path}")
+        
+        # Get dimensions for normalization (could also use img_cv.shape)
+        image_height, image_width = img_cv.shape[:2]
 
         faces = []
-        for det in detections:
+        for i, det in enumerate(detections):
             # Normalize bounding box
             bbox = BBox(
                 x1=max(0.0, min(1.0, det.bbox.x1 / image_width)),
@@ -81,13 +88,40 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
                 mouth_left=(det.landmarks.mouth_left[0] / image_width, det.landmarks.mouth_left[1] / image_height),
             )
 
-            faces.append(
-                DetectedFace(
-                    bbox=bbox,
-                    confidence=det.confidence,
-                    landmarks=landmarks,
+            # Align and crop face
+            # Landmark order: [Right Eye, Left Eye, Nose, Right Mouth, Left Mouth]
+            lm_points = [
+                det.landmarks.right_eye,
+                det.landmarks.left_eye,
+                det.landmarks.nose_tip,
+                det.landmarks.mouth_right,
+                det.landmarks.mouth_left,
+            ]
+            
+            try:
+                aligned_face, _ = align_and_crop(img_cv, lm_points)
+                
+                # Save cropped face
+                face_relative_path = f"faces/face_{i}.png"
+                face_abs_path = storage.allocate_path(job_id, face_relative_path)
+                cv2.imwrite(str(face_abs_path), aligned_face)
+                
+                faces.append(
+                    DetectedFace(
+                        bbox=bbox,
+                        confidence=det.confidence,
+                        landmarks=landmarks,
+                        file_path=face_relative_path,
+                    )
                 )
-            )
+            except Exception as e:
+                logger.warning(f"Failed to align/crop face {i}: {e}")
+                # Should we skip or include without file_path?
+                # Schema requires file_path. For now, skipping failed alignments or failing task?
+                # Given strict schema, failing or skipping is needed. 
+                # Let's skip safely but log error, or maybe raise if critical. 
+                # Requirement implies we MUST save. 
+                raise RuntimeError(f"Face alignment failed for face {i}") from e
 
         output = FaceDetectionOutput(
             faces=faces,
