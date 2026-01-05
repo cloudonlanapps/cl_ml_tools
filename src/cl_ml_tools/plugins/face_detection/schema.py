@@ -70,11 +70,22 @@ class BBox(BaseModel):
 
 class DetectedFace(BaseModel):
     """Detected face with bounding box and landmarks."""
-    
+
     bbox: BBox = Field(..., description="Face bounding box")
     confidence: float = Field(..., ge=0.0, le=1.0, description="Detection confidence score")
     landmarks: FaceLandmarks = Field(..., description="Detected facial landmarks")
     file_path: str = Field(..., description="Relative path to the cropped face image")
+
+    def model_dump(self, **kwargs):
+        """Override to ensure landmarks tuples are serialized as lists."""
+        data = super().model_dump(**kwargs)
+        # Ensure landmarks dict has lists instead of tuples
+        if 'landmarks' in data and isinstance(data['landmarks'], dict):
+            landmarks_data = data['landmarks']
+            for key in ['right_eye', 'left_eye', 'nose_tip', 'mouth_right', 'mouth_left']:
+                if key in landmarks_data and isinstance(landmarks_data[key], tuple):
+                    landmarks_data[key] = list(landmarks_data[key])
+        return data
 
     def to_absolute(self, image_width: int, image_height: int) -> dict:
         """Convert all coordinates to absolute pixel values."""

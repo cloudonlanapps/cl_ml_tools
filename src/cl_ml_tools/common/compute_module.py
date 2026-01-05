@@ -63,7 +63,7 @@ class ComputeModule(ABC, Generic[P, Q]):
 
             return JobRecordUpdate(
                 status=JobStatus.completed,
-                output=output.model_dump(),
+                output=output.model_dump(mode='json'),
                 progress=100,
             )
 
