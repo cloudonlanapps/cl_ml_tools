@@ -8,9 +8,7 @@ import logging
 from pathlib import Path
 
 import cv2
-import numpy as np
 from pydantic import BaseModel
-from PIL import Image
 
 from ....utils.model_downloader import get_model_downloader
 
@@ -64,7 +62,7 @@ class FaceDetector:
                 raise FileNotFoundError(f"Model file not found: {model_path}")
 
         logger.info("Loading face detection model from %s", model_path)
-        
+
         # Initialize YuNet
         # Input size will be set dynamically per image
         self._detector = cv2.FaceDetectorYN.create(
@@ -91,21 +89,21 @@ class FaceDetector:
         image = cv2.imread(str(image_path))
         if image is None:
             raise ValueError(f"Failed to load image: {image_path}")
-            
+
         height, width, _ = image.shape
-        
+
         # Update detector input size
         self._detector.setInputSize((width, height))
         self._detector.setScoreThreshold(confidence_threshold)
         self._detector.setNMSThreshold(nms_threshold)
-        
+
         # Run inference
         # faces: [1, num_faces, 15]
         # Format: x1, y1, w, h, x_re, y_re, x_le, y_le, x_nt, y_nt, x_rcm, y_rcm, x_lcm, y_lcm, confidence
         _, faces = self._detector.detect(image)
-        
+
         detections: list[FaceDetection] = []
-        
+
         if faces is not None:
             for face in faces:
                 x1, y1, w, h = face[0:4]
@@ -119,7 +117,7 @@ class FaceDetector:
                     mouth_left=(float(face[12]), float(face[13])),
                 )
                 confidence = face[14]
-                
+
                 detections.append(
                     FaceDetection(
                         bbox=BBox(

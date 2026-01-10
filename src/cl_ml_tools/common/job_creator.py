@@ -3,8 +3,8 @@ from uuid import uuid4
 
 from fastapi import UploadFile
 
-from .job_storage import JobStorage
 from .job_repository import JobRepository
+from .job_storage import JobStorage
 from .schema_job import Job, P, Q
 from .schema_job_record import JobCreatedResponse, JobStatus
 from .user import UserLike

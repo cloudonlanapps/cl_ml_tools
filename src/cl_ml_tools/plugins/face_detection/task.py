@@ -1,11 +1,10 @@
 """Face detection task implementation."""
 
-import cv2
 import json
 import logging
-import numpy as np
-from PIL import Image
 from typing import Callable, override
+
+import cv2
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
@@ -65,7 +64,7 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
         img_cv = cv2.imread(str(input_path))
         if img_cv is None:
              raise RuntimeError(f"Failed to read image with OpenCV: {input_path}")
-        
+
         # Get dimensions for normalization (could also use img_cv.shape)
         image_height, image_width = img_cv.shape[:2]
 
@@ -78,7 +77,7 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
                 x2=max(0.0, min(1.0, det.bbox.x2 / image_width)),
                 y2=max(0.0, min(1.0, det.bbox.y2 / image_height)),
             )
-            
+
             # Normalize landmarks
             landmarks = FaceLandmarks(
                 right_eye=(det.landmarks.right_eye[0] / image_width, det.landmarks.right_eye[1] / image_height),
@@ -97,15 +96,15 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
                 det.landmarks.mouth_right,
                 det.landmarks.mouth_left,
             ]
-            
+
             try:
                 aligned_face, _ = align_and_crop(img_cv, lm_points)
-                
+
                 # Save cropped face
                 face_relative_path = f"faces/face_{i}.png"
                 face_abs_path = storage.allocate_path(job_id, face_relative_path)
                 cv2.imwrite(str(face_abs_path), aligned_face)
-                
+
                 faces.append(
                     DetectedFace(
                         bbox=bbox,
@@ -118,9 +117,9 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
                 logger.warning(f"Failed to align/crop face {i}: {e}")
                 # Should we skip or include without file_path?
                 # Schema requires file_path. For now, skipping failed alignments or failing task?
-                # Given strict schema, failing or skipping is needed. 
-                # Let's skip safely but log error, or maybe raise if critical. 
-                # Requirement implies we MUST save. 
+                # Given strict schema, failing or skipping is needed.
+                # Let's skip safely but log error, or maybe raise if critical.
+                # Requirement implies we MUST save.
                 raise RuntimeError(f"Face alignment failed for face {i}") from e
 
         output = FaceDetectionOutput(

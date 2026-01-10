@@ -5,8 +5,8 @@ from typing import Callable, cast
 
 from fastapi import APIRouter
 
-from .common.job_storage import JobStorage
 from .common.job_repository import JobRepository
+from .common.job_storage import JobStorage
 from .common.user import UserLike
 
 # Type alias for route factory functions loaded from entry points

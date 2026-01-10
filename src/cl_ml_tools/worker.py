@@ -4,8 +4,8 @@ from importlib.metadata import entry_points
 from typing import cast
 
 from .common.compute_module import ComputeModule
-from .common.job_storage import JobStorage
 from .common.job_repository import JobRepository
+from .common.job_storage import JobStorage
 from .common.schema_job import BaseJobParams, TaskOutput
 from .common.schema_job_record import JobRecordUpdate, JobStatus
 

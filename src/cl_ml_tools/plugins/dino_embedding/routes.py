@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from cl_ml_tools.common.user import UserLike
 
-from ...common.job_storage import JobStorage
 from ...common.job_creator import create_job_from_upload
 from ...common.job_repository import JobRepository
+from ...common.job_storage import JobStorage
 from ...common.schema_job_record import JobCreatedResponse
 from .schema import DinoEmbeddingOutput, DinoEmbeddingParams
 
