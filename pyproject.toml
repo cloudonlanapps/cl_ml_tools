@@ -22,9 +22,7 @@ dependencies = [
     "fastapi>=0.100",
     "python-multipart>=0.0.6",
     "Pillow>=10.0",
-    "ruff>=0.14.9",
     "opencv-python-headless>=4.12.0.88",
-    "basedpyright>=1.36.1",
     "python-magic>=0.4.27",
     "pillow-heif>=1.1.1",
     "m3u8>=6.0.0",
@@ -42,6 +40,8 @@ dev = [
     "pytest-asyncio>=0.21",
     "pytest-cov>=4.0",
     "httpx>=0.24",
+    "basedpyright>=1.36.1",
+    "ruff>=0.14.9",
 ]
 all = [
     "cl_ml_tools[dev]",
@@ -121,8 +121,3 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "W", "F811", "F401"]
 ignore = ["E501"]
-
-[dependency-groups]
-dev = [
-    "ruff>=0.14.10",
-]
