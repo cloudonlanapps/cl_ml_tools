@@ -44,7 +44,7 @@ def create_router(
             output_type=DinoEmbeddingOutput,
             params_factory=lambda path: DinoEmbeddingParams(
                 input_path=path,
-                output_path="output/dino_embedding.nb",
+                output_path="output/dino_embedding.npy",
                 normalize=normalize,
             ),
         )
