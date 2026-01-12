@@ -7,9 +7,7 @@ Requires ML models downloaded.
 import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
-from unittest.mock import MagicMock, patch
 
-import numpy as np
 import pytest
 from PIL import Image
 
@@ -17,8 +15,8 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.job_storage import JobStorage, SavedJobFile
     from cl_ml_tools.common.job_repository import JobRepository
+    from cl_ml_tools.common.job_storage import JobStorage, SavedJobFile
 
 from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
 from cl_ml_tools.plugins.face_detection.schema import (
@@ -110,9 +108,9 @@ def test_detected_face_to_absolute():
         mouth_left=(0.6, 0.7),
     )
     face = DetectedFace(
-        bbox=bbox, 
-        confidence=0.9, 
-        landmarks=landmarks, 
+        bbox=bbox,
+        confidence=0.9,
+        landmarks=landmarks,
         file_path="faces/face_0.png"
     )
 
@@ -123,11 +121,11 @@ def test_detected_face_to_absolute():
     assert absolute["y1"] == 160
     assert absolute["x2"] == 800
     assert absolute["y2"] == 720
-    
+
     # Landmarks check
     assert absolute["landmarks"]["right_eye"] == (200, 240)
     assert absolute["landmarks"]["nose_tip"] == (500, 400)
-    
+
     # File path check
     assert absolute["file_path"] == "faces/face_0.png"
 
@@ -143,9 +141,9 @@ def test_face_detection_output_schema_validation():
         mouth_left=(0.35, 0.4),
     )
     face = DetectedFace(
-        bbox=bbox, 
-        confidence=0.9, 
-        landmarks=landmarks, 
+        bbox=bbox,
+        confidence=0.9,
+        landmarks=landmarks,
         file_path="faces/face_0.png"
     )
 
@@ -180,7 +178,6 @@ def test_face_detection_output_schema_validation():
 @pytest.mark.requires_models
 def test_face_detection_algo_basic(sample_image_path: Path):
     """Test basic face detection."""
-    from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
 
     detector = FaceDetector()
     faces = detector.detect(str(sample_image_path), confidence_threshold=0.5)
@@ -192,7 +189,6 @@ def test_face_detection_algo_basic(sample_image_path: Path):
 @pytest.mark.requires_models
 def test_face_detection_algo_returns_bounding_boxes(sample_image_path: Path):
     """Test face detection returns proper bounding box format."""
-    from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
 
     detector = FaceDetector()
     faces = detector.detect(str(sample_image_path), confidence_threshold=0.3)
@@ -207,7 +203,6 @@ def test_face_detection_algo_returns_bounding_boxes(sample_image_path: Path):
 @pytest.mark.requires_models
 def test_face_detection_algo_confidence_threshold(sample_image_path: Path):
     """Test confidence threshold filtering."""
-    from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
 
     detector = FaceDetector()
 
@@ -224,7 +219,6 @@ def test_face_detection_algo_confidence_threshold(sample_image_path: Path):
 @pytest.mark.requires_models
 def test_face_detection_algo_error_handling_invalid_file(tmp_path: Path):
     """Test face detection handles invalid image files."""
-    from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
 
     invalid_file = tmp_path / "invalid.jpg"
     _ = invalid_file.write_text("not an image")

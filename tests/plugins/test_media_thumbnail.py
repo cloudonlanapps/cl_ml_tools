@@ -15,8 +15,8 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
+    from cl_ml_tools.common.job_storage import JobStorage
 
 from cl_ml_tools.plugins.media_thumbnail.algo.image_thumbnail import (
     image_thumbnail,

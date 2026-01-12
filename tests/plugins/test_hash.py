@@ -17,8 +17,8 @@ if TYPE_CHECKING:
     from fastapi.testclient import TestClient
 
     from cl_ml_tools import Worker
-    from cl_ml_tools.common.job_storage import JobStorage
     from cl_ml_tools.common.job_repository import JobRepository
+    from cl_ml_tools.common.job_storage import JobStorage
 
 from cl_ml_tools.plugins.hash.algo.generic import sha512hash_generic
 from cl_ml_tools.plugins.hash.algo.image import sha512hash_image

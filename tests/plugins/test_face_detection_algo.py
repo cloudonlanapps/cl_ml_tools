@@ -1,6 +1,8 @@
-import pytest
 from pathlib import Path
+
+import pytest
 from pydantic import BaseModel, TypeAdapter
+
 from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
 
 CONFIDENCE_THRESHOLD = 0.8
@@ -53,7 +55,7 @@ class TestFaceDetectorIntegration:
                         failures.append(
                             f"Case {image_path.name}: Expected at least {case.expected_count} faces, found {count}"
                         )
-                
+
                 # Check for landmarks in first detection if any found
                 if count > 0:
                     first_det = detections[0]
