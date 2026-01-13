@@ -65,9 +65,9 @@ class MetadataExtractor:
             return parsed[0] if parsed else {}
 
         except subprocess.CalledProcessError as exc:
-            stderr = (
-                cast(str, exc.stderr) if exc.stderr is not None else ""
-            )  # pyright: ignore[reportAny]
+            # Cast stderr explicitly to str | None to satisfy basedpyright 'no Any' rule
+            raw_stderr = cast(str | None, exc.stderr)
+            stderr = raw_stderr if raw_stderr is not None else ""
             logger.warning(f"ExifTool failed for {path}: {stderr}")
             return {}
 
@@ -98,9 +98,9 @@ class MetadataExtractor:
             return parsed[0] if parsed else {}
 
         except subprocess.CalledProcessError as exc:
-            stderr = (
-                cast(str, exc.stderr) if exc.stderr is not None else ""
-            )  # pyright: ignore[reportAny]
+            # Cast stderr explicitly to str | None to satisfy basedpyright 'no Any' rule
+            raw_stderr = cast(str | None, exc.stderr)
+            stderr = raw_stderr if raw_stderr is not None else ""
             logger.warning(f"ExifTool failed for {path}: {stderr}")
             return {}
 

@@ -1,8 +1,16 @@
 {
-  "include": ["src"],
-  "exclude": ["**/__pycache__", "**/node_modules", ".venv"],
-  "extraPaths": ["src"],
-
-  // Avoid error with FastAPI's Depends
-  "reportCallInDefaultInitializer": "none",
+  "typeCheckingMode": "strict",
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/node_modules",
+    ".venv"
+  ],
+  "extraPaths": [
+    "src",
+    "typings"
+  ],
+  "reportCallInDefaultInitializer": "none"
 }

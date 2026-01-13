@@ -95,18 +95,30 @@ class FaceDetector:
             mat_array = mat_array.reshape(1, -1)
 
         faces: list[list[float]] = []
-        for row in mat_array:
+        for row_raw in mat_array:
+            # We cast to a specific type to help basedpyright
+            row: np.ndarray[tuple[int, ...], np.dtype[np.float32]] = cast(
+                np.ndarray[tuple[int, ...], np.dtype[np.float32]], row_raw
+            )
+
             # Ensure we have the expected 15 values
             if len(row) != 15:
                 # If it's still (1, N, 15) after squeeze it might look like this
                 if row.ndim > 1:
-                    for sub_row in row:
+                    row_2d_raw = cast(np.ndarray[tuple[int, int], np.dtype[np.float32]], row)
+                    for sub_row_raw in row_2d_raw:
+                        sub_row = cast(
+                            np.ndarray[tuple[int], np.dtype[np.float32]], sub_row_raw
+                        )
                         if len(sub_row) == 15:
-                            faces.append([float(v) for v in sub_row])
+                            # Use tolist() to get a typed list and avoid Any warnings
+                            faces.append(sub_row.tolist())
                     continue
                 raise ValueError(f"Expected 15 values per face, got {len(row)}")
 
-            faces.append([float(v) for v in row])
+            # Use tolist() to get a typed list and avoid Any warnings
+            row_list = cast(list[float], row.tolist())
+            faces.append(row_list)
 
         return faces
 
