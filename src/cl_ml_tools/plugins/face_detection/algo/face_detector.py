@@ -4,11 +4,11 @@ Model Source: https://github.com/opencv/opencv_zoo/tree/main/models/face_detecti
 Model File: face_detection_yunet_2023mar.onnx
 """
 
-from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import cast
 
 import cv2
+import numpy as np
 from loguru import logger
 from pydantic import BaseModel
 
@@ -78,24 +78,35 @@ class FaceDetector:
         if mat is None:
             return []
 
-        # Must be iterable of rows
-        if not isinstance(mat, Iterable):
-            raise TypeError("Expected iterable face matrix")
+        # YuNet returns a numpy array, usually (1, N, 15) or (N, 15)
+        # We specify the type to avoid 'Unknown' shape warnings
+        mat_array: np.ndarray[tuple[int, ...], np.dtype[np.float32]] = np.asarray(
+            mat, dtype=np.float32
+        )
+
+        if mat_array.size == 0:
+            return []
+
+        # Squeeze batch dimension if present (1, N, 15) -> (N, 15)
+        if mat_array.ndim == 3 and mat_array.shape[0] == 1:
+            mat_array = mat_array.squeeze(0)
+        elif mat_array.ndim == 1:
+            # Single face (15,) -> (1, 15)
+            mat_array = mat_array.reshape(1, -1)
 
         faces: list[list[float]] = []
-        rows = cast(Iterable[Sequence[float] | None], mat)
+        for row in mat_array:
+            # Ensure we have the expected 15 values
+            if len(row) != 15:
+                # If it's still (1, N, 15) after squeeze it might look like this
+                if row.ndim > 1:
+                    for sub_row in row:
+                        if len(sub_row) == 15:
+                            faces.append([float(v) for v in sub_row])
+                    continue
+                raise ValueError(f"Expected 15 values per face, got {len(row)}")
 
-        for row in rows:
-            if not isinstance(row, Sequence):
-                raise TypeError("Face row must be a sequence")
-
-            values = list(row)
-
-            if len(values) != 15:
-                raise ValueError(f"Expected 15 values per face, got {len(values)}")
-
-            # Force float conversion (kills Any)
-            faces.append([float(v) for v in values])
+            faces.append([float(v) for v in row])
 
         return faces
 

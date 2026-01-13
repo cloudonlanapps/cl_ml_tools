@@ -58,19 +58,18 @@ def align_and_crop(
     dst[:, 0] += diff_x
 
     # Estimate the similarity transformation matrix
-    M, inliers = cv2.estimateAffinePartial2D(landmarks, dst, ransacReprojThreshold=1000)
-    # verify inliers is not None and all true?
-    # cv2.estimateAffinePartial2D returns (M, inliers).
-    # If it fails, M might be None.
+    # Basedpyright might think M cannot be None based on stubs, but it can fail at runtime
+    M_raw, inliers = cv2.estimateAffinePartial2D(landmarks, dst, ransacReprojThreshold=1000)
     _ = inliers
+    M = cast(NDArray[np.float64] | None, M_raw)
 
-    # if M is None:
-    #    raise ValueError("Failed to estimate affine transformation")
+    if M is None:
+        raise ValueError("Failed to estimate affine transformation (M is None)")
 
     # Apply the affine transformation
     aligned_img = cv2.warpAffine(img, M, (image_size, image_size), borderValue=0.0)
 
     val0: NDArray[np.uint8] = cast(NDArray[np.uint8], aligned_img)
-    val1: NDArray[np.float64] = cast(NDArray[np.float64], M)
+    val1 = M
 
     return val0, val1
