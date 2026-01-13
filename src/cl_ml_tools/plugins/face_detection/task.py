@@ -2,9 +2,10 @@
 
 import json
 import logging
-from typing import Callable, override
+from typing import Callable, cast, override
 
 import cv2
+import numpy as np
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
@@ -63,12 +64,12 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
         # Read image for alignment
         img_cv = cv2.imread(str(input_path))
         if img_cv is None:
-             raise RuntimeError(f"Failed to read image with OpenCV: {input_path}")
+            raise RuntimeError(f"Failed to read image with OpenCV: {input_path}")
 
         # Get dimensions for normalization (could also use img_cv.shape)
-        image_height, image_width = img_cv.shape[:2]
+        image_height, image_width = cast(list[int], img_cv.shape[:2])
 
-        faces = []
+        faces: list[DetectedFace] = []
         for i, det in enumerate(detections):
             # Normalize bounding box
             bbox = BBox(
@@ -80,11 +81,26 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
 
             # Normalize landmarks
             landmarks = FaceLandmarks(
-                right_eye=(det.landmarks.right_eye[0] / image_width, det.landmarks.right_eye[1] / image_height),
-                left_eye=(det.landmarks.left_eye[0] / image_width, det.landmarks.left_eye[1] / image_height),
-                nose_tip=(det.landmarks.nose_tip[0] / image_width, det.landmarks.nose_tip[1] / image_height),
-                mouth_right=(det.landmarks.mouth_right[0] / image_width, det.landmarks.mouth_right[1] / image_height),
-                mouth_left=(det.landmarks.mouth_left[0] / image_width, det.landmarks.mouth_left[1] / image_height),
+                right_eye=(
+                    det.landmarks.right_eye[0] / image_width,
+                    det.landmarks.right_eye[1] / image_height,
+                ),
+                left_eye=(
+                    det.landmarks.left_eye[0] / image_width,
+                    det.landmarks.left_eye[1] / image_height,
+                ),
+                nose_tip=(
+                    det.landmarks.nose_tip[0] / image_width,
+                    det.landmarks.nose_tip[1] / image_height,
+                ),
+                mouth_right=(
+                    det.landmarks.mouth_right[0] / image_width,
+                    det.landmarks.mouth_right[1] / image_height,
+                ),
+                mouth_left=(
+                    det.landmarks.mouth_left[0] / image_width,
+                    det.landmarks.mouth_left[1] / image_height,
+                ),
             )
 
             # Align and crop face
@@ -98,7 +114,7 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
             ]
 
             try:
-                aligned_face, _ = align_and_crop(img_cv, lm_points)
+                aligned_face, _ = align_and_crop(img_cv.astype(np.uint8), lm_points)
 
                 # Save cropped face
                 face_relative_path = f"faces/face_{i}.png"

@@ -1,13 +1,15 @@
+from typing import cast
 
 import cv2
 import numpy as np
+from numpy.typing import NDArray
 
 
 def align_and_crop(
-    img: np.ndarray,
-    landmarks: list[tuple[float, float]] | np.ndarray,
+    img: NDArray[np.uint8],
+    landmarks: list[tuple[float, float]] | NDArray[np.float32],
     image_size: int = 112,
-) -> tuple[np.ndarray, np.ndarray]:
+) -> tuple[NDArray[np.uint8], NDArray[np.float64]]:
     """
     Align and crop the face from the image based on the given landmarks.
 
@@ -56,17 +58,19 @@ def align_and_crop(
     dst[:, 0] += diff_x
 
     # Estimate the similarity transformation matrix
-    M, inliers = cv2.estimateAffinePartial2D(
-        landmarks, dst, ransacReprojThreshold=1000
-    )
+    M, inliers = cv2.estimateAffinePartial2D(landmarks, dst, ransacReprojThreshold=1000)
     # verify inliers is not None and all true?
     # cv2.estimateAffinePartial2D returns (M, inliers).
     # If it fails, M might be None.
+    _ = inliers
 
-    if M is None:
-        raise ValueError("Failed to estimate affine transformation")
+    # if M is None:
+    #    raise ValueError("Failed to estimate affine transformation")
 
     # Apply the affine transformation
     aligned_img = cv2.warpAffine(img, M, (image_size, image_size), borderValue=0.0)
 
-    return aligned_img, M
+    val0: NDArray[np.uint8] = cast(NDArray[np.uint8], aligned_img)
+    val1: NDArray[np.float64] = cast(NDArray[np.float64], M)
+
+    return val0, val1

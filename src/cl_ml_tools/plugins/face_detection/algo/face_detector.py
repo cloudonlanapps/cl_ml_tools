@@ -5,7 +5,9 @@ Model File: face_detection_yunet_2023mar.onnx
 """
 
 import logging
+from collections.abc import Iterable, Sequence
 from pathlib import Path
+from typing import cast
 
 import cv2
 from pydantic import BaseModel
@@ -74,6 +76,31 @@ class FaceDetector:
             top_k=5000,
         )
 
+    def matlike_to_face_rows(self, mat: object) -> list[list[float]]:
+        if mat is None:
+            return []
+
+        # Must be iterable of rows
+        if not isinstance(mat, Iterable):
+            raise TypeError("Expected iterable face matrix")
+
+        faces: list[list[float]] = []
+        rows = cast(Iterable[Sequence[float] | None], mat)
+
+        for row in rows:
+            if not isinstance(row, Sequence):
+                raise TypeError("Face row must be a sequence")
+
+            values = list(row)
+
+            if len(values) != 15:
+                raise ValueError(f"Expected 15 values per face, got {len(values)}")
+
+            # Force float conversion (kills Any)
+            faces.append([float(v) for v in values])
+
+        return faces
+
     def detect(
         self,
         image_path: str | Path,
@@ -90,7 +117,7 @@ class FaceDetector:
         if image is None:
             raise ValueError(f"Failed to load image: {image_path}")
 
-        height, width, _ = image.shape
+        height, width, _ = cast(list[int], image.shape)
 
         # Update detector input size
         self._detector.setInputSize((width, height))
@@ -100,36 +127,42 @@ class FaceDetector:
         # Run inference
         # faces: [1, num_faces, 15]
         # Format: x1, y1, w, h, x_re, y_re, x_le, y_le, x_nt, y_nt, x_rcm, y_rcm, x_lcm, y_lcm, confidence
-        _, faces = self._detector.detect(image)
+        ret, faces_raw = self._detector.detect(image)
+        if not ret:
+            raise RuntimeError("Face detection failed")
+
+        faces = self.matlike_to_face_rows(faces_raw)
+
+        if len(faces) == 0:
+            return []
 
         detections: list[FaceDetection] = []
+        if not faces:
+            return detections
 
-        if faces is not None:
-            for face in faces:
-                x1, y1, w, h = face[0:4]
-                # Landmarks are pairs from index 4 to 13 (5 points)
-                # re_x, re_y, le_x, le_y, nt_x, nt_y, rcm_x, rcm_y, lcm_x, lcm_y
-                landmarks = FaceLandmarks(
-                    right_eye=(float(face[4]), float(face[5])),
-                    left_eye=(float(face[6]), float(face[7])),
-                    nose_tip=(float(face[8]), float(face[9])),
-                    mouth_right=(float(face[10]), float(face[11])),
-                    mouth_left=(float(face[12]), float(face[13])),
-                )
-                confidence = face[14]
+        for face in faces:
+            x1, y1, w, h = face[0:4]
 
-                detections.append(
-                    FaceDetection(
-                        bbox=BBox(
-                            x1=float(x1),
-                            y1=float(y1),
-                            x2=float(x1 + w),
-                            y2=float(y1 + h),
-                        ),
-                        confidence=float(confidence),
-                        landmarks=landmarks,
-                    )
+            detections.append(
+                FaceDetection(
+                    bbox=BBox(
+                        x1=float(x1),
+                        y1=float(y1),
+                        x2=float(x1 + w),
+                        y2=float(y1 + h),
+                    ),
+                    # Landmarks are pairs from index 4 to 13 (5 points)
+                    # re_x, re_y, le_x, le_y, nt_x, nt_y, rcm_x, rcm_y, lcm_x, lcm_y
+                    landmarks=FaceLandmarks(
+                        right_eye=(float(face[4]), float(face[5])),
+                        left_eye=(float(face[6]), float(face[7])),
+                        nose_tip=(float(face[8]), float(face[9])),
+                        mouth_right=(float(face[10]), float(face[11])),
+                        mouth_left=(float(face[12]), float(face[13])),
+                    ),
+                    confidence=float(face[14]),
                 )
+            )
 
         logger.info(
             "Detected %d faces in %s",
