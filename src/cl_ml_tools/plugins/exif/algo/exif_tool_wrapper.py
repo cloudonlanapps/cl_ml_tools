@@ -5,12 +5,11 @@ ExifTool must be installed separately: https://exiftool.org/
 """
 
 import json
-import logging
 import subprocess
 from pathlib import Path
 from typing import TypeAlias, cast
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 JSONPrimitive: TypeAlias = str | int | float | bool | None
 JSONValue: TypeAlias = JSONPrimitive | list["JSONValue"] | dict[str, "JSONValue"]
@@ -35,7 +34,11 @@ class MetadataExtractor:
             )
             logger.debug(f"ExifTool version {result.stdout.strip()} found")
             return True
-        except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        except (
+            FileNotFoundError,
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired,
+        ):
             return False
 
     def extract_metadata(self, filepath: str | Path, tags: list[str]) -> MetadataDict:
@@ -62,7 +65,9 @@ class MetadataExtractor:
             return parsed[0] if parsed else {}
 
         except subprocess.CalledProcessError as exc:
-            stderr = cast(str, exc.stderr) if exc.stderr is not None else ""  # pyright: ignore[reportAny]
+            stderr = (
+                cast(str, exc.stderr) if exc.stderr is not None else ""
+            )  # pyright: ignore[reportAny]
             logger.warning(f"ExifTool failed for {path}: {stderr}")
             return {}
 
@@ -93,7 +98,9 @@ class MetadataExtractor:
             return parsed[0] if parsed else {}
 
         except subprocess.CalledProcessError as exc:
-            stderr = cast(str, exc.stderr) if exc.stderr is not None else ""  # pyright: ignore[reportAny]
+            stderr = (
+                cast(str, exc.stderr) if exc.stderr is not None else ""
+            )  # pyright: ignore[reportAny]
             logger.warning(f"ExifTool failed for {path}: {stderr}")
             return {}
 

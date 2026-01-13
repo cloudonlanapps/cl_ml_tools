@@ -9,13 +9,11 @@ the original model licenses.
 """
 
 import hashlib
-import logging
 from pathlib import Path
 from typing import cast
 
 import httpx
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 class ModelDownloader:
@@ -89,11 +87,15 @@ class ModelDownloader:
             logger.info(f"Downloading model from {url} to {model_path}")
 
             try:
-                with httpx.stream("GET", url, follow_redirects=True, timeout=300.0) as response:
+                with httpx.stream(
+                    "GET", url, follow_redirects=True, timeout=300.0
+                ) as response:
                     _ = response.raise_for_status()
 
                     # Get total size if available
-                    size_header = cast(str | None, response.headers.get("content-length"))
+                    size_header = cast(
+                        str | None, response.headers.get("content-length")
+                    )
                     total_size: int = int(size_header) if size_header is not None else 0
 
                     # Download with progress logging
@@ -144,10 +146,14 @@ class ModelDownloader:
                 # If we can't easily check for *all* files, maybe best to just try extracting.
                 # Optimisation: Check for at least one match?
                 # Using rglob if pattern indicates recursion?
-                existing = list(extract_dir.rglob(extract_pattern)) if "**" in extract_pattern else list(extract_dir.glob(extract_pattern))
+                existing = (
+                    list(extract_dir.rglob(extract_pattern))
+                    if "**" in extract_pattern
+                    else list(extract_dir.glob(extract_pattern))
+                )
                 if existing and not force_redownload:
-                     logger.info(f"Found already extracted file: {existing[0]}")
-                     return existing[0]
+                    logger.info(f"Found already extracted file: {existing[0]}")
+                    return existing[0]
 
             # Extract ZIP file
             logger.info(f"Extracting {model_path}")

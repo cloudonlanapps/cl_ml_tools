@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import random
 import re
@@ -8,9 +7,8 @@ import subprocess
 from typing import cast, override
 
 import m3u8
+from loguru import logger
 from m3u8.model import MediaList, Playlist, StreamInfo
-
-logger = logging.getLogger(__name__)
 
 # ─────────────────────────────────────────────
 # Exceptions
@@ -47,7 +45,9 @@ class HLSVariant:
         self.bitrate: int | None = bitrate
 
         self.resolution_str: str = str(resolution) if resolution is not None else "orig"
-        self.scale_str: str = f"scale=-2:{resolution}" if resolution is not None else "copy"
+        self.scale_str: str = (
+            f"scale=-2:{resolution}" if resolution is not None else "copy"
+        )
         self.bitrate_str: str | None = f"{bitrate}k" if bitrate is not None else None
 
     @override
@@ -163,7 +163,9 @@ class HLSStreamGenerator:
             )
             return len(result.stdout.strip()) > 0
         except Exception:
-            logger.warning(f"Failed to check {stream_type} stream for {self.input_file}")
+            logger.warning(
+                f"Failed to check {stream_type} stream for {self.input_file}"
+            )
             return False
 
     # ─────────────────────────────────────────────
@@ -211,7 +213,9 @@ class HLSStreamGenerator:
         self.run_command(command)
 
     def update(self, requested_variants: list[HLSVariant]) -> None:
-        temp_master_pl_name = f"{''.join(random.choices(string.ascii_letters, k=10))}.m3u8"
+        temp_master_pl_name = (
+            f"{''.join(random.choices(string.ascii_letters, k=10))}.m3u8"
+        )
         command = self.get_ffmpeg_command(
             requested_variants=requested_variants, master_pl_name=temp_master_pl_name
         )
@@ -227,7 +231,9 @@ class HLSStreamGenerator:
                     for stream in new_streams:
                         master_playlist.playlists.append(stream)
                     master_playlist.playlists.sort(
-                        key=lambda x: int(x.uri.split("-")[1].replace("p", "") if x.uri else 0),
+                        key=lambda x: int(
+                            x.uri.split("-")[1].replace("p", "") if x.uri else 0
+                        ),
                         reverse=True,
                     )
                     with open(self.master_pl_path, "w") as f:
@@ -237,14 +243,18 @@ class HLSStreamGenerator:
                         f"no stream found in the create master_pl; {temp_master_pl_name}"
                     )
             else:
-                raise InternalServerError(f"ffmpeg didn't create master_pl; {temp_master_pl_name}")
+                raise InternalServerError(
+                    f"ffmpeg didn't create master_pl; {temp_master_pl_name}"
+                )
             if os.path.exists(path):
                 os.remove(path)
         finally:
             if os.path.exists(path):
                 os.remove(path)
 
-    def get_ffmpeg_command(self, requested_variants: list[HLSVariant], master_pl_name: str):
+    def get_ffmpeg_command(
+        self, requested_variants: list[HLSVariant], master_pl_name: str
+    ):
         # Constructing filter complex part
         split: list[str] = []
         scale: list[str] = []
@@ -278,12 +288,19 @@ class HLSStreamGenerator:
             if self.has_audio:
                 audio_bitrate_commands.append(f"-b:a:{i}")
                 audio_bitrate_commands.append("128k")
-                out_streams.append(f"v:{i},a:{i},name:{variant.resolution}p-{variant.bitrate}")
+                out_streams.append(
+                    f"v:{i},a:{i},name:{variant.resolution}p-{variant.bitrate}"
+                )
             else:
-                out_streams.append(f"v:{i},name:{variant.resolution}p-{variant.bitrate}")
+                out_streams.append(
+                    f"v:{i},name:{variant.resolution}p-{variant.bitrate}"
+                )
 
         filter_complex = (
-            f"[0:v]split={len(requested_variants)}" + "".join(split) + ";" + ";".join(scale)
+            f"[0:v]split={len(requested_variants)}"
+            + "".join(split)
+            + ";"
+            + ";".join(scale)
         )
         var_stream_map = " ".join(out_streams)
 
@@ -352,7 +369,9 @@ class HLSStreamGenerator:
                 f"\tStream with {len(self.variants)} variants found. {','.join([item.uri() for item in self.variants])}"
             )
             available_variants = self.variants
-            found_variants = [item for item in requested_variants if item in available_variants]
+            found_variants = [
+                item for item in requested_variants if item in available_variants
+            ]
             if len(found_variants) > 0:
                 logger.info(
                     f"\t{len(found_variants)} variant(s) is/are already present. {','.join([item.uri() for item in found_variants])}"
@@ -376,7 +395,9 @@ class HLSStreamGenerator:
         # reload
         self.scan()
         available_variants = self.variants
-        missing_variants = [item for item in requested_variants if item not in available_variants]
+        missing_variants = [
+            item for item in requested_variants if item not in available_variants
+        ]
 
         return len(missing_variants) == 0
 
@@ -401,7 +422,9 @@ class HLSStreamGenerator:
 
     def addOriginal(self):
         logger.info("addOriginal")
-        logger.info("\tRequest to convert the original stream to hls format without reencoding")
+        logger.info(
+            "\tRequest to convert the original stream to hls format without reencoding"
+        )
         # check if original is present
         variant = HLSVariant()
         valid = variant.check(dir=self.output_dir)
@@ -413,5 +436,7 @@ class HLSStreamGenerator:
                     f"the stream generated {variant.uri()} is either invalid or partial or corrupted"
                 )
             return True
-        logger.info(f"\toriginal stream in hls format is already present. {variant.uri()}")
+        logger.info(
+            f"\toriginal stream in hls format is already present. {variant.uri()}"
+        )
         return True

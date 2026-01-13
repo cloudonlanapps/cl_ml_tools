@@ -1,19 +1,23 @@
 """Face detection task implementation."""
 
 import json
-import logging
 from typing import Callable, cast, override
 
 import cv2
 import numpy as np
+from loguru import logger
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
 from .algo.face_aligner import align_and_crop
 from .algo.face_detector import FaceDetector
-from .schema import BBox, DetectedFace, FaceDetectionOutput, FaceDetectionParams, FaceLandmarks
-
-logger = logging.getLogger(__name__)
+from .schema import (
+    BBox,
+    DetectedFace,
+    FaceDetectionOutput,
+    FaceDetectionParams,
+    FaceLandmarks,
+)
 
 
 class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput]):

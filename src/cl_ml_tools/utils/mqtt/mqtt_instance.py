@@ -1,9 +1,8 @@
-import logging
 from typing import TypedDict
 
-from .mqtt_impl import MQTTBroadcaster, NoOpBroadcaster
+from loguru import logger
 
-logger = logging.getLogger(__name__)
+from .mqtt_impl import MQTTBroadcaster, NoOpBroadcaster
 
 
 class BroadcasterConfig(TypedDict):

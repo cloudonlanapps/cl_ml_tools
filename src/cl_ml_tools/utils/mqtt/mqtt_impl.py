@@ -1,17 +1,15 @@
 """MQTT broadcaster for job events and worker capabilities."""
 
-import logging
 import time
 from typing import Callable, Protocol, override
 from uuid import uuid4
 
 import paho.mqtt.client as mqtt
+from loguru import logger
 from paho.mqtt.client import ConnectFlags, DisconnectFlags, MQTTMessage
 from paho.mqtt.enums import CallbackAPIVersion
 from paho.mqtt.properties import Properties
 from paho.mqtt.reasoncodes import ReasonCode
-
-logger = logging.getLogger(__name__)
 
 
 # NoOpBroadcaster must not require configuration. So protocol
@@ -31,7 +29,9 @@ class BroadcasterBase(Protocol):
     def publish_event(self, *, topic: str, payload: str, qos: int = 1) -> bool:
         return False
 
-    def set_will(self, *, topic: str, payload: str, qos: int = 1, retain: bool = False) -> bool:
+    def set_will(
+        self, *, topic: str, payload: str, qos: int = 1, retain: bool = False
+    ) -> bool:
         return False
 
     def publish_retained(self, *, topic: str, payload: str, qos: int = 1) -> bool:
@@ -59,7 +59,9 @@ class MQTTBroadcaster(BroadcasterBase):
     def __init__(self, broker: str | None = None, port: int | None = None):
         super().__init__(broker, port)
         if not broker or not port:
-            raise Exception("MQTT broadcaster must be provided with broker and its port")
+            raise Exception(
+                "MQTT broadcaster must be provided with broker and its port"
+            )
         self.broker: str = broker
         self.port: int = port
         self.client: mqtt.Client | None = None
@@ -93,7 +95,9 @@ class MQTTBroadcaster(BroadcasterBase):
 
             return self.connected
         except Exception as e:
-            logger.warning(f"Failed to connect to MQTT broker:{self.broker}:{self.port} {e}")
+            logger.warning(
+                f"Failed to connect to MQTT broker:{self.broker}:{self.port} {e}"
+            )
             self.connected = False
             return False
 
@@ -119,7 +123,9 @@ class MQTTBroadcaster(BroadcasterBase):
             return False
 
     @override
-    def set_will(self, *, topic: str, payload: str, qos: int = 1, retain: bool = True) -> bool:
+    def set_will(
+        self, *, topic: str, payload: str, qos: int = 1, retain: bool = True
+    ) -> bool:
         """Set MQTT Last Will and Testament message."""
         if not self.client:
             return False
@@ -185,7 +191,9 @@ class MQTTBroadcaster(BroadcasterBase):
             # Generate unique subscription ID and store callback
             subscription_id = str(uuid4())
             self.subscriptions[subscription_id] = (topic, callback)
-            logger.info(f"Subscribed to topic: {topic} (subscription_id: {subscription_id})")
+            logger.info(
+                f"Subscribed to topic: {topic} (subscription_id: {subscription_id})"
+            )
             return subscription_id
 
         except Exception as e:
@@ -223,7 +231,9 @@ class MQTTBroadcaster(BroadcasterBase):
             if not still_subscribed:
                 result, _mid = self.client.unsubscribe(topic)
                 if result != mqtt.MQTT_ERR_SUCCESS:
-                    logger.error(f"Failed to unsubscribe from {topic}: error code {result}")
+                    logger.error(
+                        f"Failed to unsubscribe from {topic}: error code {result}"
+                    )
                     return False
 
             logger.info(f"Unsubscribed: {subscription_id} from topic: {topic}")
@@ -248,7 +258,9 @@ class MQTTBroadcaster(BroadcasterBase):
         if self.connected:
             logger.info("MQTT connected using v5")
         else:
-            logger.warning(f"MQTT connection failed: reason={reason_code}, props={properties}")
+            logger.warning(
+                f"MQTT connection failed: reason={reason_code}, props={properties}"
+            )
 
     def _on_disconnect(
         self,
@@ -261,14 +273,19 @@ class MQTTBroadcaster(BroadcasterBase):
         self.connected = False
         logger.warning(f"MQTT disconnected: {reason_code}")
 
-    def _on_message(self, _client: mqtt.Client, _userdata: object, message: MQTTMessage) -> None:
+    def _on_message(
+        self, _client: mqtt.Client, _userdata: object, message: MQTTMessage
+    ) -> None:
         """Handle incoming MQTT messages (VERSION2 callback)."""
         try:
             received_topic = message.topic
             payload = message.payload.decode("utf-8")
 
             # Invoke all callbacks for matching subscriptions
-            for subscription_id, (subscribed_topic, callback) in self.subscriptions.items():
+            for subscription_id, (
+                subscribed_topic,
+                callback,
+            ) in self.subscriptions.items():
                 # paho-mqtt handles wildcard matching internally, so we get messages
                 # only for topics we're subscribed to. Just check if topics match.
                 if received_topic == subscribed_topic or self._topic_matches(
@@ -344,7 +361,9 @@ class NoOpBroadcaster(BroadcasterBase):
         return True
 
     @override
-    def set_will(self, *, topic: str, payload: str, qos: int = 1, retain: bool = True) -> bool:
+    def set_will(
+        self, *, topic: str, payload: str, qos: int = 1, retain: bool = True
+    ) -> bool:
         return True
 
     @override

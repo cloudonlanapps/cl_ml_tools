@@ -5,18 +5,16 @@ Input: 224x224 RGB images with ImageNet normalization
 Output: 384-dimensional CLS token embedding
 """
 
-import logging
 from pathlib import Path
 from typing import Final, cast
 
 import numpy as np
 import onnxruntime as ort
+from loguru import logger
 from numpy.typing import NDArray
 from PIL import Image
 
 from ....utils.model_downloader import get_model_downloader
-
-logger = logging.getLogger(__name__)
 
 # Model configuration
 MODEL_URL: Final[str] = (
@@ -27,8 +25,12 @@ MODEL_SHA256: Final[str | None] = None  # TODO: Add SHA256 hash for verification
 
 # Input configuration
 INPUT_SIZE: Final[tuple[int, int]] = (224, 224)  # (height, width)
-IMAGENET_MEAN: Final[NDArray[np.float32]] = np.array([0.485, 0.456, 0.406], dtype=np.float32)
-IMAGENET_STD: Final[NDArray[np.float32]] = np.array([0.229, 0.224, 0.225], dtype=np.float32)
+IMAGENET_MEAN: Final[NDArray[np.float32]] = np.array(
+    [0.485, 0.456, 0.406], dtype=np.float32
+)
+IMAGENET_STD: Final[NDArray[np.float32]] = np.array(
+    [0.229, 0.224, 0.225], dtype=np.float32
+)
 
 
 class DinoEmbedder:
@@ -55,7 +57,9 @@ class DinoEmbedder:
         logger.info("Loading DINOv2 model from %s", model_path)
 
         sess_options = ort.SessionOptions()
-        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        sess_options.graph_optimization_level = (
+            ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        )
 
         self.session = ort.InferenceSession(
             str(model_path),
@@ -76,11 +80,17 @@ class DinoEmbedder:
         if image.mode != "RGB":
             image = image.convert("RGB")
 
-        image_resized = image.resize((INPUT_SIZE[1], INPUT_SIZE[0]), Image.Resampling.BILINEAR)
+        image_resized = image.resize(
+            (INPUT_SIZE[1], INPUT_SIZE[0]), Image.Resampling.BILINEAR
+        )
 
-        img_array: NDArray[np.float32] = np.asarray(image_resized, dtype=np.float32) / 255.0
+        img_array: NDArray[np.float32] = (
+            np.asarray(image_resized, dtype=np.float32) / 255.0
+        )
 
-        img_array = (img_array - IMAGENET_MEAN.reshape(1, 1, 3)) / IMAGENET_STD.reshape(1, 1, 3)
+        img_array = (img_array - IMAGENET_MEAN.reshape(1, 1, 3)) / IMAGENET_STD.reshape(
+            1, 1, 3
+        )
 
         img_array = np.transpose(img_array, (2, 0, 1))
         img_array = np.expand_dims(img_array, axis=0)
@@ -105,7 +115,9 @@ class DinoEmbedder:
 
         return embedding
 
-    def embed(self, image_path: str | Path, normalize: bool = True) -> NDArray[np.float32]:
+    def embed(
+        self, image_path: str | Path, normalize: bool = True
+    ) -> NDArray[np.float32]:
         image_path = Path(image_path)
         if not image_path.exists():
             raise FileNotFoundError(f"Image file not found: {image_path}")
@@ -116,7 +128,9 @@ class DinoEmbedder:
         outputs = self.session.run([self.output_name], {self.input_name: input_array})
         raw_embedding = cast(NDArray[np.float32], outputs[0])
 
-        embedding: NDArray[np.float32] = self.postprocess(raw_embedding, normalize=normalize)
+        embedding: NDArray[np.float32] = self.postprocess(
+            raw_embedding, normalize=normalize
+        )
 
         logger.info(
             "Generated DINOv2 embedding for %s: dim=%d",

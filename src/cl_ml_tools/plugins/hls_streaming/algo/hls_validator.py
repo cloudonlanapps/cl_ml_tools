@@ -1,11 +1,9 @@
-import logging
 import os
 import re
 from dataclasses import dataclass
 
 import m3u8
-
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 @dataclass
@@ -90,7 +88,9 @@ class HLSValidator:
 
                 # Store variant information
                 bandwidth = (
-                    int(playlist.stream_info.bandwidth) if playlist.stream_info.bandwidth else 0
+                    int(playlist.stream_info.bandwidth)
+                    if playlist.stream_info.bandwidth
+                    else 0
                 )
                 variants_info[uri] = {
                     "resolution": resolution,

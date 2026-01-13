@@ -1,15 +1,14 @@
 """EXIF metadata extraction task implementation."""
 
 import json
-import logging
 from typing import Callable, override
+
+from loguru import logger
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
 from .algo.exif_tool_wrapper import MetadataExtractor
 from .schema import ExifMetadataOutput, ExifMetadataParams
-
-logger = logging.getLogger(__name__)
 
 
 class ExifTask(ComputeModule[ExifMetadataParams, ExifMetadataOutput]):

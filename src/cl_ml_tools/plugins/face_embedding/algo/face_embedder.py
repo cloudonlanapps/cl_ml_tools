@@ -7,21 +7,21 @@ Output: 512-dimensional embedding
 
 from __future__ import annotations
 
-import logging
 from pathlib import Path
 from typing import cast
 
 import numpy as np
 import onnxruntime as ort
+from loguru import logger
 from numpy.typing import NDArray
 from PIL import Image
 
 from ....utils.model_downloader import get_model_downloader
 
-logger = logging.getLogger(__name__)
-
 # Model configuration
-MODEL_URL = "https://huggingface.co/onnx-community/arcface-onnx/resolve/main/arcface.onnx"
+MODEL_URL = (
+    "https://huggingface.co/onnx-community/arcface-onnx/resolve/main/arcface.onnx"
+)
 MODEL_FILENAME = "arcface_face_embedding.onnx"
 MODEL_SHA256 = None  # TODO: Add SHA256 hash for verification
 
@@ -53,7 +53,9 @@ class FaceEmbedder:
         logger.info(f"Loading face embedding model from {model_path}")
 
         sess_options = ort.SessionOptions()
-        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        sess_options.graph_optimization_level = (
+            ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        )
 
         self.session = ort.InferenceSession(
             str(model_path),
@@ -64,7 +66,9 @@ class FaceEmbedder:
         self.input_name = self.session.get_inputs()[0].name
         self.output_name = self.session.get_outputs()[0].name
 
-        logger.info(f"Model loaded. Input: {self.input_name}, Output: {self.output_name}")
+        logger.info(
+            f"Model loaded. Input: {self.input_name}, Output: {self.output_name}"
+        )
 
     def preprocess(self, image: Image.Image) -> NDArray[np.float32]:
         if image.mode != "RGB":
@@ -75,7 +79,9 @@ class FaceEmbedder:
             Image.Resampling.BILINEAR,
         )
 
-        img_array: NDArray[np.float32] = np.asarray(image_resized, dtype=np.float32) / 255.0
+        img_array: NDArray[np.float32] = (
+            np.asarray(image_resized, dtype=np.float32) / 255.0
+        )
 
         # PIL already gives us (H, W, C), model expects (batch, H, W, C)
         img_array = np.expand_dims(img_array, axis=0)

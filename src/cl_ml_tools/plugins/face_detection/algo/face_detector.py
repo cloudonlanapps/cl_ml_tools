@@ -4,17 +4,15 @@ Model Source: https://github.com/opencv/opencv_zoo/tree/main/models/face_detecti
 Model File: face_detection_yunet_2023mar.onnx
 """
 
-import logging
 from collections.abc import Iterable, Sequence
 from pathlib import Path
 from typing import cast
 
 import cv2
+from loguru import logger
 from pydantic import BaseModel
 
 from ....utils.model_downloader import get_model_downloader
-
-logger = logging.getLogger(__name__)
 
 # Model configuration
 MODEL_URL = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"

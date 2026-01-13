@@ -1,16 +1,14 @@
 """MobileCLIP embedding task implementation."""
 
-import logging
 from typing import Callable, override
 
 import numpy as np
+from loguru import logger
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
 from .algo.clip_embedder import ClipEmbedder
 from .schema import ClipEmbeddingOutput, ClipEmbeddingParams
-
-logger = logging.getLogger(__name__)
 
 
 class ClipEmbeddingTask(ComputeModule[ClipEmbeddingParams, ClipEmbeddingOutput]):

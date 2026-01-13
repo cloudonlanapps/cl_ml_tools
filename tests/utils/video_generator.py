@@ -4,10 +4,9 @@ Uses the existing RandomMediaGenerator to create videos with sufficient
 duration and quality to generate multiple HLS .ts segments.
 """
 
-import logging
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 def generate_hls_test_video(
@@ -37,12 +36,16 @@ def generate_hls_test_video(
         ImportError: If cv2 (OpenCV) is not available
     """
     try:
-        from cl_ml_tools.utils.random_media_generator.scene_generator import SceneGenerator
-        from cl_ml_tools.utils.random_media_generator.video_generator import VideoGenerator
+        from cl_ml_tools.utils.random_media_generator.scene_generator import (
+            SceneGenerator,
+        )
+        from cl_ml_tools.utils.random_media_generator.video_generator import (
+            VideoGenerator,
+        )
     except ImportError as e:
         raise ImportError(
             "OpenCV (cv2) is required for video generation. "
-             "Install with: pip install opencv-python",
+            "Install with: pip install opencv-python",
         ) from e
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -75,7 +78,7 @@ def generate_hls_test_video(
     try:
         logger.info(
             f"Generating test video: {output_path} "
-             f"({duration_seconds}s, {width}x{height} @ {fps}fps)",
+            f"({duration_seconds}s, {width}x{height} @ {fps}fps)",
         )
 
         generator = VideoGenerator(
@@ -91,11 +94,14 @@ def generate_hls_test_video(
         generator.generate()
 
         if not output_path.exists():
-            raise RuntimeError(f"Video generation failed: {output_path} was not created")
+            raise RuntimeError(
+                f"Video generation failed: {output_path} was not created"
+            )
 
         file_size = output_path.stat().st_size
         logger.info(
-            f"Generated test video: {output_path} " + f"({file_size:,} bytes, {duration_seconds}s)",
+            f"Generated test video: {output_path} "
+            + f"({file_size:,} bytes, {duration_seconds}s)",
         )
 
         return output_path

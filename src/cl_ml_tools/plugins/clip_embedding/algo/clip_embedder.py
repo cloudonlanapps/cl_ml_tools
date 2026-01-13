@@ -1,19 +1,19 @@
 """MobileCLIP embedding using ONNX model."""
 
-import logging
 from pathlib import Path
 from typing import cast
 
 import numpy as np
 import onnxruntime as ort
+from loguru import logger
 from numpy.typing import NDArray
 from PIL import Image
 
 from ....utils.model_downloader import get_model_downloader
 
-logger = logging.getLogger(__name__)
-
-MODEL_URL = "https://huggingface.co/Xenova/mobileclip_blt/resolve/main/onnx/vision_model.onnx"
+MODEL_URL = (
+    "https://huggingface.co/Xenova/mobileclip_blt/resolve/main/onnx/vision_model.onnx"
+)
 MODEL_FILENAME = "mobileclip_blt_vision_model.onnx"
 MODEL_SHA256: str | None = None
 
@@ -44,7 +44,9 @@ class ClipEmbedder:
                 raise FileNotFoundError(model_path)
 
         sess_options = ort.SessionOptions()
-        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        sess_options.graph_optimization_level = (
+            ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        )
 
         self.session = ort.InferenceSession(
             str(model_path),

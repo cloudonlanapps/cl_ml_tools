@@ -1,16 +1,14 @@
 """Face embedding task implementation."""
 
-import logging
 from typing import Callable, override
 
 import numpy as np
+from loguru import logger
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
 from .algo.face_embedder import FaceEmbedder
 from .schema import FaceEmbeddingOutput, FaceEmbeddingParams
-
-logger = logging.getLogger(__name__)
 
 
 class FaceEmbeddingTask(ComputeModule[FaceEmbeddingParams, FaceEmbeddingOutput]):

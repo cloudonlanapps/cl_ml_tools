@@ -1,8 +1,7 @@
-import logging
 import os
 import subprocess
 
-logger = logging.getLogger(__name__)
+from loguru import logger
 
 
 class NotFound(Exception):
@@ -34,7 +33,9 @@ class FFMPEGCommands:
             f"[0:v]split={len(self.video_bitrates)}"
             + "".join(f"[{res}_in]" for res in self.video_bitrates)
             + ";"
-            + ";".join(f"[{res}_in]scale=-2:{res}[{res}_out]" for res in self.video_bitrates)
+            + ";".join(
+                f"[{res}_in]scale=-2:{res}[{res}_out]" for res in self.video_bitrates
+            )
         )
 
         # ─────────────────────────────────────────────
@@ -65,7 +66,9 @@ class FFMPEGCommands:
         ]
 
         audio_bitrate_commands: list[str] = [
-            item for i in range(len(self.video_bitrates)) for item in (f"-b:a:{i}", "128k")
+            item
+            for i in range(len(self.video_bitrates))
+            for item in (f"-b:a:{i}", "128k")
         ]
 
         # ─────────────────────────────────────────────

@@ -1,16 +1,14 @@
 """DINOv2 embedding task implementation."""
 
-import logging
 from typing import Callable, override
 
 import numpy as np
+from loguru import logger
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
 from .algo.dino_embedder import DinoEmbedder
 from .schema import DinoEmbeddingOutput, DinoEmbeddingParams
-
-logger = logging.getLogger(__name__)
 
 
 class DinoEmbeddingTask(ComputeModule[DinoEmbeddingParams, DinoEmbeddingOutput]):
