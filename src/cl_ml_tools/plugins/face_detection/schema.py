@@ -1,5 +1,7 @@
 """Face detection parameters and output schemas."""
 
+from typing import override
+
 from pydantic import BaseModel, Field
 
 from ...common.schema_job import BaseJobParams, TaskOutput
@@ -24,8 +26,6 @@ class FaceDetectionParams(BaseJobParams):
 
 class FaceLandmarks(BaseModel):
     """Facial landmarks with normalized coordinates [0.0, 1.0]."""
-
-    model_config = {"ser_json_timedelta": "float", "ser_json_bytes": "base64"}
 
     right_eye: tuple[float, float] = Field(..., description="Right eye (x, y)")
     left_eye: tuple[float, float] = Field(..., description="Left eye (x, y)")
@@ -94,6 +94,7 @@ class DetectedFace(BaseModel):
     landmarks: FaceLandmarks = Field(..., description="Detected facial landmarks")
     file_path: str = Field(..., description="Relative path to the cropped face image")
 
+    @override
     def model_dump(self, **kwargs):  # pyright: ignore[reportUnknownParameterType, reportMissingParameterType]
         """Override to ensure landmarks tuples are serialized as lists."""
         data = super().model_dump(**kwargs)  # pyright: ignore[reportUnknownArgumentType]

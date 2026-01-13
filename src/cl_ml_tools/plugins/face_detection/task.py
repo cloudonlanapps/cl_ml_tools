@@ -119,7 +119,7 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
                 # Save cropped face
                 face_relative_path = f"faces/face_{i}.png"
                 face_abs_path = storage.allocate_path(job_id, face_relative_path)
-                cv2.imwrite(str(face_abs_path), aligned_face)
+                _ = cv2.imwrite(str(face_abs_path), aligned_face)
 
                 faces.append(
                     DetectedFace(
