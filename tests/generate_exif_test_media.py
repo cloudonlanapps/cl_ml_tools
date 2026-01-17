@@ -11,9 +11,13 @@ from pathlib import Path
 
 from PIL import Image
 
+import os
 # Configuration
 TESTS_DIR = Path(__file__).parent
-TARGET_DIR = TESTS_DIR / "test_media" / "exif_generated"
+TEST_MEDIA_DIR = Path(
+    os.getenv("TEST_VECTORS_DIR", "/Users/anandasarangaram/Work/cl_server_test_media")
+)
+TARGET_DIR = TEST_MEDIA_DIR / "exif_generated"
 MANIFEST_FILE = TESTS_DIR / "MANIFEST.md5"
 
 
@@ -198,9 +202,9 @@ def update_manifest(generated_files: list[Path]) -> None:
     # Add new entries
     new_entries: list[str] = []
     for file_path in generated_files:
-        relative_path = file_path.relative_to(TESTS_DIR)
+        # Use logical prefix 'test_media/' for manifest regardless of physical location
+        path_str = f"test_media/exif_generated/{file_path.name}"
         md5_hash = calculate_md5(file_path)
-        path_str = str(relative_path).replace("\\", "/")
         new_entries.append(f"{md5_hash}  {path_str}")
 
     # Write updated manifest

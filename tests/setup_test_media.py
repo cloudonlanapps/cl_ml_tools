@@ -12,10 +12,13 @@ import hashlib
 import shutil
 from pathlib import Path
 
+import os
 # Configuration
 SOURCE_DIR = Path("/Users/anandasarangaram/Work/test_media")
 TESTS_DIR = Path(__file__).parent
-TARGET_DIR = TESTS_DIR / "test_media"
+TARGET_DIR = Path(
+    os.getenv("TEST_VECTORS_DIR", "/Users/anandasarangaram/Work/cl_server_test_media")
+)
 MANIFEST_FILE = TESTS_DIR / "MANIFEST.md5"
 
 

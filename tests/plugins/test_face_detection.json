@@ -1,12 +1,12 @@
 [
     {
-        "absolute_path": "/Users/anandasarangaram/Work/cl_server/test_vectors/images/test_face_single.jpg",
-        "expected_count": 1,
+        "absolute_path": "/Users/anandasarangaram/Work/cl_server_test_media/images/20210420_144043.jpg",
+        "expected_count": 4,
         "exact_match": true
     },
     {
-        "absolute_path": "/Users/anandasarangaram/Work/cl_server/test_vectors/images/test_face_multiple.jpg",
-        "expected_count": 3,
+        "absolute_path": "/Users/anandasarangaram/Work/cl_server_test_media/images/20210420_225822.jpg",
+        "expected_count": 1,
         "exact_match": false
     }
 ]

@@ -1,5 +1,5 @@
 # Test Media Manifest
-# Updated: 2025-12-18 15:33:05
+# Updated: 2026-01-18 05:16:22
 # Source: /Users/anandasarangaram/Work/test_media
 
 229f35ff59fe0397615e466b1b612cd5  test_media/images/20210420_144043.jpg
@@ -9,6 +9,11 @@ d88b6c38653d83c1d0da57b215e6c0bd  test_media/images/20210420_225822.jpg
 756bd3d4478fb13e42a1c68d55627cb7  test_media/images/20210424_004327.jpg
 dc2a3e6e79d9ed8544e28f66d3b00435  test_media/images/20210426_153946.jpg
 e0532cbfd1dd68d26affbe67dc185930  test_media/images/20210426_155703.jpg
+b561d9dbe253e31e52c4da8522791911  test_media/exif_generated/with_gps.jpg
+b86781dc6ad8e7649fe47911bca587f4  test_media/exif_generated/with_camera.jpg
+a2f34b3f2394f5839401072476a7b9f9  test_media/exif_generated/with_datetime.jpg
+782e8c328bafdf38a7c41dffefc78422  test_media/exif_generated/with_all.jpg
+757d7aebf61a64d4417b7ce7eb1bc3be  test_media/exif_generated/no_exif.jpg
 
 # Generated EXIF test images
 b561d9dbe253e31e52c4da8522791911  test_media/exif_generated/with_gps.jpg

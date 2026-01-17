@@ -15,9 +15,12 @@ from typing import Any, cast, override
 import pytest
 from fastapi.testclient import TestClient
 
+import os
 # Test directory paths
 TESTS_DIR = Path(__file__).parent
-TEST_MEDIA_DIR = TESTS_DIR / "test_media"
+TEST_MEDIA_DIR = Path(
+    os.getenv("TEST_VECTORS_DIR", "/Users/anandasarangaram/Work/cl_server_test_media")
+)
 MANIFEST_FILE = TESTS_DIR / "MANIFEST.md5"
 
 
@@ -129,7 +132,13 @@ def validate_test_media():
                 continue
 
             expected_md5, relative_path = parts
-            file_path = TESTS_DIR / relative_path
+            
+            if relative_path.startswith("test_media/"):
+                # Map manifest path to the potentially redirected TEST_MEDIA_DIR
+                actual_relative = relative_path.replace("test_media/", "", 1)
+                file_path = TEST_MEDIA_DIR / actual_relative
+            else:
+                file_path = TESTS_DIR / relative_path
 
             if not file_path.exists():
                 errors.append(f"Missing: {relative_path}")

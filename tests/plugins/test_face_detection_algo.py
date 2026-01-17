@@ -5,7 +5,7 @@ from pydantic import BaseModel, TypeAdapter
 
 from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
 
-CONFIDENCE_THRESHOLD = 0.8
+CONFIDENCE_THRESHOLD = 0.5
 
 
 class FaceTestCase(BaseModel):

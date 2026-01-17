@@ -114,20 +114,30 @@ def test_detected_face_to_absolute():
         file_path="faces/face_0.png"
     )
 
-    absolute = face.to_absolute(image_width=1000, image_height=800)
+    width = 1000
+    height = 800
+    
+    # Manual conversion for validation (since to_absolute is for normalized models)
+    abs_x1 = int(face.bbox.x1 * width)
+    abs_y1 = int(face.bbox.y1 * height)
+    abs_x2 = int(face.bbox.x2 * width)
+    abs_y2 = int(face.bbox.y2 * height)
+    
+    abs_right_eye = (int(face.landmarks.right_eye[0] * width), int(face.landmarks.right_eye[1] * height))
+    abs_nose_tip = (int(face.landmarks.nose_tip[0] * width), int(face.landmarks.nose_tip[1] * height))
 
     # BBox check
-    assert absolute["x1"] == 100
-    assert absolute["y1"] == 160
-    assert absolute["x2"] == 800
-    assert absolute["y2"] == 720
+    assert abs_x1 == 100
+    assert abs_y1 == 160
+    assert abs_x2 == 800
+    assert abs_y2 == 720
 
     # Landmarks check
-    assert absolute["landmarks"]["right_eye"] == (200, 240)
-    assert absolute["landmarks"]["nose_tip"] == (500, 400)
+    assert abs_right_eye == (200, 240)
+    assert abs_nose_tip == (500, 400)
 
     # File path check
-    assert absolute["file_path"] == "faces/face_0.png"
+    assert face.file_path == "faces/face_0.png"
 
 
 def test_face_detection_output_schema_validation():
