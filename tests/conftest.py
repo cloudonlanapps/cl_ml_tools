@@ -363,35 +363,20 @@ def job_repository():
 
 
 @pytest.fixture
-def file_storage(tmp_path: Path, pytestconfig):
-    """Provide file storage for testing.
-
-    Configuration priority:
-    1. TEST_STORAGE_DIR environment variable
-    2. pytest.ini test_storage_base_dir option
-    3. Default: tmp_path / "file_storage"
-    """
-    import os
-
+def file_storage(tmp_path: Path):
+    """File storage fixture using TEST_ARTIFACT_DIR."""
     from cl_ml_tools.common.file_storage_impl import LocalFileStorage
 
-    # Check environment variable first
-    env_storage = os.environ.get("TEST_STORAGE_DIR")
-    if env_storage:
-        storage_dir = Path(env_storage)
-        storage_dir.mkdir(parents=True, exist_ok=True)
-    else:
-        # Check pytest.ini configuration
-        ini_storage = pytestconfig.getini("test_storage_base_dir")
-        if ini_storage:
-            storage_dir = Path(ini_storage)
-            storage_dir.mkdir(parents=True, exist_ok=True)
-        else:
-            # Default to tmp_path
-            storage_dir = tmp_path / "file_storage"
-            storage_dir.mkdir()
+    storage_dir = os.getenv("TEST_ARTIFACT_DIR", "/tmp/cl_server_test_artifacts")
+    storage_dir = Path(storage_dir) / "cl_ml_tools"
+    storage_dir.mkdir(parents=True, exist_ok=True)
 
-    return LocalFileStorage(base_dir=storage_dir)
+    storage = LocalFileStorage(base_dir=storage_dir)
+    yield storage
+
+    # Cleanup after test
+    if storage_dir.exists():
+        shutil.rmtree(storage_dir, ignore_errors=True)
 
 
 @pytest.fixture
