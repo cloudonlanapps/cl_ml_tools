@@ -71,6 +71,7 @@ class MQTTBroadcaster(BroadcasterBase):
     @override
     def connect(self) -> bool:
         try:
+            logger.info(f"Assuming MQTT client configuration: broker={self.broker}:{self.port}")
             self.client = mqtt.Client(
                 callback_api_version=CallbackAPIVersion.VERSION2,
                 protocol=mqtt.MQTTv5,
@@ -85,7 +86,7 @@ class MQTTBroadcaster(BroadcasterBase):
             _ = self.client.reconnect_delay_set(min_delay=1, max_delay=30)
 
             _ = self.client.loop_start()
-            _ = self.client.connect(self.broker, self.port, keepalive=60)
+            _ = self.client.connect(self.broker, self.port, keepalive=60, clean_start=True)
 
             # Wait for connection to be established (up to 5 seconds)
             timeout = 5
