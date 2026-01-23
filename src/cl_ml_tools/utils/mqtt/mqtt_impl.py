@@ -16,6 +16,7 @@ from paho.mqtt.reasoncodes import ReasonCode
 # should not enforce broker nad port mandatory
 class BroadcasterBase(Protocol):
     connected: bool
+    client: mqtt.Client | None = None
 
     def __init__(self, broker: str | None = None, port: int | None = None):
         self.connected = False
@@ -71,7 +72,9 @@ class MQTTBroadcaster(BroadcasterBase):
     @override
     def connect(self) -> bool:
         try:
-            logger.info(f"Assuming MQTT client configuration: broker={self.broker}:{self.port}")
+            logger.info(
+                f"Assuming MQTT client configuration: broker={self.broker}:{self.port}"
+            )
             self.client = mqtt.Client(
                 callback_api_version=CallbackAPIVersion.VERSION2,
                 protocol=mqtt.MQTTv5,
@@ -86,7 +89,9 @@ class MQTTBroadcaster(BroadcasterBase):
             _ = self.client.reconnect_delay_set(min_delay=1, max_delay=30)
 
             _ = self.client.loop_start()
-            _ = self.client.connect(self.broker, self.port, keepalive=60, clean_start=True)
+            _ = self.client.connect(
+                self.broker, self.port, keepalive=60, clean_start=True
+            )
 
             # Wait for connection to be established (up to 5 seconds)
             timeout = 5
@@ -338,6 +343,7 @@ class NoOpBroadcaster(BroadcasterBase):
     """No-operation broadcaster for when MQTT is disabled or unavailable."""
 
     connected: bool
+    client: None = None
 
     def __init__(self, broker: str | None = None, port: int | None = None):
         super().__init__(broker, port)
