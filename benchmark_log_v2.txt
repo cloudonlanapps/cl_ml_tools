@@ -1,0 +1,188 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.12, pytest-9.0.2, pluggy-1.6.0
+rootdir: /Users/anandasarangaram/Work/cl_server/services/packages/cl_ml_tools
+configfile: pyproject.toml
+plugins: anyio-4.12.0, asyncio-1.3.0, cov-7.0.0
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 1 item
+
+tests/plugins/test_face_embedding_perf.py::test_face_embedding_performance_benchmark 2026-01-24 10:56:19.158 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:12 - Starting performance benchmark with image: /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg
+2026-01-24 10:56:19.158 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:__init__:43 - Downloading face embedding model from https://huggingface.co/onnx-community/arcface-onnx/resolve/main/arcface.onnx
+2026-01-24 10:56:19.158 | INFO     | cl_ml_tools.utils.model_downloader:download:71 - Model already cached: /Users/anandasarangaram/.cache/cl_ml_tools/models/arcface_face_embedding.onnx
+2026-01-24 10:56:19.158 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:__init__:54 - Loading face embedding model from /Users/anandasarangaram/.cache/cl_ml_tools/models/arcface_face_embedding.onnx
+2026-01-24 10:56:19.631 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:__init__:70 - Model loaded. Input: input_1, Output: embedding
+2026-01-24 10:56:19.631 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:17 - Performing warmup iterations...
+2026-01-24 10:56:19.652 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.007s
+2026-01-24 10:56:19.678 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.026s
+2026-01-24 10:56:19.678 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:20.828 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.compute_quality_score took 1.150s
+2026-01-24 10:56:20.829 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=1.0
+2026-01-24 10:56:20.829 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 1.198s
+2026-01-24 10:56:20.835 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.005s
+2026-01-24 10:56:20.854 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.019s
+2026-01-24 10:56:20.854 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:20.864 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.compute_quality_score took 0.010s
+2026-01-24 10:56:20.864 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=1.0
+2026-01-24 10:56:20.865 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.036s
+2026-01-24 10:56:20.865 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:23 - Running 5 benchmark iterations...
+2026-01-24 10:56:20.865 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:27 - Iteration 1/5
+2026-01-24 10:56:20.871 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:20.890 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.020s
+2026-01-24 10:56:20.891 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:20.900 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.compute_quality_score took 0.010s
+2026-01-24 10:56:20.901 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=1.0
+2026-01-24 10:56:20.901 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.036s
+2026-01-24 10:56:20.901 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:27 - Iteration 2/5
+2026-01-24 10:56:20.907 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:20.934 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.027s
+2026-01-24 10:56:20.935 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:20.945 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.compute_quality_score took 0.010s
+2026-01-24 10:56:20.945 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=1.0
+2026-01-24 10:56:20.945 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.044s
+2026-01-24 10:56:20.945 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:27 - Iteration 3/5
+2026-01-24 10:56:20.951 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:20.974 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.023s
+2026-01-24 10:56:20.974 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:20.983 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.compute_quality_score took 0.009s
+2026-01-24 10:56:20.983 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=1.0
+2026-01-24 10:56:20.984 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.038s
+2026-01-24 10:56:20.984 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:27 - Iteration 4/5
+2026-01-24 10:56:20.990 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:21.010 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.021s
+2026-01-24 10:56:21.010 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:21.020 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.compute_quality_score took 0.010s
+2026-01-24 10:56:21.020 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=1.0
+2026-01-24 10:56:21.020 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.037s
+2026-01-24 10:56:21.021 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:27 - Iteration 5/5
+2026-01-24 10:56:21.027 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:21.046 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.020s
+2026-01-24 10:56:21.047 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:21.056 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.compute_quality_score took 0.009s
+2026-01-24 10:56:21.056 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=1.0
+2026-01-24 10:56:21.056 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.035s
+2026-01-24 10:56:21.056 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:33 - Benchmark completed. Average total time: 0.038s
+2026-01-24 10:56:21.056 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:36 - Running benchmark WITHOUT quality score...
+2026-01-24 10:56:21.062 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:21.081 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.019s
+2026-01-24 10:56:21.081 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:21.081 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=None
+2026-01-24 10:56:21.081 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.025s
+2026-01-24 10:56:21.087 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:21.108 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.020s
+2026-01-24 10:56:21.108 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:21.108 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=None
+2026-01-24 10:56:21.108 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.027s
+2026-01-24 10:56:21.114 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:21.135 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.020s
+2026-01-24 10:56:21.135 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:21.135 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=None
+2026-01-24 10:56:21.135 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.027s
+2026-01-24 10:56:21.141 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:21.162 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.020s
+2026-01-24 10:56:21.162 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:21.162 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=None
+2026-01-24 10:56:21.162 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.027s
+2026-01-24 10:56:21.168 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.preprocess took 0.006s
+2026-01-24 10:56:21.187 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed.<locals>._inference_run took 0.018s
+2026-01-24 10:56:21.187 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.postprocess took 0.000s
+2026-01-24 10:56:21.187 | INFO     | cl_ml_tools.plugins.face_embedding.algo.face_embedder:embed:162 - Generated embedding for /Users/anandasarangaram/Work/cl_server_test_media/images/20210426_155703.jpg: dim=512, quality=None
+2026-01-24 10:56:21.187 | INFO     | cl_ml_tools.utils.profiling:log_elapsed:32 - [PROFILE] FaceEmbedder.embed took 0.025s
+2026-01-24 10:56:21.188 | INFO     | test_face_embedding_perf:test_face_embedding_performance_benchmark:43 - Benchmark (no quality) completed. Average time: 0.026s
+PASSED
+ERROR: Coverage failure: total of 13.05 is less than fail-under=90.00
+
+
+================================ tests coverage ================================
+______________ coverage: platform darwin, python 3.12.12-final-0 _______________
+
+Name                                                                     Stmts   Miss   Cover   Missing
+-------------------------------------------------------------------------------------------------------
+src/cl_ml_tools/__init__.py                                                 10      0 100.00%
+src/cl_ml_tools/algorithms.py                                               17     17   0.00%   54-123
+src/cl_ml_tools/common/__init__.py                                           5      0 100.00%
+src/cl_ml_tools/common/compute_module.py                                    19     10  47.37%   28, 52-77
+src/cl_ml_tools/common/file_storage_impl.py                                 81     81   0.00%   1-175
+src/cl_ml_tools/common/job_creator.py                                       22     22   0.00%   1-54
+src/cl_ml_tools/common/job_repository.py                                    15      5  66.67%   28, 32, 48, 58, 62
+src/cl_ml_tools/common/job_storage.py                                       32      8  75.00%   26-27, 99, 108, 133, 150, 164, 177
+src/cl_ml_tools/common/schema_job.py                                        26      3  88.46%   40, 60, 76
+src/cl_ml_tools/common/schema_job_record.py                                 29      0 100.00%
+src/cl_ml_tools/common/user.py                                               3      0 100.00%
+src/cl_ml_tools/master.py                                                   21     12  42.86%   60-78, 87-88
+src/cl_ml_tools/plugins/clip_embedding/__init__.py                           3      3   0.00%   3-6
+src/cl_ml_tools/plugins/clip_embedding/algo/clip_embedder.py                61     61   0.00%   3-118
+src/cl_ml_tools/plugins/clip_embedding/routes.py                            15     15   0.00%   3-52
+src/cl_ml_tools/plugins/clip_embedding/schema.py                             7      7   0.00%   3-19
+src/cl_ml_tools/plugins/clip_embedding/task.py                              37     37   0.00%   3-69
+src/cl_ml_tools/plugins/dino_embedding/__init__.py                           3      3   0.00%   3-6
+src/cl_ml_tools/plugins/dino_embedding/algo/dino_embedder.py                65     65   0.00%   8-143
+src/cl_ml_tools/plugins/dino_embedding/routes.py                            15     15   0.00%   3-53
+src/cl_ml_tools/plugins/dino_embedding/schema.py                             8      8   0.00%   3-20
+src/cl_ml_tools/plugins/dino_embedding/task.py                              37     37   0.00%   3-69
+src/cl_ml_tools/plugins/exif/__init__.py                                     3      3   0.00%   3-6
+src/cl_ml_tools/plugins/exif/routes.py                                      16     16   0.00%   3-57
+src/cl_ml_tools/plugins/exif/schema.py                                      31     31   0.00%   3-60
+src/cl_ml_tools/plugins/exif/task.py                                        41     41   0.00%   3-79
+src/cl_ml_tools/plugins/face_detection/__init__.py                           3      3   0.00%   3-6
+src/cl_ml_tools/plugins/face_detection/algo/face_aligner.py                 28     28   0.00%   1-77
+src/cl_ml_tools/plugins/face_detection/algo/face_detector.py                89     89   0.00%   7-196
+src/cl_ml_tools/plugins/face_detection/routes.py                            15     15   0.00%   3-60
+src/cl_ml_tools/plugins/face_detection/schema.py                            43     43   0.00%   3-124
+src/cl_ml_tools/plugins/face_detection/task.py                              60     60   0.00%   3-165
+src/cl_ml_tools/plugins/face_embedding/__init__.py                           3      0 100.00%
+src/cl_ml_tools/plugins/face_embedding/algo/face_embedder.py                80      7  91.25%   50-52, 77, 136, 159-160
+src/cl_ml_tools/plugins/face_embedding/routes.py                            15     15   0.00%   3-50
+src/cl_ml_tools/plugins/face_embedding/schema.py                             9      0 100.00%
+src/cl_ml_tools/plugins/face_embedding/task.py                              37     18  51.35%   21, 26, 30-36, 50-70
+src/cl_ml_tools/plugins/hash/__init__.py                                     3      3   0.00%   3-6
+src/cl_ml_tools/plugins/hash/algo/generic.py                                13     13   0.00%   3-32
+src/cl_ml_tools/plugins/hash/algo/image.py                                  14     14   0.00%   1-19
+src/cl_ml_tools/plugins/hash/algo/md5.py                                    14     14   0.00%   1-23
+src/cl_ml_tools/plugins/hash/algo/video.py                                  67     67   0.00%   1-123
+src/cl_ml_tools/plugins/hash/routes.py                                      15     15   0.00%   3-51
+src/cl_ml_tools/plugins/hash/schema.py                                       8      8   0.00%   3-27
+src/cl_ml_tools/plugins/hash/task.py                                        54     54   0.00%   3-97
+src/cl_ml_tools/plugins/hls_streaming/__init__.py                            3      3   0.00%   3-10
+src/cl_ml_tools/plugins/hls_streaming/algo/ffmpeg_to_hls.py                 30     30   0.00%   1-134
+src/cl_ml_tools/plugins/hls_streaming/algo/hls_stream_generator.py         206    206   0.00%   1-442
+src/cl_ml_tools/plugins/hls_streaming/algo/hls_validator.py                 74     74   0.00%   1-146
+src/cl_ml_tools/plugins/hls_streaming/routes.py                             22     22   0.00%   3-65
+src/cl_ml_tools/plugins/hls_streaming/schema.py                             20     20   0.00%   3-52
+src/cl_ml_tools/plugins/hls_streaming/task.py                               35     35   0.00%   3-73
+src/cl_ml_tools/plugins/image_conversion/__init__.py                         3      3   0.00%   3-6
+src/cl_ml_tools/plugins/image_conversion/algo/image_convert.py              21     21   0.00%   3-75
+src/cl_ml_tools/plugins/image_conversion/routes.py                          17     17   0.00%   3-57
+src/cl_ml_tools/plugins/image_conversion/schema.py                           8      8   0.00%   3-22
+src/cl_ml_tools/plugins/image_conversion/task.py                            24     24   0.00%   3-55
+src/cl_ml_tools/plugins/media_thumbnail/__init__.py                          3      3   0.00%   3-6
+src/cl_ml_tools/plugins/media_thumbnail/algo/__init__.py                     3      3   0.00%   3-6
+src/cl_ml_tools/plugins/media_thumbnail/algo/image_thumbnail.py             38     38   0.00%   3-88
+src/cl_ml_tools/plugins/media_thumbnail/algo/video_thumbnail.py             23     23   0.00%   3-90
+src/cl_ml_tools/plugins/media_thumbnail/routes.py                           15     15   0.00%   3-60
+src/cl_ml_tools/plugins/media_thumbnail/schema.py                            8      8   0.00%   3-21
+src/cl_ml_tools/plugins/media_thumbnail/task.py                             40     40   0.00%   3-85
+src/cl_ml_tools/utils/media_types.py                                        52     52   0.00%   1-79
+src/cl_ml_tools/utils/model_downloader.py                                   89     60  32.58%   75-80, 87-128, 132-182, 195-202, 213-214, 218-221
+src/cl_ml_tools/utils/mqtt/__init__.py                                       3      0 100.00%
+src/cl_ml_tools/utils/mqtt/mqtt_impl.py                                    205    142  30.73%   22, 25, 28, 31, 36, 39, 42, 51, 54, 61-70, 74-108, 112-116, 120-129, 136-145, 149-156, 161, 183-207, 219-250, 263-267, 279-280, 286-307, 318-339, 349-350, 354, 358, 368, 374, 378, 382, 393, 398
+src/cl_ml_tools/utils/mqtt/mqtt_instance.py                                 32     21  34.38%   26-55, 61-63
+src/cl_ml_tools/utils/profiling.py                                          26      5  80.77%   36-42
+src/cl_ml_tools/utils/random_media_generator/__init__.py                     3      3   0.00%   1-4
+src/cl_ml_tools/utils/random_media_generator/base_media.py                  62     62   0.00%   1-100
+src/cl_ml_tools/utils/random_media_generator/basic_shapes.py               242    242   0.00%   1-437
+src/cl_ml_tools/utils/random_media_generator/errors.py                       8      8   0.00%   1-18
+src/cl_ml_tools/utils/random_media_generator/exif_metadata.py               46     46   0.00%   1-105
+src/cl_ml_tools/utils/random_media_generator/frame_generator.py             36     36   0.00%   1-73
+src/cl_ml_tools/utils/random_media_generator/image_generator.py             29     29   0.00%   1-39
+src/cl_ml_tools/utils/random_media_generator/random_media_generator.py      30     30   0.00%   1-52
+src/cl_ml_tools/utils/random_media_generator/scene_generator.py             37     37   0.00%   1-82
+src/cl_ml_tools/utils/random_media_generator/video_generator.py             56     56   0.00%   1-99
+src/cl_ml_tools/utils/timestamp.py                                          12     12   0.00%   1-31
+src/cl_ml_tools/worker.py                                                   44     32  27.27%   25-38, 75-79, 87, 100-133
+-------------------------------------------------------------------------------------------------------
+TOTAL                                                                     2797   2432  13.05%
+
+9 empty files skipped.
+Coverage HTML written to dir htmlcov
+FAIL Required test coverage of 90% not reached. Total coverage: 13.05%
+============================== 1 passed in 2.96s ===============================
