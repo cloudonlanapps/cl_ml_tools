@@ -13,6 +13,7 @@ from loguru import logger
 from pydantic import BaseModel
 
 from ....utils.model_downloader import get_model_downloader
+from ....utils.profiling import timed
 
 # Model configuration
 MODEL_URL = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
@@ -122,6 +123,7 @@ class FaceDetector:
 
         return faces
 
+    @timed
     def detect(
         self,
         image_path: str | Path,

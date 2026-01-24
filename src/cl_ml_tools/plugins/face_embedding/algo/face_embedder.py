@@ -17,6 +17,7 @@ from numpy.typing import NDArray
 from PIL import Image
 
 from ....utils.model_downloader import get_model_downloader
+from ....utils.profiling import timed
 
 # Model configuration
 MODEL_URL = (
@@ -120,6 +121,7 @@ class FaceEmbedder:
 
         return quality
 
+    @timed
     def embed(
         self,
         image_path: str | Path,

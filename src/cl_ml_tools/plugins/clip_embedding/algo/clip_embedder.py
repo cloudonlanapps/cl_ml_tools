@@ -10,6 +10,7 @@ from numpy.typing import NDArray
 from PIL import Image
 
 from ....utils.model_downloader import get_model_downloader
+from ....utils.profiling import timed
 
 MODEL_URL = (
     "https://huggingface.co/Xenova/mobileclip_blt/resolve/main/onnx/vision_model.onnx"
@@ -90,6 +91,7 @@ class ClipEmbedder:
 
         return embedding
 
+    @timed
     def embed(
         self,
         image_path: str | Path,

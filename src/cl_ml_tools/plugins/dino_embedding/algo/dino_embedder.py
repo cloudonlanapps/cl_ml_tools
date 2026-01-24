@@ -15,6 +15,7 @@ from numpy.typing import NDArray
 from PIL import Image
 
 from ....utils.model_downloader import get_model_downloader
+from ....utils.profiling import timed
 
 # Model configuration
 MODEL_URL: Final[str] = (
@@ -115,6 +116,7 @@ class DinoEmbedder:
 
         return embedding
 
+    @timed
     def embed(
         self, image_path: str | Path, normalize: bool = True
     ) -> NDArray[np.float32]:
