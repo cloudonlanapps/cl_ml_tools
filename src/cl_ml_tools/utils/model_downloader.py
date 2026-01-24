@@ -11,6 +11,8 @@ the original model licenses.
 import hashlib
 from pathlib import Path
 from typing import cast
+import shutil
+import zipfile
 
 import httpx
 from loguru import logger
@@ -129,8 +131,6 @@ class ModelDownloader:
 
         # Auto-extract if requested
         if auto_extract and model_path.suffix == ".zip":
-            import zipfile
-
             extract_dir = model_path.parent
 
             # Check if already extracted

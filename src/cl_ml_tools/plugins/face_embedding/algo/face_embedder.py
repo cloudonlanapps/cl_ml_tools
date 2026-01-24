@@ -15,6 +15,7 @@ import onnxruntime as ort
 from loguru import logger
 from numpy.typing import NDArray
 from PIL import Image
+from scipy import signal
 
 from ....utils.model_downloader import get_model_downloader
 from ....utils.profiling import timed
@@ -71,6 +72,7 @@ class FaceEmbedder:
             f"Model loaded. Input: {self.input_name}, Output: {self.output_name}"
         )
 
+    @timed
     def preprocess(self, image: Image.Image) -> NDArray[np.float32]:
         if image.mode != "RGB":
             image = image.convert("RGB")
@@ -89,6 +91,7 @@ class FaceEmbedder:
 
         return img_array
 
+    @timed
     def postprocess(
         self, embedding: NDArray[np.float32], normalize: bool = True
     ) -> NDArray[np.float32]:
@@ -102,9 +105,8 @@ class FaceEmbedder:
 
         return embedding
 
+    @timed
     def compute_quality_score(self, image: Image.Image) -> float:
-        from scipy import signal
-
         img_gray = image.convert("L")
         img_array: NDArray[np.float32] = np.asarray(img_gray, dtype=np.float32)
 
@@ -135,13 +137,17 @@ class FaceEmbedder:
         with Image.open(image_path) as image:
             input_array = self.preprocess(image)
 
-            raw_output = cast(
-                NDArray[np.float32],
-                self.session.run(
-                    [self.output_name],
-                    {self.input_name: input_array},
-                )[0],
-            )
+            @timed
+            def _inference_run():
+                return cast(
+                    NDArray[np.float32],
+                    self.session.run(
+                        [self.output_name],
+                        {self.input_name: input_array},
+                    )[0],
+                )
+
+            raw_output = _inference_run()
 
             embedding = self.postprocess(raw_output, normalize=normalize)
 

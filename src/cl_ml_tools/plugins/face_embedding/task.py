@@ -9,6 +9,7 @@ from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
 from .algo.face_embedder import FaceEmbedder
 from .schema import FaceEmbeddingOutput, FaceEmbeddingParams
+from ...utils.profiling import timed
 
 
 class FaceEmbeddingTask(ComputeModule[FaceEmbeddingParams, FaceEmbeddingOutput]):
@@ -38,6 +39,7 @@ class FaceEmbeddingTask(ComputeModule[FaceEmbeddingParams, FaceEmbeddingOutput])
                 ) from exc
 
     @override
+    @timed
     async def run(
         self,
         job_id: str,

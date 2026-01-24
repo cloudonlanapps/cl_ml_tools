@@ -18,6 +18,7 @@ from .schema import (
     FaceDetectionParams,
     FaceLandmarks,
 )
+from ...utils.profiling import timed
 
 
 class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput]):
@@ -47,6 +48,7 @@ class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput])
                 ) from exc
 
     @override
+    @timed
     async def run(
         self,
         job_id: str,

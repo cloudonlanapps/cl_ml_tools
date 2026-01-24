@@ -3,8 +3,10 @@ from typing import cast
 import cv2
 import numpy as np
 from numpy.typing import NDArray
+from ....utils.profiling import timed
 
 
+@timed
 def align_and_crop(
     img: NDArray[np.uint8],
     landmarks: list[tuple[float, float]] | NDArray[np.float32],

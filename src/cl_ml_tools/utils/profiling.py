@@ -1,9 +1,10 @@
 """Performance profiling utilities for cl_ml_tools algorithms."""
 
+import asyncio
 import time
 from collections.abc import Callable
 from functools import wraps
-from typing import ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar, cast
 
 from loguru import logger
 
@@ -25,13 +26,25 @@ def timed(func: Callable[P, R]) -> Callable[P, R]:
     @wraps(func)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         start_time = time.perf_counter()
+
+        def log_elapsed():
+            elapsed_time = time.perf_counter() - start_time
+            logger.info(f"[PROFILE] {func.__qualname__} took {elapsed_time:.3f}s")
+
+        if asyncio.iscoroutinefunction(func):
+
+            async def async_wrapper(*args, **kwargs):
+                try:
+                    return await func(*args, **kwargs)
+                finally:
+                    log_elapsed()
+
+            return cast(R, async_wrapper(*args, **kwargs))
+
         try:
             result = func(*args, **kwargs)
             return result
         finally:
-            elapsed_time = time.perf_counter() - start_time
-            logger.info(
-                f"[PROFILE] {func.__qualname__} took {elapsed_time:.3f}s"
-            )
+            log_elapsed()
 
     return wrapper

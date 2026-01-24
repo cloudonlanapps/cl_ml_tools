@@ -4,6 +4,7 @@ import json
 import time
 from io import BytesIO
 from typing import Callable, override
+import magic
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
@@ -41,15 +42,7 @@ class HashTask(ComputeModule[HashParams, HashOutput]):
         file_bytes = input_path.read_bytes()
         bytes_io = BytesIO(file_bytes)
 
-        # Lazy import to avoid hard dependency
-        try:
-            import magic  # type: ignore[import-not-found]
-        except ImportError as exc:
-            raise RuntimeError(
-                "python-magic is required for hash computation. "
-                + "Install it with: pip install python-magic"
-            ) from exc
-
+        # Get MIME type
         mime = magic.Magic(mime=True)
         file_type = mime.from_buffer(file_bytes)
         media_type = determine_media_type(bytes_io, file_type)

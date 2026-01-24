@@ -9,6 +9,7 @@ from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
 from .algo.dino_embedder import DinoEmbedder
 from .schema import DinoEmbeddingOutput, DinoEmbeddingParams
+from ...utils.profiling import timed
 
 
 class DinoEmbeddingTask(ComputeModule[DinoEmbeddingParams, DinoEmbeddingOutput]):
@@ -38,6 +39,7 @@ class DinoEmbeddingTask(ComputeModule[DinoEmbeddingParams, DinoEmbeddingOutput])
                 ) from exc
 
     @override
+    @timed
     async def run(
         self,
         job_id: str,
