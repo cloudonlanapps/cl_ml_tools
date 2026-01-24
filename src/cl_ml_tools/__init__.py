@@ -20,7 +20,7 @@ from .utils.mqtt import (
     shutdown_broadcaster,
 )
 from .worker import Worker
-
+from .plugins.face_detection.schema import BBox, FaceLandmarks
 __version__ = "0.1.0"
 
 __all__ = [
@@ -45,4 +45,6 @@ __all__ = [
     "create_master_router",
     "get_broadcaster",
     "shutdown_broadcaster",
+    "BBox",
+    "FaceLandmarks"
 ]
