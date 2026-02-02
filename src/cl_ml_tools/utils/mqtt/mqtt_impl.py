@@ -105,12 +105,10 @@ class MQTTBroadcaster(BroadcasterBase):
             raise ValueError(f"MQTT URL missing hostname. URL: {url}")
 
         # Extract port with defaults
-        if parsed.port:
-            port = parsed.port
-        else:
-            # Default ports: 1883 for mqtt, 8883 for mqtts
-            port = 8883 if parsed.scheme == "mqtts" else 1883
-
+        port = parsed.port
+        if not port:
+            raise ValueError(f"MQTT URL missing hostname. URL: {url}")
+            
         return broker, port
 
     def __init__(self, mqtt_url: str):
