@@ -40,21 +40,21 @@ def test_broadcaster_base_defaults():
 
 def test_mqtt_broadcaster_init_error():
     """Test MQTTBroadcaster raises exception on missing config."""
-    with pytest.raises(Exception, match="must be provided with broker"):
-        MQTTBroadcaster(None, None)
+    with pytest.raises(ValueError, match="MQTT URL cannot be None"):
+        MQTTBroadcaster(mqtt_url=None)
 
 
-def test_mqtt_broadcaster_connect_exception():
+def test_mqtt_broadcaster_connect_exception(mqtt_url: str):
     """Test connect handles client instantiation/loop errors."""
-    broadcaster = MQTTBroadcaster("localhost", 1883)
+    broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
     with patch("paho.mqtt.client.Client", side_effect=Exception("oops")):
         assert broadcaster.connect() is False
         assert broadcaster.connected is False
 
 
-def test_mqtt_broadcaster_publish_errors():
+def test_mqtt_broadcaster_publish_errors(mqtt_url: str):
     """Test publish methods handle disconnection and exceptions."""
-    broadcaster = MQTTBroadcaster("localhost", 1883)
+    broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
 
     # 1. Not connected
     assert broadcaster.publish_event(topic="t", payload="p") is False
@@ -75,9 +75,9 @@ def test_mqtt_broadcaster_publish_errors():
     assert broadcaster.publish_retained(topic="t", payload="p") is False
 
 
-def test_mqtt_broadcaster_set_will_errors():
+def test_mqtt_broadcaster_set_will_errors(mqtt_url: str):
     """Test set_will handle missing client or exceptions."""
-    broadcaster = MQTTBroadcaster("localhost", 1883)
+    broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
     assert broadcaster.set_will(topic="t", payload="p") is False
 
     broadcaster.client = MagicMock()
@@ -85,9 +85,9 @@ def test_mqtt_broadcaster_set_will_errors():
     assert broadcaster.set_will(topic="t", payload="p") is False
 
 
-def test_mqtt_broadcaster_subscribe_errors():
+def test_mqtt_broadcaster_subscribe_errors(mqtt_url: str):
     """Test subscribe failure modes."""
-    broadcaster = MQTTBroadcaster("localhost", 1883)
+    broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
 
     # Not connected
     assert broadcaster.subscribe(topic="t", callback=lambda x, y: None) is None
@@ -104,9 +104,9 @@ def test_mqtt_broadcaster_subscribe_errors():
     assert broadcaster.subscribe(topic="t", callback=lambda x, y: None) is None
 
 
-def test_mqtt_broadcaster_unsubscribe_errors():
+def test_mqtt_broadcaster_unsubscribe_errors(mqtt_url: str):
     """Test unsubscribe failure modes."""
-    broadcaster = MQTTBroadcaster("localhost", 1883)
+    broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
     assert broadcaster.unsubscribe("some-id") is False
 
     broadcaster.connected = True
@@ -128,16 +128,16 @@ def test_mqtt_broadcaster_unsubscribe_errors():
     assert broadcaster.unsubscribe("test-id") is False
 
 
-def test_mqtt_broadcaster_on_connect_fail():
+def test_mqtt_broadcaster_on_connect_fail(mqtt_url: str):
     """Test _on_connect with non-zero reason code."""
-    broadcaster = MQTTBroadcaster("localhost", 1883)
+    broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
     broadcaster._on_connect(None, None, None, 5, None)  # pyright: ignore[reportPrivateUsage, reportArgumentType]
     assert broadcaster.connected is False
 
 
-def test_mqtt_broadcaster_on_message_callback_error():
+def test_mqtt_broadcaster_on_message_callback_error(mqtt_url: str):
     """Test callback failures don't crash the message loop."""
-    broadcaster = MQTTBroadcaster("localhost", 1883)
+    broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
 
     def failing_callback(t: str, p: Any):  # pyright: ignore[reportUnusedParameter]
         raise Exception("callback explosion")
@@ -152,9 +152,9 @@ def test_mqtt_broadcaster_on_message_callback_error():
     broadcaster._on_message(None, None, msg)  # pyright: ignore[reportPrivateUsage, reportArgumentType]
 
 
-def test_mqtt_broadcaster_topic_matches_edge_cases():
+def test_mqtt_broadcaster_topic_matches_edge_cases(mqtt_url: str):
     """Test _topic_matches with complex patterns."""
-    broadcaster = MQTTBroadcaster("localhost", 1883)
+    broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
 
     # Hash wildcard
     assert broadcaster._topic_matches("home/#", "home/livingroom/temp") is True

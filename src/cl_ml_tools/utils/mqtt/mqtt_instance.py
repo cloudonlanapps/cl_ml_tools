@@ -1,63 +1,66 @@
-from typing import TypedDict
-
 from loguru import logger
 
 from .mqtt_impl import MQTTBroadcaster, NoOpBroadcaster
 
 
-class BroadcasterConfig(TypedDict):
-    """Configuration for broadcaster instance."""
-
-    broadcast_type: str
-    broker: str | None
-    port: int | None
-
-
-_broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = None
-_broadcaster_config: BroadcasterConfig | None = None
+_broadcaster_instance: MQTTBroadcaster | NoOpBroadcaster | None = None
+_current_config: tuple[str | None] | None = None
 
 
 def get_broadcaster(
-    broadcast_type: str, broker: str | None = None, port: int | None = None
-) -> MQTTBroadcaster | NoOpBroadcaster | None:
-    """Get or create global broadcaster instance based on config."""
-    global _broadcaster, _broadcaster_config
+    mqtt_url: str | None = None,
+) -> MQTTBroadcaster | NoOpBroadcaster:
+    """Get or create broadcaster singleton.
 
-    desired_config: BroadcasterConfig = {
-        "broadcast_type": broadcast_type,
-        "broker": broker,
-        "port": port,
-    }
+    NULL SEMANTICS:
+    - mqtt_url=None → Returns NoOpBroadcaster
+    - mqtt_url="" → Raises ValueError
+    - mqtt_url="mqtt://host:port" → Returns MQTTBroadcaster
 
-    # Check if existing singleton is compatible
-    if _broadcaster is not None and _broadcaster_config == desired_config:
-        return _broadcaster
+    Args:
+        mqtt_url: MQTT URL or None to disable MQTT
 
-    # Config mismatch — shutdown old broadcaster if needed
-    if _broadcaster is not None:
-        try:
-            _broadcaster.disconnect()
-            _broadcaster_config = None
-        except Exception:
-            pass  # Best effort cleanup
+    Returns:
+        Broadcaster instance (singleton)
 
-    try:
-        # Recreate with new config
+    Raises:
+        ValueError: If mqtt_url is provided but invalid
+    """
+    global _broadcaster_instance, _current_config
+
+    # Determine broadcast type from url
+    broadcast_type = "noop" if mqtt_url is None else "mqtt"
+
+    # Create new config tuple for comparison
+    new_config = (mqtt_url,)
+
+    # Check if reconfiguration needed
+    if _broadcaster_instance is not None and _current_config != new_config:
+        logger.info("Broadcaster config changed, disconnecting old instance")
+        if hasattr(_broadcaster_instance, "disconnect"):
+            _broadcaster_instance.disconnect()
+        _broadcaster_instance = None
+
+    # Create broadcaster if needed
+    if _broadcaster_instance is None:
+        _current_config = new_config
+
         if broadcast_type == "mqtt":
-            _broadcaster = MQTTBroadcaster(broker, port)
+            # MQTTBroadcaster will validate the URL
+            _broadcaster_instance = MQTTBroadcaster(mqtt_url=mqtt_url)
+            _broadcaster_instance.connect()
         else:
-            _broadcaster = NoOpBroadcaster(broker, port)
-        _ = _broadcaster.connect()
+            _broadcaster_instance = NoOpBroadcaster()
 
-        _broadcaster_config = desired_config
-    except Exception as e:
-        logger.error(f"Error creating broadcaster: {e}")
-    return _broadcaster
+    return _broadcaster_instance
 
 
-def shutdown_broadcaster():
-    """Shutdown global broadcaster."""
-    global _broadcaster
-    if _broadcaster:
-        _broadcaster.disconnect()
-        _broadcaster = None
+def shutdown_broadcaster() -> None:
+    """Shutdown and cleanup broadcaster singleton."""
+    global _broadcaster_instance, _current_config
+
+    if _broadcaster_instance is not None:
+        if hasattr(_broadcaster_instance, "disconnect"):
+            _broadcaster_instance.disconnect()
+        _broadcaster_instance = None
+        _current_config = None

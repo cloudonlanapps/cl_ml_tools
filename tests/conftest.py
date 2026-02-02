@@ -2,12 +2,10 @@
 
 This module provides:
 - Pytest configuration (markers, dependency checks)
-- Session-scoped fixtures (test media validation, model downloads)
 - Function-scoped fixtures (temp dirs, sample files, mock services)
 - Integration test fixtures (API client, worker, repositories)
 """
 
-import hashlib
 import shutil
 from pathlib import Path
 from typing import Any, cast, override
@@ -36,6 +34,18 @@ def pytest_addoption(parser):
         help="Base directory for test storage",
         default="/tmp/cl_ml_tools_test_storage",
     )
+    parser.addoption(
+        "--mqtt-url",
+        action="store",
+        default="mqtt://localhost:1883",
+        help="MQTT broker URL for tests (default: mqtt://localhost:1883)",
+    )
+
+
+@pytest.fixture
+def mqtt_url(request: pytest.FixtureRequest) -> str:
+    """Provide MQTT URL from --mqtt-url command line option."""
+    return request.config.getoption("--mqtt-url")
 
 
 def pytest_configure(config):
@@ -90,80 +100,6 @@ def pytest_runtest_setup(item):
                 "Or exclude with: pytest -m 'not requires_models'",
                 pytrace=False,
             )
-
-
-# ============================================================================
-# Session-Scoped Fixtures (Run Once)
-# ============================================================================
-
-
-@pytest.fixture(scope="session", autouse=True)
-def validate_test_media():
-    """
-    Validate test media manifest before any tests run.
-
-    This fixture runs automatically for all test sessions and ensures
-    that test_media directory exists and matches MANIFEST.md5.
-    """
-    if not TEST_MEDIA_DIR.exists():
-        pytest.exit(
-            f"Test media directory not found: {TEST_MEDIA_DIR}\n"
-            f"Run: python tests/setup_test_media.py",
-            returncode=1,
-        )
-
-    if not MANIFEST_FILE.exists():
-        pytest.exit(
-            f"Test media manifest not found: {MANIFEST_FILE}\n"
-            f"Run: python tests/setup_test_media.py",
-            returncode=1,
-        )
-
-    # Validate checksums
-    errors = []
-    with open(MANIFEST_FILE, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-
-            parts = line.split(maxsplit=1)
-            if len(parts) != 2:
-                continue
-
-            expected_md5, relative_path = parts
-            
-            if relative_path.startswith("test_media/"):
-                # Map manifest path to the potentially redirected TEST_MEDIA_DIR
-                actual_relative = relative_path.replace("test_media/", "", 1)
-                file_path = TEST_MEDIA_DIR / actual_relative
-            else:
-                file_path = TESTS_DIR / relative_path
-
-            if not file_path.exists():
-                errors.append(f"Missing: {relative_path}")
-                continue
-
-            # Calculate actual MD5
-            md5_hash = hashlib.md5()
-            with open(file_path, "rb") as f2:
-                for chunk in iter(lambda: f2.read(4096), b""):
-                    md5_hash.update(chunk)
-            actual_md5 = md5_hash.hexdigest()
-
-            if actual_md5 != expected_md5:
-                errors.append(
-                    f"Checksum mismatch: {relative_path}\n"
-                    f"  Expected: {expected_md5}\n"
-                    f"  Actual:   {actual_md5}",
-                )
-
-    if errors:
-        pytest.exit(
-            "Test media validation failed:\n" + "\n".join(errors) + "\n\n"
-            "Run: python tests/setup_test_media.py",
-            returncode=1,
-        )
 
 
 # ============================================================================

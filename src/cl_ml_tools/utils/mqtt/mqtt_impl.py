@@ -12,14 +12,10 @@ from paho.mqtt.properties import Properties
 from paho.mqtt.reasoncodes import ReasonCode
 
 
-# NoOpBroadcaster must not require configuration. So protocol
-# should not enforce broker nad port mandatory
+# Protocol for broadcaster implementations
 class BroadcasterBase(Protocol):
     connected: bool
     client: mqtt.Client | None = None
-
-    def __init__(self, broker: str | None = None, port: int | None = None):
-        self.connected = False
 
     def connect(self) -> bool:
         return False
@@ -57,14 +53,78 @@ class BroadcasterBase(Protocol):
 class MQTTBroadcaster(BroadcasterBase):
     """MQTT event broadcaster using modern MQTT v5 protocol."""
 
-    def __init__(self, broker: str | None = None, port: int | None = None):
-        super().__init__(broker, port)
-        if not broker or not port:
-            raise Exception(
-                "MQTT broadcaster must be provided with broker and its port"
+    @staticmethod
+    def validate_mqtt_url(url: str | None) -> tuple[str, int]:
+        """Validate and parse MQTT URL.
+
+        This is the ONLY place in the codebase where MQTT URL validation happens.
+        All other code should call this method for validation.
+
+        Args:
+            url: MQTT URL in format mqtt://host:port or mqtts://host:port
+
+        Returns:
+            Tuple of (broker_host, port)
+
+        Raises:
+            ValueError: If URL is None, empty, or invalid format
+
+        Examples:
+            >>> MQTTBroadcaster.validate_mqtt_url("mqtt://localhost:1883")
+            ('localhost', 1883)
+
+            >>> MQTTBroadcaster.validate_mqtt_url("mqtts://broker.example.com:8883")
+            ('broker.example.com', 8883)
+
+            >>> MQTTBroadcaster.validate_mqtt_url(None)
+            ValueError: MQTT URL cannot be None
+        """
+        from urllib.parse import urlparse
+
+        if url is None:
+            raise ValueError(
+                "MQTT URL cannot be None. "
+                "If MQTT is not required, use NoOpBroadcaster instead."
             )
-        self.broker: str = broker
-        self.port: int = port
+
+        if not url or not url.strip():
+            raise ValueError("MQTT URL cannot be empty")
+
+        parsed = urlparse(url)
+
+        # Validate scheme
+        if parsed.scheme not in ("mqtt", "mqtts"):
+            raise ValueError(
+                f"Invalid MQTT URL scheme: '{parsed.scheme}'. "
+                f"Expected 'mqtt://' or 'mqtts://'. URL: {url}"
+            )
+
+        # Extract broker (hostname)
+        broker = parsed.hostname
+        if not broker:
+            raise ValueError(f"MQTT URL missing hostname. URL: {url}")
+
+        # Extract port with defaults
+        if parsed.port:
+            port = parsed.port
+        else:
+            # Default ports: 1883 for mqtt, 8883 for mqtts
+            port = 8883 if parsed.scheme == "mqtts" else 1883
+
+        return broker, port
+
+    def __init__(self, mqtt_url: str):
+        """Initialize MQTT broadcaster.
+
+        Args:
+            mqtt_url: MQTT URL in format mqtt://host:port or mqtts://host:port
+
+        Raises:
+            ValueError: If mqtt_url is None or invalid format
+        """
+        # Validate using centralized validator
+        self.broker, self.port = self.validate_mqtt_url(mqtt_url)
+        self.mqtt_url = mqtt_url
         self.client: mqtt.Client | None = None
         self.connected: bool = False
         self.subscriptions: dict[str, tuple[str, Callable[[str, str], None]]] = {}
@@ -345,8 +405,14 @@ class NoOpBroadcaster(BroadcasterBase):
     connected: bool
     client: None = None
 
-    def __init__(self, broker: str | None = None, port: int | None = None):
-        super().__init__(broker, port)
+    def __init__(self):
+        """Initialize no-op broadcaster.
+
+        No parameters needed - this broadcaster does nothing.
+        """
+        self.broker = None
+        self.port = None
+        self.mqtt_url = None
         self.connected = True
 
     @override
