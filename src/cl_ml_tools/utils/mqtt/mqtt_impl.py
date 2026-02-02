@@ -70,8 +70,8 @@ class MQTTBroadcaster(BroadcasterBase):
             ValueError: If URL is None, empty, or invalid format
 
         Examples:
-            >>> MQTTBroadcaster.validate_mqtt_url("mqtt://localhost:1883")
-            ('localhost', 1883)
+            >>> MQTTBroadcaster.validate_mqtt_url("mqtt://broker.local:1883")
+            ('broker.local', 1883)
 
             >>> MQTTBroadcaster.validate_mqtt_url("mqtts://broker.example.com:8883")
             ('broker.example.com', 8883)

@@ -37,8 +37,8 @@ def pytest_addoption(parser):
     parser.addoption(
         "--mqtt-url",
         action="store",
-        default="mqtt://localhost:1883",
-        help="MQTT broker URL for tests (default: mqtt://localhost:1883)",
+        default=None,
+        help="MQTT broker URL for tests (default: None)",
     )
 
 

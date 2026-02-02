@@ -45,7 +45,6 @@
   - [HLS Streaming](#9-hls_streaming)
 - [Algorithm API Reference](#algorithm-api-reference)
 - [Configuration](#configuration)
-- [Hardware Support](#hardware-support)
 - [Testing](#testing)
 - [License & Contributing](#license--contributing)
 
@@ -613,9 +612,9 @@ image_thumbnail(
 )
 ```
 
-#### `video_thumbnail(input_path, output_path, width=None, height=None, timestamp=1.0)`
+#### `video_thumbnail(input_path, output_path, width=None, height=None)`
 
-Extract video frame as thumbnail at specified timestamp.
+Extract video frame as thumbnail.
 
 ```python
 from cl_ml_tools.algorithms import video_thumbnail
@@ -625,18 +624,17 @@ video_thumbnail(
     output_path="/path/to/thumb.jpg",
     width=256,
     height=256,
-    timestamp=1.0  # 1 second into video
 )
 ```
 
-#### `convert_image(input_path, output_path, format="png", quality=85)`
+#### `image_convert(input_path, output_path, format="png", quality=85)`
 
 Convert image to different format.
 
 ```python
-from cl_ml_tools.algorithms import convert_image
+from cl_ml_tools.algorithms import image_convert
 
-convert_image(
+image_convert(
     input_path="/path/to/image.png",
     output_path="/path/to/image.webp",
     format="webp",
@@ -699,15 +697,15 @@ with open("/path/to/file.dat", "rb") as f:
 
 ### EXIF Metadata
 
-#### `ExifToolWrapper`
+#### `MetadataExtractor`
 
 Extract EXIF metadata using ExifTool.
 
 ```python
-from cl_ml_tools.algorithms import ExifToolWrapper
+from cl_ml_tools.algorithms import MetadataExtractor
 
-wrapper = ExifToolWrapper()
-metadata = wrapper.extract("/path/to/image.jpg", tags=["Make", "Model", "DateTimeOriginal"])
+extractor = MetadataExtractor()
+metadata = extractor.extract_metadata("/path/to/image.jpg", tags=["Make", "Model", "DateTimeOriginal"])
 print(metadata)
 ```
 
@@ -802,14 +800,16 @@ output_dir = generator.generate(
 print(f"HLS playlist: {output_dir}/master.m3u8")
 ```
 
-#### `validate_hls_directory(directory)`
+#### `validate_hls_output(m3u8_file)`
 
-Validate HLS output directory structure.
+Validate HLS output playlist structure.
 
 ```python
-from cl_ml_tools.algorithms import validate_hls_directory
+from cl_ml_tools.algorithms import validate_hls_output
 
-is_valid = validate_hls_directory("/path/to/hls_output")
+error = validate_hls_output("/path/to/hls_output/master.m3u8")
+if error:
+    print(f"Validation failed: {error}")
 ```
 
 ---
@@ -862,16 +862,8 @@ Downloaded models:
 
 Configure optional settings:
 
-```bash
-# Model cache directory
-export CL_ML_TOOLS_CACHE_DIR="/custom/cache/path"
-
-# MQTT broker for distributed workers
-export MQTT_BROKER_HOST="localhost"
-export MQTT_BROKER_PORT="1883"
-export MQTT_USERNAME="user"
-export MQTT_PASSWORD="password"
-```
+# MQTT model cache directory (not used for MQTT specifically but for models)
+# export CL_ML_TOOLS_CACHE_DIR="/custom/cache/path"
 
 ### MQTT Setup (Optional)
 
@@ -881,12 +873,7 @@ For distributed worker deployments, configure MQTT:
 from cl_ml_tools import Worker, get_broadcaster
 
 # Start MQTT broadcaster
-broadcaster = get_broadcaster(
-    host="localhost",
-    port=1883,
-    username="user",
-    password="pass"
-)
+broadcaster = get_broadcaster(mqtt_url="mqtt://broker.local:1883")
 
 # Run worker with MQTT notifications
 worker = Worker(repository, file_storage, broadcaster)
@@ -895,42 +882,11 @@ await worker.start()
 
 ---
 
-## Hardware Support
-
-### Raspberry Pi 5 + Hailo 8 AI Hat+
-
-This package is optimized for edge deployment on Raspberry Pi 5 with Hailo 8 AI Hat+ accelerator.
-
-**Considerations:**
-- Models use ONNX Runtime for efficient CPU/NPU inference
-- Face detection and embeddings optimized for 8GB RAM
-- Video processing benefits from hardware H.264 encoding
-- Adjust worker concurrency based on thermal limits
-
-**Recommended settings for RPi5:**
-
-```python
-# Limit concurrent jobs to prevent thermal throttling
-worker = Worker(
-    repository,
-    file_storage,
-    max_workers=2,  # Adjust based on workload
-    enable_hardware_accel=True
-)
-```
-
-**Memory notes:**
-- CLIP/DINO embedders: ~200-300 MB per model
-- Face detection: ~50 MB
-- HLS streaming: Minimal (FFmpeg handles encoding)
-
 ---
 
 ## Testing
 
-The package includes a comprehensive test suite (350+ tests) covering all plugins and core functionality.
-
-**Coverage Status: 91.42%**
+The package includes a comprehensive test suite covering all plugins and core functionality.
 
 ### Running Tests
 

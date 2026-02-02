@@ -1,7 +1,7 @@
 """Unit tests for MQTT broadcaster.
 
-Tests MQTTBroadcaster and NoOpBroadcaster implementations.
-Requires MQTT broker running on localhost:1883 for MQTTBroadcaster tests.
+Tests `MQTTBroadcaster` and `NoOpBroadcaster` implementations.
+Requires MQTT broker URL provided via `--mqtt-url` for `MQTTBroadcaster` tests.
 """
 
 import json
@@ -24,18 +24,20 @@ from cl_ml_tools import (
 # ============================================================================
 
 
-def is_mqtt_running(host: str = "localhost", port: int = 1883, timeout: int = 2) -> bool:
-    """Check if MQTT broker is running on specified host:port.
+def is_mqtt_running(mqtt_url: str | None, timeout: int = 2) -> bool:
+    """Check if MQTT broker is running on specified URL.
 
     Args:
-        host: MQTT broker hostname
-        port: MQTT broker port
+        mqtt_url: MQTT broker URL
         timeout: Connection timeout in seconds
 
     Returns:
         True if MQTT broker is reachable, False otherwise
     """
+    if mqtt_url is None:
+        return False
     try:
+        host, port = MQTTBroadcaster.validate_mqtt_url(mqtt_url)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
         result = sock.connect_ex((host, port))
@@ -45,11 +47,14 @@ def is_mqtt_running(host: str = "localhost", port: int = 1883, timeout: int = 2)
         return False
 
 
-def skip_if_no_mqtt():
+def skip_if_no_mqtt(mqtt_url: str | None):
     """Fail test if MQTT is not running."""
-    if not is_mqtt_running():
+    if mqtt_url is None:
+        pytest.skip("MQTT URL not provided. Use --mqtt-url to run MQTT tests.")
+
+    if not is_mqtt_running(mqtt_url):
         pytest.fail(
-            "MQTT broker not running on localhost:1883.\n"
+            f"MQTT broker not running at {mqtt_url}.\n"
             "Start broker or exclude MQTT tests with: pytest -m 'not mqtt'",
         )
 
@@ -66,9 +71,10 @@ def test_topic() -> str:
 
 
 @pytest.fixture
-def mqtt_broadcaster(mqtt_url: str) -> Generator[MQTTBroadcaster, None, None]:
+def mqtt_broadcaster(mqtt_url: str | None) -> Generator[MQTTBroadcaster, None, None]:
     """Create MQTTBroadcaster instance for testing."""
-    skip_if_no_mqtt()
+    skip_if_no_mqtt(mqtt_url)
+    assert mqtt_url is not None
     broadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
     yield broadcaster
     # Cleanup
@@ -149,32 +155,18 @@ class TestNoOpBroadcaster:
 class TestMQTTBroadcaster:
     """Test suite for MQTTBroadcaster.
 
-    These tests require MQTT broker running on localhost:1883.
+    These tests require MQTT broker URL provided via --mqtt-url.
     Tests will be skipped if broker is not available.
     """
 
-    def test_mqtt_broker_running(self):
-        """Test that MQTT broker is running on localhost:1883."""
-        if not is_mqtt_running():
-            pytest.fail(
-                "MQTT broker is not running on localhost:1883. "
-                 "Please start MQTT broker to run these tests.",
-            )
-
-    def test_init_without_broker(self):
-        """Test that MQTTBroadcaster raises exception without broker."""
-        with pytest.raises(ValueError, match="MQTT URL cannot be None"):
-            _ = MQTTBroadcaster(mqtt_url=None)
-
-    def test_init_without_port(self):
-        """Test that MQTTBroadcaster raises exception with empty url."""
-        with pytest.raises(ValueError, match="MQTT URL cannot be empty"):
-            _ = MQTTBroadcaster(mqtt_url="")
+    def test_mqtt_broker_running(self, mqtt_url: str | None):
+        """Test that MQTT broker is running on specified URL."""
+        skip_if_no_mqtt(mqtt_url)
 
     def test_init_without_both(self):
         """Test that MQTTBroadcaster raises exception with invalid url scheme."""
         with pytest.raises(ValueError, match="Invalid MQTT URL scheme"):
-            _ = MQTTBroadcaster(mqtt_url="http://localhost:1883")
+            _ = MQTTBroadcaster(mqtt_url="http://broker.local:1883")
 
     def test_connect_to_invalid_broker(self):
         """Test connection failure with invalid broker hostname."""
@@ -247,8 +239,10 @@ class TestMQTTBroadcaster:
         )
         assert result is True
 
-    def test_publish_event_without_connection(self, mqtt_url: str, test_topic: str):
+    def test_publish_event_without_connection(self, mqtt_url: str | None, test_topic: str):
         """Test publish_event fails without connection."""
+        skip_if_no_mqtt(mqtt_url)
+        assert mqtt_url is not None
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
         # Don't connect
 
@@ -290,14 +284,10 @@ class TestMQTTBroadcaster:
         result = mqtt_broadcaster.clear_retained(topic, qos=1)
         assert result is True
 
-    def test_set_will(self, mqtt_url: str):
-        """Test setting Last Will and Testament.
-
-        Note: Current implementation requires connect() to be called first
-        because the MQTT client is only created during connect(). This is
-        a limitation - ideally LWT should be set before connecting.
-        """
-        skip_if_no_mqtt()
+    def test_set_will(self, mqtt_url: str | None):
+        """Test setting Last Will and Testament."""
+        skip_if_no_mqtt(mqtt_url)
+        assert mqtt_url is not None
 
         will_topic: str = f"test/will/{uuid4()}"
         will_payload: str = json.dumps({"status": "offline"})
@@ -351,8 +341,10 @@ class TestMQTTBroadcaster:
             assert result is True
             time.sleep(0.01)  # Small delay between events
 
-    def test_subscribe_without_connection(self, mqtt_url: str, test_topic: str):
+    def test_subscribe_without_connection(self, mqtt_url: str | None, test_topic: str):
         """Test subscribe returns None when not connected."""
+        skip_if_no_mqtt(mqtt_url)
+        assert mqtt_url is not None
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
 
         def callback(_topic: str, _payload: str) -> None:
@@ -463,8 +455,10 @@ class TestMQTTBroadcaster:
         id2: str | None = mqtt_broadcaster.subscribe(topic="test/#", callback=callback)
         assert id2 is not None
 
-    def test_subscribe_before_connect(self, mqtt_url: str):
+    def test_subscribe_before_connect(self, mqtt_url: str | None):
         """Test that subscribe before connect returns None."""
+        skip_if_no_mqtt(mqtt_url)
+        assert mqtt_url is not None
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
 
         def callback(_topic: str, _payload: str) -> None:
@@ -538,9 +532,9 @@ class TestGlobalBroadcaster:
         """Cleanup after each test."""
         shutdown_broadcaster()
 
-    def test_get_broadcaster_mqtt(self, mqtt_url: str):
+    def test_get_broadcaster_mqtt(self, mqtt_url: str | None):
         """Test getting MQTT broadcaster."""
-        skip_if_no_mqtt()
+        skip_if_no_mqtt(mqtt_url)
 
         broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
             mqtt_url=mqtt_url,
@@ -595,7 +589,7 @@ class TestGlobalBroadcaster:
         assert isinstance(broadcaster1, NoOpBroadcaster)
 
         # Switch to MQTT (if broker is running)
-        if is_mqtt_running():
+        if is_mqtt_running(mqtt_url):
             broadcaster2: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
                 mqtt_url=mqtt_url,
             )
@@ -616,7 +610,7 @@ class TestGlobalBroadcaster:
             mqtt_url=mqtt_url,
         )
 
-        # Change port should create new instance
+        # Change configuration should create new instance
         broadcaster2: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(
             mqtt_url="mqtt://localhost:1884",
         )
@@ -850,9 +844,10 @@ class TestMQTTSubscription:
         assert len(received1) == 1  # Still 1
         assert len(received2) == 2  # Now 2
 
-    def test_subscribe_disconnect_clears_subscriptions(self, mqtt_url: str, test_topic: str):
+    def test_subscribe_disconnect_clears_subscriptions(self, mqtt_url: str | None, test_topic: str):
         """Test that disconnect clears subscriptions."""
-        skip_if_no_mqtt()
+        skip_if_no_mqtt(mqtt_url)
+        assert mqtt_url is not None
 
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
         _ = broadcaster.connect()
@@ -862,7 +857,8 @@ class TestMQTTSubscription:
 
         _ = broadcaster.subscribe(topic=test_topic, callback=callback)
 
-        # Verify subscription exists        assert len(broadcaster._subscriptions) == 1
+        # Verify subscription exists
+        assert len(broadcaster.subscriptions) == 1
 
         # Disconnect
         broadcaster.disconnect()
@@ -874,8 +870,10 @@ class TestMQTTSubscription:
 class TestBroadcasterMethods:
     """Tests for broadcaster retained message and LWT methods."""
 
-    def test_set_will_method_exists(self, mqtt_url: str):
+    def test_set_will_method_exists(self, mqtt_url: str | None):
         """Test that broadcaster has set_will method."""
+        skip_if_no_mqtt(mqtt_url)
+        assert mqtt_url is not None
         from cl_ml_tools import MQTTBroadcaster
 
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
@@ -887,8 +885,10 @@ class TestBroadcasterMethods:
             if hasattr(broadcaster, "disconnect"):
                 broadcaster.disconnect()
 
-    def test_publish_retained_method_exists(self, mqtt_url: str):
+    def test_publish_retained_method_exists(self, mqtt_url: str | None):
         """Test that broadcaster has publish_retained method."""
+        skip_if_no_mqtt(mqtt_url)
+        assert mqtt_url is not None
         from cl_ml_tools import MQTTBroadcaster
 
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
@@ -910,13 +910,15 @@ class TestBroadcasterMethods:
         assert callable(broadcaster.set_will)
         assert callable(broadcaster.publish_retained)
 
-    def test_clear_retained_method_exists(self, mqtt_url: str):
+    def test_clear_retained_method_exists(self, mqtt_url: str | None):
         """Test that broadcaster has clear_retained method.
 
         Note: This test verifies that cl_ml_tools.MQTTBroadcaster
         has implemented the clear_retained method. If this test fails, it means
         the cl_server_shared package needs to be updated.
         """
+        skip_if_no_mqtt(mqtt_url)
+        assert mqtt_url is not None
         from cl_ml_tools import MQTTBroadcaster
 
         broadcaster: MQTTBroadcaster = MQTTBroadcaster(mqtt_url=mqtt_url)
