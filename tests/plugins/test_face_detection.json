@@ -1,11 +1,11 @@
 [
     {
-        "absolute_path": "/Users/anandasarangaram/Work/cl_server_test_media/images/20210420_144043.jpg",
+        "path": "images/20210420_144043.jpg",
         "expected_count": 4,
         "exact_match": true
     },
     {
-        "absolute_path": "/Users/anandasarangaram/Work/cl_server_test_media/images/20210420_225822.jpg",
+        "path": "images/20210420_225822.jpg",
         "expected_count": 1,
         "exact_match": false
     }

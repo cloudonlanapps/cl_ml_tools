@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -7,9 +8,14 @@ from cl_ml_tools.plugins.face_detection.algo.face_detector import FaceDetector
 
 CONFIDENCE_THRESHOLD = 0.5
 
+# Standardize path resolution
+TEST_VECTORS_DIR = Path(
+    os.getenv("TEST_VECTORS_DIR", "/Users/anandasarangaram/Work/cl_server_test_media")
+)
+
 
 class FaceTestCase(BaseModel):
-    absolute_path: str
+    path: str
     expected_count: int
     exact_match: bool
 
@@ -33,9 +39,11 @@ class TestFaceDetectorIntegration:
         failures = []
 
         for case in test_cases:
-            image_path = Path(case.absolute_path)
+            # Resolve relative to TEST_VECTORS_DIR
+            image_path = TEST_VECTORS_DIR / case.path
+            
             if not image_path.exists():
-                failures.append(f"Image not found: {case.absolute_path}")
+                failures.append(f"Image not found: {image_path} (from {case.path})")
                 continue
 
             try:
