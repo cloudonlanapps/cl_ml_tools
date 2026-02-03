@@ -15,7 +15,7 @@ import os
 # Configuration
 TESTS_DIR = Path(__file__).parent
 TEST_MEDIA_DIR = Path(
-    os.getenv("TEST_VECTORS_DIR", "/Users/anandasarangaram/Work/cl_server_test_media")
+    os.getenv("TEST_VECTORS_DIR", str(Path.home() / "cl_server_test_media"))
 )
 TARGET_DIR = TEST_MEDIA_DIR / "exif_generated"
 MANIFEST_FILE = TESTS_DIR / "MANIFEST.md5"
