@@ -9,6 +9,7 @@ from loguru import logger
 
 from ...common.compute_module import ComputeModule
 from ...common.job_storage import JobStorage
+from ...utils.profiling import timed
 from .algo.face_aligner import align_and_crop
 from .algo.face_detector import FaceDetector
 from .schema import (
@@ -18,7 +19,6 @@ from .schema import (
     FaceDetectionParams,
     FaceLandmarks,
 )
-from ...utils.profiling import timed
 
 
 class FaceDetectionTask(ComputeModule[FaceDetectionParams, FaceDetectionOutput]):

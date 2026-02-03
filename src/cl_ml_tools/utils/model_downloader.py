@@ -9,10 +9,9 @@ the original model licenses.
 """
 
 import hashlib
+import zipfile
 from pathlib import Path
 from typing import cast
-import shutil
-import zipfile
 
 import httpx
 from loguru import logger
@@ -89,15 +88,11 @@ class ModelDownloader:
             logger.info(f"Downloading model from {url} to {model_path}")
 
             try:
-                with httpx.stream(
-                    "GET", url, follow_redirects=True, timeout=300.0
-                ) as response:
+                with httpx.stream("GET", url, follow_redirects=True, timeout=300.0) as response:
                     _ = response.raise_for_status()
 
                     # Get total size if available
-                    size_header = cast(
-                        str | None, response.headers.get("content-length")
-                    )
+                    size_header = cast(str | None, response.headers.get("content-length"))
                     total_size: int = int(size_header) if size_header is not None else 0
 
                     # Download with progress logging
@@ -161,9 +156,7 @@ class ModelDownloader:
                 if extract_pattern:
                     # Extract specific files matching pattern
                     # Using Path(m).match(extract_pattern) supports basic glob
-                    members = [
-                        m for m in zip_ref.namelist() if Path(m).match(extract_pattern)
-                    ]
+                    members = [m for m in zip_ref.namelist() if Path(m).match(extract_pattern)]
                     if not members:
                         raise FileNotFoundError(
                             f"No files matching '{extract_pattern}' found in {model_path}"

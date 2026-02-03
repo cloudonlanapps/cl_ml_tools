@@ -30,9 +30,7 @@ class BroadcasterBase(Protocol):
     def publish_event(self, *, topic: str, payload: str, qos: int = 1) -> bool:
         return False
 
-    def set_will(
-        self, *, topic: str, payload: str, qos: int = 1, retain: bool = False
-    ) -> bool:
+    def set_will(self, *, topic: str, payload: str, qos: int = 1, retain: bool = False) -> bool:
         return False
 
     def publish_retained(self, *, topic: str, payload: str, qos: int = 1) -> bool:
@@ -60,9 +58,7 @@ class MQTTBroadcaster(BroadcasterBase):
     def __init__(self, broker: str | None = None, port: int | None = None):
         super().__init__(broker, port)
         if not broker or not port:
-            raise Exception(
-                "MQTT broadcaster must be provided with broker and its port"
-            )
+            raise Exception("MQTT broadcaster must be provided with broker and its port")
         self.broker: str = broker
         self.port: int = port
         self.client: mqtt.Client | None = None
@@ -72,9 +68,7 @@ class MQTTBroadcaster(BroadcasterBase):
     @override
     def connect(self) -> bool:
         try:
-            logger.info(
-                f"Assuming MQTT client configuration: broker={self.broker}:{self.port}"
-            )
+            logger.info(f"Assuming MQTT client configuration: broker={self.broker}:{self.port}")
             self.client = mqtt.Client(
                 callback_api_version=CallbackAPIVersion.VERSION2,
                 protocol=mqtt.MQTTv5,
@@ -89,9 +83,7 @@ class MQTTBroadcaster(BroadcasterBase):
             _ = self.client.reconnect_delay_set(min_delay=1, max_delay=30)
 
             _ = self.client.loop_start()
-            _ = self.client.connect(
-                self.broker, self.port, keepalive=60, clean_start=True
-            )
+            _ = self.client.connect(self.broker, self.port, keepalive=60, clean_start=True)
 
             # Wait for connection to be established (up to 5 seconds)
             timeout = 5
@@ -101,9 +93,7 @@ class MQTTBroadcaster(BroadcasterBase):
 
             return self.connected
         except Exception as e:
-            logger.warning(
-                f"Failed to connect to MQTT broker:{self.broker}:{self.port} {e}"
-            )
+            logger.warning(f"Failed to connect to MQTT broker:{self.broker}:{self.port} {e}")
             self.connected = False
             return False
 
@@ -129,9 +119,7 @@ class MQTTBroadcaster(BroadcasterBase):
             return False
 
     @override
-    def set_will(
-        self, *, topic: str, payload: str, qos: int = 1, retain: bool = True
-    ) -> bool:
+    def set_will(self, *, topic: str, payload: str, qos: int = 1, retain: bool = True) -> bool:
         """Set MQTT Last Will and Testament message."""
         if not self.client:
             return False
@@ -197,9 +185,7 @@ class MQTTBroadcaster(BroadcasterBase):
             # Generate unique subscription ID and store callback
             subscription_id = str(uuid4())
             self.subscriptions[subscription_id] = (topic, callback)
-            logger.info(
-                f"Subscribed to topic: {topic} (subscription_id: {subscription_id})"
-            )
+            logger.info(f"Subscribed to topic: {topic} (subscription_id: {subscription_id})")
             return subscription_id
 
         except Exception as e:
@@ -237,9 +223,7 @@ class MQTTBroadcaster(BroadcasterBase):
             if not still_subscribed:
                 result, _mid = self.client.unsubscribe(topic)
                 if result != mqtt.MQTT_ERR_SUCCESS:
-                    logger.error(
-                        f"Failed to unsubscribe from {topic}: error code {result}"
-                    )
+                    logger.error(f"Failed to unsubscribe from {topic}: error code {result}")
                     return False
 
             logger.info(f"Unsubscribed: {subscription_id} from topic: {topic}")
@@ -264,9 +248,7 @@ class MQTTBroadcaster(BroadcasterBase):
         if self.connected:
             logger.info("MQTT connected using v5")
         else:
-            logger.warning(
-                f"MQTT connection failed: reason={reason_code}, props={properties}"
-            )
+            logger.warning(f"MQTT connection failed: reason={reason_code}, props={properties}")
 
     def _on_disconnect(
         self,
@@ -279,9 +261,7 @@ class MQTTBroadcaster(BroadcasterBase):
         self.connected = False
         logger.warning(f"MQTT disconnected: {reason_code}")
 
-    def _on_message(
-        self, _client: mqtt.Client, _userdata: object, message: MQTTMessage
-    ) -> None:
+    def _on_message(self, _client: mqtt.Client, _userdata: object, message: MQTTMessage) -> None:
         """Handle incoming MQTT messages (VERSION2 callback)."""
         try:
             received_topic = message.topic
@@ -343,7 +323,6 @@ class NoOpBroadcaster(BroadcasterBase):
     """No-operation broadcaster for when MQTT is disabled or unavailable."""
 
     connected: bool
-    client: None = None
 
     def __init__(self, broker: str | None = None, port: int | None = None):
         super().__init__(broker, port)
@@ -368,9 +347,7 @@ class NoOpBroadcaster(BroadcasterBase):
         return True
 
     @override
-    def set_will(
-        self, *, topic: str, payload: str, qos: int = 1, retain: bool = True
-    ) -> bool:
+    def set_will(self, *, topic: str, payload: str, qos: int = 1, retain: bool = True) -> bool:
         return True
 
     @override
