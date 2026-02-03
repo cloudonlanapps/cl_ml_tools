@@ -14,6 +14,9 @@ from pathlib import Path
 from typing import Any, cast, override
 
 import pytest
+from _pytest.config import Config
+from _pytest.config.argparsing import Parser
+from _pytest.nodes import Item
 from fastapi.testclient import TestClient
 
 # Test directory paths
@@ -29,7 +32,7 @@ MANIFEST_FILE = TESTS_DIR / "MANIFEST.md5"
 # ============================================================================
 
 
-def pytest_addoption(parser):
+def pytest_addoption(parser: Parser) -> None:
     """Add custom command line options and ini values."""
     parser.addini(
         "test_storage_base_dir",
@@ -44,7 +47,7 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_configure(config):
+def pytest_configure(config: Config) -> None:
     """Configure pytest with custom markers."""
     config.addinivalue_line(
         "markers",
@@ -68,7 +71,7 @@ def pytest_configure(config):
     )
 
 
-def pytest_runtest_setup(item):
+def pytest_runtest_setup(item: Item) -> None:
     """Check dependencies before running tests - FAIL if missing (not skip)."""
     # Check FFmpeg
     if item.get_closest_marker("requires_ffmpeg") and not shutil.which("ffmpeg"):
@@ -130,7 +133,7 @@ def validate_test_media():
         )
 
     # Validate checksums
-    errors = []
+    errors: list[str] = []
     with open(MANIFEST_FILE, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
@@ -303,7 +306,7 @@ def job_repository():
         def get(self, job_id: str) -> JobRecord | None:
             return self._jobs.get(job_id)
 
-        def update(self, job_id: str, **kwargs) -> JobRecord | None:
+        def update(self, job_id: str, **kwargs: Any) -> JobRecord | None:
             if job_id not in self._jobs:
                 return None
             job = self._jobs[job_id]
@@ -390,7 +393,7 @@ def file_storage(tmp_path: Path):
 
 
 @pytest.fixture
-def worker(job_repository, file_storage):
+def worker(job_repository: Any, file_storage: Any) -> Any:
     """Provide Worker instance for integration tests."""
     from cl_ml_tools import Worker
 
@@ -401,7 +404,7 @@ def worker(job_repository, file_storage):
 
 
 @pytest.fixture
-def api_client(job_repository, file_storage):
+def api_client(job_repository: Any, file_storage: Any) -> TestClient:
     """Provide FastAPI TestClient for route testing."""
     from fastapi import FastAPI
 
