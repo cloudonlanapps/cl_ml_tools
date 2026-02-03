@@ -10,7 +10,7 @@ CONFIDENCE_THRESHOLD = 0.5
 
 # Standardize path resolution
 TEST_VECTORS_DIR = Path(
-    os.getenv("TEST_VECTORS_DIR", "/Users/anandasarangaram/Work/cl_server_test_media")
+    os.getenv("TEST_VECTORS_DIR", str(Path.home() / "cl_server_test_media"))
 )
 
 
