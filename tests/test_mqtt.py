@@ -579,14 +579,14 @@ class TestGlobalBroadcaster:
             )
         skip_if_no_mqtt(mqtt_url)
 
-        broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=mqtt_url)
+        broadcaster: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=mqtt_url)
 
         assert isinstance(broadcaster, MQTTBroadcaster)
         assert broadcaster.connected is True
 
     def test_get_broadcaster_noop(self):
         """Test getting NoOp broadcaster."""
-        broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=None)
+        broadcaster: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=None)
 
         assert isinstance(broadcaster, NoOpBroadcaster)
 
@@ -596,9 +596,9 @@ class TestGlobalBroadcaster:
             pytest.skip(
                 "MQTT broker URL not configured. Run with: pytest --mqtt-url=mqtt://localhost:1883"
             )
-        broadcaster1: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=mqtt_url)
+        broadcaster1: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=mqtt_url)
 
-        broadcaster2: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=mqtt_url)
+        broadcaster2: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=mqtt_url)
 
         assert broadcaster1 is broadcaster2
 
@@ -608,14 +608,12 @@ class TestGlobalBroadcaster:
             pytest.skip(
                 "MQTT broker URL not configured. Run with: pytest --mqtt-url=mqtt://localhost:1883"
             )
-        broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=mqtt_url)
-
-        assert broadcaster is not None
+        broadcaster: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=mqtt_url)
 
         shutdown_broadcaster()
 
         # After shutdown, getting broadcaster should create new instance
-        new_broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=mqtt_url)
+        new_broadcaster: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=mqtt_url)
 
         assert new_broadcaster is not broadcaster
 
@@ -626,18 +624,18 @@ class TestGlobalBroadcaster:
                 "MQTT broker URL not configured. Run with: pytest --mqtt-url=mqtt://localhost:1883"
             )
         # Start with NoOp
-        broadcaster1: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=None)
+        broadcaster1: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=None)
         assert isinstance(broadcaster1, NoOpBroadcaster)
 
         # Switch to MQTT (if broker is running)
         if is_mqtt_running(mqtt_url):
-            broadcaster2: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=mqtt_url)
+            broadcaster2: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=mqtt_url)
             assert isinstance(broadcaster2, MQTTBroadcaster)
             assert broadcaster2 is not broadcaster1
             assert broadcaster2.connected is True
 
             # Switch back to NoOp
-            broadcaster3: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=None)
+            broadcaster3: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=None)
             assert isinstance(broadcaster3, NoOpBroadcaster)
             assert broadcaster3 is not broadcaster2
 
@@ -647,13 +645,23 @@ class TestGlobalBroadcaster:
             pytest.skip(
                 "MQTT broker URL not configured. Run with: pytest --mqtt-url=mqtt://localhost:1883"
             )
-        broadcaster1: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=mqtt_url)
+        broadcaster1: MQTTBroadcaster | NoOpBroadcaster = get_broadcaster(url=mqtt_url)
 
-        # Change port should create new instance
+        # Change port should create new instance (will fail to connect, but that's expected)
         parsed = urlparse(mqtt_url)
         alt_url = f"mqtt://{parsed.hostname}:1884"
-        broadcaster2: MQTTBroadcaster | NoOpBroadcaster | None = get_broadcaster(url=alt_url)
-        assert broadcaster2 is not broadcaster1
+
+        # Attempting to connect to non-existent broker should raise RuntimeError
+        with pytest.raises(RuntimeError, match="Failed to connect to MQTT broker"):
+            get_broadcaster(url=alt_url)
+
+    def test_broadcaster_creation_failure(self):
+        """Test that get_broadcaster raises RuntimeError when creation fails."""
+        # Use invalid URL that will cause connection to fail
+        invalid_url = "mqtt://invalid-host-that-does-not-exist-12345.local:1883"
+
+        with pytest.raises(RuntimeError, match="Failed to connect to MQTT broker"):
+            get_broadcaster(url=invalid_url)
 
 
 # ============================================================================

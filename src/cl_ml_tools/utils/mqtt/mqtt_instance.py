@@ -15,7 +15,7 @@ _broadcaster: MQTTBroadcaster | NoOpBroadcaster | None = None
 _broadcaster_config: BroadcasterConfig | None = None
 
 
-def get_broadcaster(url: str | None = None) -> MQTTBroadcaster | NoOpBroadcaster | None:
+def get_broadcaster(url: str | None = None) -> MQTTBroadcaster | NoOpBroadcaster:
     """Get or create global broadcaster instance based on config.
 
     Args:
@@ -24,6 +24,9 @@ def get_broadcaster(url: str | None = None) -> MQTTBroadcaster | NoOpBroadcaster
 
     Returns:
         MQTTBroadcaster if url is provided, NoOpBroadcaster if url is None.
+
+    Raises:
+        RuntimeError: If broadcaster creation or connection fails.
     """
     global _broadcaster, _broadcaster_config
 
@@ -49,11 +52,26 @@ def get_broadcaster(url: str | None = None) -> MQTTBroadcaster | NoOpBroadcaster
             _broadcaster = NoOpBroadcaster(url)
         else:
             _broadcaster = MQTTBroadcaster(url)
-        _ = _broadcaster.connect()
+
+        connected = _broadcaster.connect()
+        if not connected and url is not None:
+            # Only raise error for MQTTBroadcaster connection failures
+            # NoOpBroadcaster always returns True
+            _broadcaster = None
+            raise RuntimeError(
+                f"Failed to connect to MQTT broker at {url}. "
+                "Check that the broker is running and the URL is correct."
+            )
 
         _broadcaster_config = desired_config
+    except RuntimeError:
+        # Re-raise RuntimeError as-is (connection failures)
+        raise
     except Exception as e:
         logger.error(f"Error creating broadcaster: {e}")
+        _broadcaster = None
+        raise RuntimeError(f"Failed to create broadcaster: {e}") from e
+
     return _broadcaster
 
 
