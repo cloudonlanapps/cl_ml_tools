@@ -14,7 +14,7 @@ from pathlib import Path
 
 import os
 # Configuration
-SOURCE_DIR = Path("/Users/anandasarangaram/Work/test_media")
+SOURCE_DIR = Path(os.getenv("TEST_MEDIA_SOURCE", str(Path.home() / "test_media")))
 TESTS_DIR = Path(__file__).parent
 TARGET_DIR = Path(
     os.getenv("TEST_VECTORS_DIR", str(Path.home() / "cl_server_test_media"))

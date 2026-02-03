@@ -90,7 +90,7 @@ Located at `tests/MANIFEST.md5` (committed to git):
 ```
 # Test Media Manifest
 # Generated: 2025-12-18
-# Source: /Users/anandasarangaram/Work/test_media
+# Source: ~/test_media
 
 a1b2c3d4...  test_media/images/20210420_144043.jpg
 b2c3d4e5...  test_media/images/20210420_225822.jpg

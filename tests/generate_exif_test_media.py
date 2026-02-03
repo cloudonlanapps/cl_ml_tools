@@ -213,7 +213,7 @@ def update_manifest(generated_files: list[Path]) -> None:
     with open(MANIFEST_FILE, "w", encoding="utf-8") as f:
         _ = f.write("# Test Media Manifest\n")
         _ = f.write(f"# Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        _ = f.write("# Source: /Users/anandasarangaram/Work/test_media\n")
+        _ = f.write(f"# Source: {os.getenv('TEST_MEDIA_SOURCE', str(Path.home() / 'test_media'))}\n")
         _ = f.write("\n")
 
         for entry in existing_entries:
