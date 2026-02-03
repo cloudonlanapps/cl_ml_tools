@@ -12,6 +12,7 @@ from .common.schema_job_record import (
     TaskParamsRecord,
 )
 from .master import create_master_router
+from .plugins.face_detection.schema import BBox, FaceLandmarks
 from .utils.mqtt import (
     BroadcasterBase,
     MQTTBroadcaster,
@@ -20,7 +21,7 @@ from .utils.mqtt import (
     shutdown_broadcaster,
 )
 from .worker import Worker
-from .plugins.face_detection.schema import BBox, FaceLandmarks
+
 __version__ = "0.1.0"
 
 __all__ = [
@@ -46,5 +47,5 @@ __all__ = [
     "get_broadcaster",
     "shutdown_broadcaster",
     "BBox",
-    "FaceLandmarks"
+    "FaceLandmarks",
 ]

@@ -8,6 +8,7 @@ This module provides:
 """
 
 import hashlib
+import os
 import shutil
 from pathlib import Path
 from typing import Any, cast, override
@@ -15,7 +16,6 @@ from typing import Any, cast, override
 import pytest
 from fastapi.testclient import TestClient
 
-import os
 # Test directory paths
 TESTS_DIR = Path(__file__).parent
 TEST_MEDIA_DIR = Path(
@@ -36,6 +36,12 @@ def pytest_addoption(parser):
         help="Base directory for test storage",
         default="/tmp/cl_ml_tools_test_storage",
     )
+    parser.addoption(
+        "--mqtt-url",
+        action="store",
+        default=None,
+        help="MQTT broker URL for integration tests (default: None, uses NoOpBroadcaster)",
+    )
 
 
 def pytest_configure(config):
@@ -55,6 +61,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers",
         "integration: full integration tests (API → Worker)",
+    )
+    config.addinivalue_line(
+        "markers",
+        "mqtt: tests that require MQTT broker",
     )
 
 
@@ -132,7 +142,7 @@ def validate_test_media():
                 continue
 
             expected_md5, relative_path = parts
-            
+
             if relative_path.startswith("test_media/"):
                 # Map manifest path to the potentially redirected TEST_MEDIA_DIR
                 actual_relative = relative_path.replace("test_media/", "", 1)
@@ -432,3 +442,13 @@ def sample_job_params():
         input_path="/test/input.jpg",
         output_path="output/test.json",
     )
+
+
+@pytest.fixture
+def mqtt_url(request: pytest.FixtureRequest) -> str | None:
+    """Provide MQTT broker URL from pytest option.
+
+    Returns None by default, which causes tests to use NoOpBroadcaster.
+    Override with: pytest --mqtt-url=mqtt://localhost:1883
+    """
+    return request.config.getoption("--mqtt-url")  # type: ignore[no-any-return]

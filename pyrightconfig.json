@@ -1,16 +1,7 @@
 {
   "typeCheckingMode": "strict",
-  "include": [
-    "src"
-  ],
-  "exclude": [
-    "**/__pycache__",
-    "**/node_modules",
-    ".venv"
-  ],
-  "extraPaths": [
-    "src",
-    "typings"
-  ],
-  "reportCallInDefaultInitializer": "none"
+  "include": ["src", "test"],
+  "exclude": ["**/__pycache__", "**/node_modules", ".venv"],
+  "extraPaths": ["src", "typings"],
+  "reportCallInDefaultInitializer": "none",
 }

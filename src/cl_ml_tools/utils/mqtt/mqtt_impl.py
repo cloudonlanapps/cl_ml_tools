@@ -2,6 +2,7 @@
 
 import time
 from typing import Callable, Protocol, override
+from urllib.parse import urlparse
 from uuid import uuid4
 
 import paho.mqtt.client as mqtt
@@ -11,14 +12,30 @@ from paho.mqtt.enums import CallbackAPIVersion
 from paho.mqtt.properties import Properties
 from paho.mqtt.reasoncodes import ReasonCode
 
+# ============================================================================
+# Custom Exceptions
+# ============================================================================
+
+
+class InvalidMQTTURLException(Exception):
+    """Raised when the provided MQTT URL is invalid or malformed."""
+
+    pass
+
+
+class UnsupportedMQTTURLException(Exception):
+    """Raised when the MQTT URL scheme is not supported (e.g., mqtts://)."""
+
+    pass
+
 
 # NoOpBroadcaster must not require configuration. So protocol
-# should not enforce broker nad port mandatory
+# should not enforce url mandatory
 class BroadcasterBase(Protocol):
     connected: bool
     client: mqtt.Client | None = None
 
-    def __init__(self, broker: str | None = None, port: int | None = None):
+    def __init__(self, url: str | None = None):
         self.connected = False
 
     def connect(self) -> bool:
@@ -55,15 +72,59 @@ class BroadcasterBase(Protocol):
 class MQTTBroadcaster(BroadcasterBase):
     """MQTT event broadcaster using modern MQTT v5 protocol."""
 
-    def __init__(self, broker: str | None = None, port: int | None = None):
-        super().__init__(broker, port)
-        if not broker or not port:
-            raise Exception("MQTT broadcaster must be provided with broker and its port")
-        self.broker: str = broker
-        self.port: int = port
+    def __init__(self, url: str | None = None):
+        super().__init__(url)
+        if not url:
+            raise InvalidMQTTURLException("MQTT broadcaster must be provided with a URL")
+
+        # Parse and validate the URL
+        self.broker, self.port = self._parse_mqtt_url(url)
         self.client: mqtt.Client | None = None
         self.connected: bool = False
         self.subscriptions: dict[str, tuple[str, Callable[[str, str], None]]] = {}
+
+    def _parse_mqtt_url(self, url: str) -> tuple[str, int]:
+        """Parse MQTT URL and extract broker and port.
+
+        Args:
+            url: MQTT URL in format mqtt://<host>:<port>
+
+        Returns:
+            Tuple of (broker, port)
+
+        Raises:
+            InvalidMQTTURLException: If URL format is invalid
+            UnsupportedMQTTURLException: If URL scheme is mqtts://
+        """
+        try:
+            parsed = urlparse(url)
+
+            # Check for unsupported mqtts://
+            if parsed.scheme == "mqtts":
+                raise UnsupportedMQTTURLException(f"MQTTS scheme is not supported. URL: {url}")
+
+            # Check for valid mqtt:// scheme
+            if parsed.scheme != "mqtt":
+                raise InvalidMQTTURLException(
+                    f"Invalid URL scheme. Expected 'mqtt://', got '{parsed.scheme}://'. URL: {url}"
+                )
+
+            # Extract host
+            if not parsed.hostname:
+                raise InvalidMQTTURLException(f"Invalid URL: missing hostname. URL: {url}")
+
+            broker = parsed.hostname
+
+            # Extract port (must be explicitly specified)
+            if parsed.port is None:
+                raise InvalidMQTTURLException(f"Invalid URL: missing port. URL: {url}")
+
+            port = parsed.port
+
+            return broker, port
+
+        except (ValueError, AttributeError) as e:
+            raise InvalidMQTTURLException(f"Failed to parse MQTT URL: {url}. Error: {e}")
 
     @override
     def connect(self) -> bool:
@@ -324,8 +385,8 @@ class NoOpBroadcaster(BroadcasterBase):
 
     connected: bool
 
-    def __init__(self, broker: str | None = None, port: int | None = None):
-        super().__init__(broker, port)
+    def __init__(self, url: str | None = None):
+        super().__init__(url)
         self.connected = True
 
     @override
