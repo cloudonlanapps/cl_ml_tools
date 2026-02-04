@@ -551,6 +551,7 @@ def test_hls_streaming_route_with_custom_variants(
 
 @pytest.mark.integration
 @pytest.mark.requires_ffmpeg
+@pytest.mark.asyncio
 async def test_hls_streaming_full_job_lifecycle(
     api_client: "TestClient",
     worker: "Worker",
@@ -588,6 +589,7 @@ async def test_hls_streaming_full_job_lifecycle(
 
 @pytest.mark.integration
 @pytest.mark.requires_ffmpeg
+@pytest.mark.asyncio
 async def test_hls_streaming_full_job_lifecycle_with_original(
     api_client: "TestClient",
     worker: "Worker",

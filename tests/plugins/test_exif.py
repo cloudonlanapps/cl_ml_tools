@@ -469,6 +469,7 @@ def test_exif_route_job_submission_with_tags(
 
 @pytest.mark.integration
 @pytest.mark.requires_exiftool
+@pytest.mark.asyncio
 async def test_exif_full_job_lifecycle(
     api_client: "TestClient",
     worker: "Worker",
@@ -505,6 +506,7 @@ async def test_exif_full_job_lifecycle(
 
 @pytest.mark.integration
 @pytest.mark.requires_exiftool
+@pytest.mark.asyncio
 async def test_exif_full_job_lifecycle_with_gps(
     api_client: "TestClient",
     worker: "Worker",

@@ -502,6 +502,7 @@ def test_media_thumbnail_route_width_only(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_media_thumbnail_full_job_lifecycle(
     api_client: "TestClient",
     worker: "Worker",
@@ -537,6 +538,7 @@ async def test_media_thumbnail_full_job_lifecycle(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_media_thumbnail_full_job_lifecycle_aspect_ratio(
     api_client: "TestClient",
     worker: "Worker",

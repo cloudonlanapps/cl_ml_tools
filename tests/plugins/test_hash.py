@@ -725,6 +725,7 @@ def test_hash_route_default_algorithm(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_hash_full_job_lifecycle(
     api_client: "TestClient",
     worker: "Worker",
@@ -760,6 +761,7 @@ async def test_hash_full_job_lifecycle(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_hash_full_job_lifecycle_sha512(
     api_client: "TestClient",
     worker: "Worker",

@@ -414,6 +414,7 @@ def test_face_detection_route_job_submission(
 
 @pytest.mark.integration
 @pytest.mark.requires_models
+@pytest.mark.asyncio
 async def test_face_detection_full_job_lifecycle(
     api_client: "TestClient",
     worker: "Worker",

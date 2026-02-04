@@ -337,7 +337,7 @@ def test_video_generation_with_scenes(tmp_path: Path):
         out_dir=str(tmp_path),
         media_list=[  # pyright: ignore[reportArgumentType]
             {
-                "MIMEType": "video/mp4",
+                "MIMEType": "video/x-msvideo",
                 "width": 160,
                 "height": 120,
                 "fileName": "test_video",
@@ -352,8 +352,8 @@ def test_video_generation_with_scenes(tmp_path: Path):
     for media in generator.media_list:
         media.generate()
 
-    assert (tmp_path / "test_video.mp4").exists()
-    assert (tmp_path / "test_video.mp4").stat().st_size > 0
+    assert (tmp_path / "test_video.avi").exists()
+    assert (tmp_path / "test_video.avi").stat().st_size > 0
 
 
 @pytest.mark.requires_exiftool

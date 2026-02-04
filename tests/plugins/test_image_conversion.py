@@ -507,6 +507,7 @@ def test_image_conversion_route_default_quality(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_image_conversion_full_job_lifecycle(
     api_client: "TestClient",
     worker: "Worker",
@@ -542,6 +543,7 @@ async def test_image_conversion_full_job_lifecycle(
 
 
 @pytest.mark.integration
+@pytest.mark.asyncio
 async def test_image_conversion_full_job_lifecycle_jpg_to_webp(
     api_client: "TestClient",
     worker: "Worker",

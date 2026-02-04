@@ -82,6 +82,9 @@ class VideoGenerator(BaseMedia):
             (self.width, self.height),
         )
 
+        if not writer.isOpened():
+            raise Exception(f"Failed to open VideoWriter for {self.temp_filepath} with codec {self.fourcc_code}")
+
         try:
             for scene in self.scenes:
                 scene.render_to(

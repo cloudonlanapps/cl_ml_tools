@@ -277,6 +277,7 @@ def test_dino_embedding_route_job_submission(
 
 @pytest.mark.integration
 @pytest.mark.requires_models
+@pytest.mark.asyncio
 async def test_dino_embedding_full_job_lifecycle(
     api_client: "TestClient",
     worker: "Worker",
