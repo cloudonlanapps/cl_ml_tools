@@ -171,8 +171,8 @@ Generate thumbnails from images or videos with automatic media type detection.
 
 **Parameters:**
 - `file` (required): Image or video file (multipart/form-data)
-- `width` (required): Target width in pixels (integer > 0)
-- `height` (required): Target height in pixels (integer > 0)
+- `width` (optional): Target width in pixels (integer > 0)
+- `height` (optional): Target height in pixels (integer > 0)
 - `maintain_aspect_ratio` (optional): Maintain aspect ratio (boolean, default: false)
 - `priority` (optional): Job priority 0-10 (integer, default: 5)
 
