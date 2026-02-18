@@ -4,7 +4,8 @@ import random
 import re
 import string
 import subprocess
-from typing import cast, override
+import time
+from typing import Callable, cast, override
 
 import m3u8
 from loguru import logger
@@ -206,20 +207,23 @@ class HLSStreamGenerator:
     def getVariants(self) -> list[HLSVariant]:
         return self.variants
 
-    def create(self, requested_variants: list[HLSVariant]) -> None:
+    def create(self, requested_variants: list[HLSVariant], on_ready: Callable[[], None] | None = None) -> None:
         command = self.get_ffmpeg_command(
             requested_variants=requested_variants, master_pl_name="adaptive.m3u8"
         )
-        self.run_command(command)
+        self.run_command(command, on_ready=on_ready, ready_file=self.master_pl_path)
 
-    def update(self, requested_variants: list[HLSVariant]) -> None:
+    def update(self, requested_variants: list[HLSVariant], on_ready: Callable[[], None] | None = None) -> None:
         temp_master_pl_name = (
             f"{''.join(random.choices(string.ascii_letters, k=10))}.m3u8"
         )
+        temp_master_pl_path = os.path.join(self.output_dir, temp_master_pl_name)
         command = self.get_ffmpeg_command(
             requested_variants=requested_variants, master_pl_name=temp_master_pl_name
         )
-        self.run_command(command)
+        
+        # For update, we want to signal when the temp playlist is ready
+        self.run_command(command, on_ready=on_ready, ready_file=temp_master_pl_path)
         # merge master playlist
         path = os.path.join(self.output_dir, temp_master_pl_name)
         try:
@@ -336,21 +340,61 @@ class HLSStreamGenerator:
     # FFmpeg helpers
     # ─────────────────────────────────────────────
 
-    def run_command(self, command: list[str]) -> None:
-        result = subprocess.run(
+    def run_command(
+        self, 
+        command: list[str], 
+        on_ready: Callable[[], None] | None = None,
+        ready_file: str | None = None
+    ) -> None:
+        if not on_ready or not ready_file:
+            result = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=False,
+            )
+
+            if result.returncode != 0:
+                raise InternalServerError(
+                    "\n".join(["FFmpeg command failed", result.stderr, " ".join(command)])
+                )
+            return
+
+        # Asynchronous execution with manifest polling
+        process = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            check=False,
         )
 
-        if result.returncode != 0:
-            raise InternalServerError(
-                "\n".join(["FFmpeg command failed", result.stderr, " ".join(command)])
-            )
+        ready_notified = False
+        try:
+            while process.poll() is None:
+                if not ready_notified and os.path.exists(ready_file):
+                    # Check if manifest has content (is it written?)
+                    if os.path.getsize(ready_file) > 0:
+                        logger.info(f"Manifest {ready_file} is ready, notifying...")
+                        on_ready()
+                        ready_notified = True
+                
+                time.sleep(0.5)
+            
+            # Final check in case process finished too fast
+            if not ready_notified and os.path.exists(ready_file):
+                 on_ready()
 
-    def addVariants(self, requested_variants: list[HLSVariant]):
+            _, stderr = process.communicate()
+            if process.returncode != 0:
+                raise InternalServerError(
+                    "\n".join(["FFmpeg command failed", stderr, " ".join(command)])
+                )
+        except Exception:
+            process.kill()
+            raise
+
+    def addVariants(self, requested_variants: list[HLSVariant], on_ready: Callable[[], None] | None = None):
         logger.info("addVariants")
         logger.info(
             f"\tRequest to add {len(requested_variants)} variants. {','.join([item.uri() for item in requested_variants])}"
@@ -363,7 +407,7 @@ class HLSStreamGenerator:
                 logger.info(
                     f"\tcreating stream with {len(requested_variants)} variants. {','.join([item.uri() for item in requested_variants])}"
                 )
-            self.create(requested_variants=requested_variants)
+            self.create(requested_variants=requested_variants, on_ready=on_ready)
         else:
             logger.info(
                 f"\tStream with {len(self.variants)} variants found. {','.join([item.uri() for item in self.variants])}"
@@ -383,7 +427,7 @@ class HLSStreamGenerator:
                 logger.info(
                     f"updating stream with {len(missing_variants)} variants. {','.join([item.uri() for item in missing_variants])}"
                 )
-                self.update(missing_variants)
+                self.update(missing_variants, on_ready=on_ready)
 
         # validate generated stream - may not be required if we check when creating HLSStreamGenerator
         for variant in requested_variants:
@@ -401,7 +445,7 @@ class HLSStreamGenerator:
 
         return len(missing_variants) == 0
 
-    def createOriginal(self):
+    def createOriginal(self, on_ready: Callable[[], None] | None = None):
         command = [
             "ffmpeg",
             "-y",
@@ -418,9 +462,9 @@ class HLSStreamGenerator:
             f"{self.output_dir}/adaptive-orig.m3u8",
         ]
         logger.debug(" ".join(command))
-        self.run_command(command)
+        self.run_command(command, on_ready=on_ready, ready_file=f"{self.output_dir}/adaptive-orig.m3u8")
 
-    def addOriginal(self):
+    def addOriginal(self, on_ready: Callable[[], None] | None = None):
         logger.info("addOriginal")
         logger.info(
             "\tRequest to convert the original stream to hls format without reencoding"
@@ -429,7 +473,7 @@ class HLSStreamGenerator:
         variant = HLSVariant()
         valid = variant.check(dir=self.output_dir)
         if not valid:
-            self.createOriginal()
+            self.createOriginal(on_ready=on_ready)
             valid = variant.check(dir=self.output_dir)
             if not valid:
                 raise InternalServerError(

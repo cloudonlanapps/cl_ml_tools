@@ -28,7 +28,9 @@ def create_router(
 
     @router.post("/jobs/hls_streaming", response_model=JobCreatedResponse)
     async def create_hls_job(
-        file: Annotated[UploadFile, File(description="Video file to convert")],
+        file: Annotated[UploadFile | None, File(description="Video file to convert")] = None,
+        input_absolute_path: str | None = Form(None, description="Absolute path to input video"),
+        output_absolute_path: str | None = Form(None, description="Absolute path to output directory"),
         variants: Annotated[
             str,
             Form(description="JSON array of variants: [{resolution:720,bitrate:3500}]"),
@@ -45,21 +47,43 @@ def create_router(
         variants_raw = cast(list[VariantDict], parsed)
         variant_models = [VariantConfig(**v) for v in variants_raw]
 
-        return await create_job_from_upload(
-            task_type="hls_streaming",
-            repository=repository,
-            file_storage=file_storage,
-            file=file,
-            priority=priority,
-            user=user,
-            output_type=HLSStreamingOutput,
-            params_factory=lambda path: HLSStreamingParams(
-                input_path=path,
-                output_path="output",
+        if file:
+            return await create_job_from_upload(
+                task_type="hls_streaming",
+                repository=repository,
+                file_storage=file_storage,
+                file=file,
+                priority=priority,
+                user=user,
+                output_type=HLSStreamingOutput,
+                params_factory=lambda path: HLSStreamingParams(
+                    input_path=path,
+                    output_path="output",
+                    variants=variant_models,
+                    include_original=include_original,
+                ),
+            )
+        elif input_absolute_path:
+            params = HLSStreamingParams(
+                input_path="", # Not used when absolute path is present
+                output_path="", # Not used when absolute path is present
+                input_absolute_path=input_absolute_path,
+                output_absolute_path=output_absolute_path or "output", # Still relative to job_id if not absolute
                 variants=variant_models,
                 include_original=include_original,
-            ),
-        )
+            )
+            from ...common.job_creator import create_job_from_params
+            return await create_job_from_params(
+                task_type="hls_streaming",
+                repository=repository,
+                params=params,
+                priority=priority,
+                user=user,
+                output_type=HLSStreamingOutput,
+            )
+        else:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="Either file or input_absolute_path must be provided")
 
     _ = create_hls_job
     return router

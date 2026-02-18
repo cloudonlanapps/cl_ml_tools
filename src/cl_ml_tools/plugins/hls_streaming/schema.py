@@ -35,6 +35,16 @@ class HLSStreamingParams(BaseJobParams):
         default=False, description="Include original quality without re-encoding"
     )
 
+    input_absolute_path: str | None = Field(
+        default=None,
+        description="Absolute path to input file (overrides input_path/storage)",
+    )
+
+    output_absolute_path: str | None = Field(
+        default=None,
+        description="Absolute path to output directory (overrides output_path/storage)",
+    )
+
     @field_validator("variants")
     @classmethod
     def validate_variants_not_empty(cls, v: list[VariantConfig]) -> list[VariantConfig]:
