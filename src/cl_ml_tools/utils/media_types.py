@@ -49,11 +49,18 @@ def determine_mime(bytes_io: BytesIO, file_type: str | None = None) -> MediaType
     try:
         if not file_type:
             _ = bytes_io.seek(0)
-            # Create a Magic object
-            mime = magic.Magic(mime=True)
+            # Create a Magic object with fallback
+            try:
+                mime = magic.Magic(mime=True)
+                # Determine the file type
+                file_type = mime.from_buffer(bytes_io.getvalue())
+            except Exception:
+                import mimetypes
+                # Fallback to standard mimetypes (requires we don't know the extension here)
+                # but we can try to guess from buffer if mimetypes supports it (it doesn't directly)
+                # So we just default to application/octet-stream if magic fails and we have no file_type
+                file_type = None
 
-            # Determine the file type
-            file_type = mime.from_buffer(bytes_io.getvalue())
             if not file_type:
                 file_type = "application/octet-stream"
         return MediaType.from_mime(file_type)
