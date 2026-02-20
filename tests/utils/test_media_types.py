@@ -221,7 +221,8 @@ def test_determine_mime_with_explicit_type():
     data = b"any data"
     bytes_io = BytesIO(data)
 
-    result = determine_mime(bytes_io, file_type="image/jpeg")
+    mime_str, result = determine_mime(bytes_io, file_type="image/jpeg")
+    assert mime_str == "image/jpeg"
     assert result == MediaType.IMAGE
 
 
@@ -231,7 +232,7 @@ def test_determine_mime_detects_jpeg():
     jpeg_data = b"\xff\xd8\xff\xe0\x00\x10JFIF"
     bytes_io = BytesIO(jpeg_data)
 
-    result = determine_mime(bytes_io)
+    _, result = determine_mime(bytes_io)
     assert result == MediaType.IMAGE
 
 
@@ -241,7 +242,7 @@ def test_determine_mime_detects_png():
     png_data = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde"
     bytes_io = BytesIO(png_data)
 
-    result = determine_mime(bytes_io)
+    _, result = determine_mime(bytes_io)
     assert result == MediaType.IMAGE
 
 
@@ -250,7 +251,7 @@ def test_determine_mime_empty_buffer():
     bytes_io = BytesIO(b"")
 
     # Should default to FILE for unknown/empty content
-    result = determine_mime(bytes_io)
+    _, result = determine_mime(bytes_io)
     assert result in (MediaType.FILE, MediaType.TEXT)
 
 
@@ -260,7 +261,7 @@ def test_determine_mime_resets_position():
     bytes_io = BytesIO(data)
     bytes_io.seek(5)  # Move to middle
 
-    _ = determine_mime(bytes_io, file_type="text/plain")
+    _, _ = determine_mime(bytes_io, file_type="text/plain")
 
     # Position should be reset to 0
     assert bytes_io.tell() == 0

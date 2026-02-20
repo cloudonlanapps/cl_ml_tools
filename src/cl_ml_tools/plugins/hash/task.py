@@ -42,10 +42,12 @@ class HashTask(ComputeModule[HashParams, HashOutput]):
         file_bytes = input_path.read_bytes()
         bytes_io = BytesIO(file_bytes)
 
-        # Get MIME type
-        mime = magic.Magic(mime=True)
-        file_type = mime.from_buffer(file_bytes)
-        media_type = determine_media_type(bytes_io, file_type)
+        # Get MIME type robustly
+        try:
+            mime_type_str, media_type = determine_mime(bytes_io)
+        except Exception as e:
+            logger.warning(f"MIME detection failed in HashTask: {e}")
+            media_type = MediaType.FILE
 
         _ = bytes_io.seek(0)
         start = time.time()

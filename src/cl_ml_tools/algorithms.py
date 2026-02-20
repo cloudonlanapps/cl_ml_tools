@@ -115,6 +115,7 @@ from .utils.media_types import (
     MediaType,
     determine_media_type,
     determine_mime,
+    get_extension_from_mime,
 )
 from .utils.random_media_generator import (
     RandomMediaGenerator,
@@ -149,5 +150,6 @@ __all__ = [
     "MediaType",
     "determine_mime",
     "determine_media_type",
+    "get_extension_from_mime",
     "RandomMediaGenerator",
 ]

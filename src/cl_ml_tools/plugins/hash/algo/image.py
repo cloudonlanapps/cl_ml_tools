@@ -13,6 +13,7 @@ register_heif_opener()
 def sha512hash_image(image_stream: BytesIO):
     start_time = time.time()
     with Image.open(image_stream) as im:
+        im.seek(0)
         hash = hashlib.sha512(im.tobytes()).hexdigest()
     end_time = time.time()
     process_time = end_time - start_time
