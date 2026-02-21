@@ -134,13 +134,27 @@ class FaceDetector:
         if not image_path.exists():
             raise FileNotFoundError(f"Image file not found: {image_path}")
 
-        # Load image with OpenCV to keep it BGR (what OpenCV expects usually)
-        # But PIL logic passes image path. Let's use cv2.imread for robustness.
-        image = cv2.imread(str(image_path))
+        # Load image with OpenCV in BGR format (what YuNet expects)
+        # Use IMREAD_COLOR to ensure 3 channels even for grayscale source images
+        image = cv2.imread(str(image_path), cv2.IMREAD_COLOR)
         if image is None:
             raise ValueError(f"Failed to load image: {image_path}")
 
-        height, width, _ = cast(list[int], image.shape)
+        # Handle grayscale images that weren't converted properly
+        if len(image.shape) == 2:
+            # Grayscale image (H, W) -> convert to BGR (H, W, 3)
+            logger.info("Converting grayscale image to BGR for face detection")
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        elif image.shape[2] == 1:
+            # Single channel image (H, W, 1) -> convert to BGR
+            logger.info("Converting single-channel image to BGR for face detection")
+            image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
+        elif image.shape[2] == 4:
+            # RGBA/BGRA image -> convert to BGR
+            logger.info("Converting RGBA image to BGR for face detection")
+            image = cv2.cvtColor(image, cv2.COLOR_BGRA2BGR)
+
+        height, width = image.shape[:2]
 
         # Update detector input size
         self._detector.setInputSize((width, height))
